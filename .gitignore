@@ -33,6 +33,7 @@ backend/target/
 backend/build/
 backend/out/
 backend/.gradle/
+backend/data/
 
 target/
 build/
