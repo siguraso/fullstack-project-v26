@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -17,7 +18,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
@@ -28,8 +28,8 @@ public class User {
   private long id;
 
   @ManyToOne
-  @JoinColumn(name = "orginization_id", nullable = false)
-  private Orginization orginization;
+  @JoinColumn(name = "tenant_id", nullable = false)
+  private Tenant tenant;
 
   @NotBlank(message = "First name is required")
   @Column(length = 100)
