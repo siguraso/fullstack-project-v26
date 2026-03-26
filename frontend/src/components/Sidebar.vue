@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+// placeholders
 const menuItems = [
   'Dashboard',
   'Food Compliance',
@@ -37,7 +38,7 @@ function setActive(index: number) {
   </div>
 </template>
 
-<style>
+<style scoped>
 
 .sidebar {
   width: 15%;
