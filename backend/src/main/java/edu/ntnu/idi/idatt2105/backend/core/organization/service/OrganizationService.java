@@ -28,7 +28,7 @@ public class OrganizationService {
     public OrganizationDTO createOrganization(OrganizationCreateRequest request) {
         log.info("Creating new organization with org number: {}", request.getOrgNumber());
 
-        if (organizationRepository.existsByOrgNumber(request.getOrgNumber())) {
+        if (organizationRepository.findByOrgNumber(request.getOrgNumber()) != null) {
             log.warn("Organization with org number {} already exists", request.getOrgNumber());
             throw new IllegalArgumentException("Organization number already exists: " + request.getOrgNumber());
         }
@@ -76,7 +76,7 @@ public class OrganizationService {
     public List<OrganizationDTO> searchOrganizationsByName(String name) {
         log.debug("Searching organizations with name containing: {}", name);
 
-        List<Organization> organizations = organizationRepository.findByNameContainingIgnoreCase(name);
+        List<Organization> organizations = organizationRepository.findByName(name);
         log.debug("Found {} organizations matching name: {}", organizations.size(), name);
 
         return organizations.stream()
@@ -97,7 +97,7 @@ public class OrganizationService {
         // Check if new org number is already taken by another organization
         if (request.getOrgNumber() != null
             && !request.getOrgNumber().equals(organization.getOrgNumber())
-            && organizationRepository.existsByOrgNumber(request.getOrgNumber())) {
+            && organizationRepository.findByOrgNumber(request.getOrgNumber()) != null) {
                 log.warn("Organization number {} already exists", request.getOrgNumber());
                 throw new IllegalArgumentException("Organization number already exists: " + request.getOrgNumber());
         }
