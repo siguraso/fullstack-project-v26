@@ -1,27 +1,27 @@
-package edu.ntnu.idi.idatt2105.backend.core.organization.mapper;
+package edu.ntnu.idi.idatt2105.backend.core.tenant.mapper;
 
+import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantUpdateRequest;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import org.springframework.stereotype.Component;
 
-import edu.ntnu.idi.idatt2105.backend.core.organization.dto.OrganizationCreateRequest;
-import edu.ntnu.idi.idatt2105.backend.core.organization.dto.OrganizationDTO;
-import edu.ntnu.idi.idatt2105.backend.core.organization.dto.OrganizationUpdateRequest;
-import edu.ntnu.idi.idatt2105.backend.core.organization.entity.Organization;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantCreateRequest;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantDTO;
 
 @Component
-public class OrganizationMapper {
+public class TenantMapper {
 
     /**
-     * Convert Organization entity to DTO (for API responses)
+     * Convert Tenant entity to DTO (for API responses)
      * 
-     * @param entity the organization entity
-     * @return the organization DTO
+     * @param entity the Tenant entity
+     * @return the Tenant DTO
      */
-    public OrganizationDTO toDTO(Organization entity) {
+    public TenantDTO toDTO(Tenant entity) {
         if (entity == null) {
             return null;
         }
 
-        OrganizationDTO dto = new OrganizationDTO();
+        TenantDTO dto = new TenantDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setOrgNumber(entity.getOrgNumber());
@@ -44,17 +44,17 @@ public class OrganizationMapper {
     }
 
     /**
-     * Convert OrganizationCreateRequest DTO to Organization entity (for creation)
+     * Convert TenantCreateRequest DTO to Tenant entity (for creation)
      * 
      * @param request the create request DTO
-     * @return the organization entity
+     * @return the Tenant entity
      */
-    public Organization toEntity(OrganizationCreateRequest request) {
+    public Tenant toEntity(TenantCreateRequest request) {
         if (request == null) {
             return null;
         }
 
-        Organization entity = new Organization();
+        Tenant entity = new Tenant();
         entity.setName(request.getName());
         entity.setOrgNumber(request.getOrgNumber());
         entity.setAddress(request.getAddress());
@@ -67,12 +67,12 @@ public class OrganizationMapper {
     }
 
     /**
-     * Update an Organization entity with data from OrganizationUpdateRequest DTO
+     * Update an Tenant entity with data from TenantUpdateRequest DTO
      * 
      * @param request the update request DTO
-     * @param entity the organization entity to update
+     * @param entity the Tenant entity to update
      */
-    public void updateEntityFromRequest(OrganizationUpdateRequest request, Organization entity) {
+    public void updateEntityFromRequest(TenantUpdateRequest request, Tenant entity) {
         if (request == null || entity == null) {
             return;
         }

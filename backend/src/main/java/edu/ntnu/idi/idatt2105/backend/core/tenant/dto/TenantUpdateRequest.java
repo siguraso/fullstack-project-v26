@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.core.organization.dto;
+package edu.ntnu.idi.idatt2105.backend.core.tenant.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationUpdateRequest {
-    
+public class TenantUpdateRequest {
+
     private String name;
-    
-    @Pattern(regexp = "^\\d{9}$", message = "Organization number must be exactly 9 digits")
+
+    @Pattern(regexp = "^\\d{9}$", message = "Tenant number must be exactly 9 digits")
     private String orgNumber;
     
     private String address;

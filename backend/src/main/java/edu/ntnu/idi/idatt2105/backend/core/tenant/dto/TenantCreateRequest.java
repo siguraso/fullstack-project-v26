@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.core.organization.dto;
+package edu.ntnu.idi.idatt2105.backend.core.tenant.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationCreateRequest {
+public class TenantCreateRequest {
     
-    @NotBlank(message = "Organization name is required")
+    @NotBlank(message = "Tenant name is required")
     private String name;
     
-    @NotBlank(message = "Organization number is required")
-    @Pattern(regexp = "^\\d{9}$", message = "Organization number must be exactly 9 digits")
+    @NotBlank(message = "Tenant number is required")
+    @Pattern(regexp = "^\\d{9}$", message = "Tenant number must be exactly 9 digits")
     private String orgNumber;
     
     private String address;

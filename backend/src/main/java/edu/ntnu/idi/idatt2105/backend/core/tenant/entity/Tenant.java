@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.core.organization.entity;
+package edu.ntnu.idi.idatt2105.backend.core.tenant.entity;
 
 import java.time.LocalDateTime;
 
@@ -24,19 +24,19 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "organizations")
+@Table(name = "tenants")
 @EntityListeners(AuditingEntityListener.class)
-public class Organization {
+public class Tenant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotBlank(message = "Organization name is required")
+    @NotBlank(message = "Tenant name is required")
     @Column(nullable = false, length = 255)
     private String name;
 
-    @NotBlank(message = "Organization number is required")
-    @Pattern(regexp = "^\\d{9}$", message = "Organization number must be exactly 9 digits")
+    @NotBlank(message = "Tenant number is required")
+    @Pattern(regexp = "^\\d{9}$", message = "Tenant number must be exactly 9 digits")
     @Column(name = "org_number", nullable = false, unique = true, length = 20)
     private String orgNumber;
 

@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.core.organization.dto;
+package edu.ntnu.idi.idatt2105.backend.core.tenant.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationDTO {
+public class TenantDTO {
   private long id;
   private String name;
   
