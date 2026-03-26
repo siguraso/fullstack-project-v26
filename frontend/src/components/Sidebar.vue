@@ -30,18 +30,21 @@ function setActive(index: number) {
         </button>
       </li>
     </ul>
+    <div class="user-info">
+      <p>John Doe</p>
+      <button>Logout</button>
+    </div>
   </div>
-
 </template>
 
 <style>
 
 .sidebar {
-  width: 20%;
+  width: 15%;
   min-width: 260px;
   height: 100vh;
   background-color: var(--bg);
-  border-right: 2px solid var(--stroke);
+  border-right: 1px solid var(--stroke);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,19 +74,17 @@ function setActive(index: number) {
 .menu-button {
   background-color: var(--neutral);
   color: var(--bg);
-  font-size: 18px;
-  border-radius: 50px;
-  margin-bottom: 20px;
+  border: none;
+  font-size: 14px;
 }
 
 .menu-button-inactive {
   background-color: transparent;
   color: var(--neutral);
-  border: 2px solid var(--stroke);
+  /*border: 2px solid var(--stroke);*/
+  border: none;
   outline: none;
-  font-size: 18px;
-  border-radius: 50px;
-  margin-bottom: 20px;
+  font-size: 14px;
 }
 
 .menu-button-inactive:hover {
@@ -91,9 +92,11 @@ function setActive(index: number) {
 }
 
 .menu-button, .menu-button-inactive {
-  width: 220px;
+  width: 210px;
   box-sizing: border-box;
-  height: 40px;
+  height: 30px;
+  margin-bottom: 10px;
+  border-radius: 10px;
   transition:
     background-color 220ms ease,
     color 220ms ease,
@@ -103,6 +106,28 @@ function setActive(index: number) {
 
 .menu-button-inactive:active {
   transform: scale(0.98);
+}
+
+.user-info {
+  margin-top: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-info p {
+  margin: 0;
+}
+
+.user-info button {
+  margin-bottom: 0;
+  background-color: var(--neutral);
+  color: var(--bg);
+  border: none;
+  height: 30px;
+  border-radius: 8px;
 }
 
 </style>
