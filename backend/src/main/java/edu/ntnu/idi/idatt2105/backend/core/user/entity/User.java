@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.entity;
+package edu.ntnu.idi.idatt2105.backend.core.user.entity;
 
 import java.time.LocalDateTime;
 
