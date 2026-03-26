@@ -12,7 +12,7 @@ import edu.ntnu.idi.idatt2105.backend.core.user.service.UserService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @CrossOrigin
 public class UserController {
 
