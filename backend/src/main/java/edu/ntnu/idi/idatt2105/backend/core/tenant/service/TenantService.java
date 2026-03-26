@@ -1,5 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.core.tenant.service;
 
+import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
+import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantUpdateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import java.util.List;
@@ -30,7 +32,7 @@ public class TenantService {
 
         if (tenantRepository.findByOrgNumber(request.getOrgNumber()) != null) {
             log.warn("Tenant with org number {} already exists", request.getOrgNumber());
-            throw new IllegalArgumentException("Tenant number already exists: " + request.getOrgNumber());
+            throw new ValidationException("Tenant number already exists: " + request.getOrgNumber());
         }
 
         // Map DTO to entity
@@ -52,7 +54,7 @@ public class TenantService {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Tenant not found with ID: {}", id);
-                    return new IllegalArgumentException("Tenant not found with ID: " + id);
+                    return new ResourceNotFoundException("Tenant not found with ID: " + id);
                 });
 
         return tenantMapper.toDTO(tenant);
@@ -91,7 +93,7 @@ public class TenantService {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Tenant not found with ID: {}", id);
-                    return new IllegalArgumentException("Tenant not found with ID: " + id);
+                    return new ResourceNotFoundException("Tenant not found with ID: " + id);
                 });
 
         // Check if new org number is already taken by another tenant
@@ -99,7 +101,7 @@ public class TenantService {
             && !request.getOrgNumber().equals(tenant.getOrgNumber())
             && tenantRepository.findByOrgNumber(request.getOrgNumber()) != null) {
                 log.warn("Tenant number {} already exists", request.getOrgNumber());
-                throw new IllegalArgumentException("Tenant number already exists: " + request.getOrgNumber());
+                throw new ValidationException("Tenant number already exists: " + request.getOrgNumber());
         }
 
         // Update fields
@@ -116,7 +118,7 @@ public class TenantService {
 
         if (!tenantRepository.existsById(id)) {
             log.warn("Tenant not found with ID: {}", id);
-            throw new IllegalArgumentException("Tenant not found with ID: " + id);
+            throw new ResourceNotFoundException("Tenant not found with ID: " + id);
         }
 
         tenantRepository.deleteById(id);
