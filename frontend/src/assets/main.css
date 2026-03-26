@@ -1,0 +1,51 @@
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url('./fonts/PlusJakartaSans-Regular.ttf');
+}
+
+:root {
+  --bg: #f5f5f7;
+  --primary: #0066FF;
+  --secondary: #00e676;
+  --tertiary: #ff9100;
+  --neutral: #1a1c1e;
+  --stroke: #e4e4e6;
+  --surface: #ffffff;
+  --surface-muted: #fafafa;
+  --text: var(--neutral);
+  --text-muted: #8a8a8e;
+  --border: var(--stroke);
+  --shadow-soft: 0 28px 60px rgba(26, 28, 30, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html * {
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
