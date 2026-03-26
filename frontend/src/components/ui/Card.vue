@@ -3,11 +3,11 @@
 <template>
   <article class="card">
     <header class="card-header">
-      <slot name="cardHeader" />
+      <slot name="card-header" />
     </header>
 
     <section class="card-content">
-      <slot name="cardContent" />
+      <slot name="card-content" />
     </section>
   </article>
 </template>
@@ -23,6 +23,7 @@
 .card-header {
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+  align-self: center;
 }
 </style>

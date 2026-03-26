@@ -10,7 +10,9 @@ const props = withDefaults(
   }>(),
   {
     greenPiece: 0,
-    orangePiece: 0
+    orangePiece: 0,
+    greenLabel: "Green",
+    orangeLabel: "Orange"
   }
 );
 
@@ -54,11 +56,11 @@ const pieStyle = computed(() => {
     <div class="legend">
       <div class="legend-row">
         <span class="box box-green" />
-        <span>{{ greenLabel }}: {{ green }}</span>
+        <span class="legend-label">{{ greenLabel }}: {{ green }}</span>
       </div>
       <div class="legend-row">
         <span class="box box-orange" />
-        <span>{{ orangeLabel }}: {{ orange }}</span>
+        <span class="legend-label">{{ orangeLabel }}: {{ orange }}</span>
       </div>
     </div>
   </div>
@@ -75,7 +77,7 @@ const pieStyle = computed(() => {
 .pie-chart {
   position: relative;
   width: 160px;
-  aspect-ratio: 1 / 1;
+  height: 160px;
 }
 
 .chart-outline {
@@ -119,12 +121,21 @@ const pieStyle = computed(() => {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+}
+
+.legend-row span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .box {
   width: 0.8rem;
   height: 0.8rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .box-green {
