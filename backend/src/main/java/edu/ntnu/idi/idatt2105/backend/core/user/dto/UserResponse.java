@@ -6,6 +6,7 @@ import lombok.Data;
 public class UserResponse {
 
   private Long id;
+  private Long tenant_id;
   private String firstName;
   private String lastName;
   private String username;
