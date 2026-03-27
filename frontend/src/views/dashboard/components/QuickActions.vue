@@ -1,109 +1,97 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import Card from '@/components/ui/Card.vue'
+import { ArrowRight, Thermometer, TriangleAlert, ClipboardCheck, BadgeCheck } from '@lucide/vue'
 
 const temperatureInput = ref('')
 
-// TODO: Fetch locations from backend and populate the select options
-const locations = ['Freezer', 'Fridge']
-
-// TODO: fetch logs from backend, placeholders for now
-const recentLogTitles = [
-  { id: 1, title: '2 liter machine broke' },
-  { id: 2, title: 'freezer too warm' },
-  { id: 3, title: 'drunk guy broke entire chair' },
+const quickActions = [
+  {
+    label: 'New Temperature Log',
+    action: () => console.log('New Temperature Log'),
+    icon: Thermometer,
+  },
+  {
+    label: 'New Incident Report',
+    action: () => console.log('New Incident Report'),
+    icon: TriangleAlert,
+  },
+  {
+    label: 'Compliance Checklists',
+    action: () => console.log('Compliance Checklists'),
+    icon: ClipboardCheck,
+  },
+  {
+    label: 'Log ID Verification',
+    action: () => console.log('Log ID Verification'),
+    icon: BadgeCheck,
+  },
 ]
 </script>
 
 <template>
-  <Card title="Quick Actions">
+  <Card class="quick-actions">
     <template #card-header> Quick Actions </template>
+
     <template #card-content>
-      <h3>Create Incident Report</h3>
-      <div class="action">
-        <input type="text" placeholder="Incident Title" class="incident-input" />
-        <button>Create Report</button>
-      </div>
-
-      <br />
-
-      <h3>Temperature Logging</h3>
-      <div class="action">
-        <input type="text" placeholder="" class="temperature-input" v-model="temperatureInput" />
-        <span>°C</span>
-        <select placeholder="Select Location">
-          <option value="" disabled selected>Select Location</option>
-          <option v-for="location in locations" :key="location" :value="location">
-            {{ location }}
-          </option>
-        </select>
-        <button>Create Temperature Log</button>
-      </div>
-
-      <br />
-
-      <h3>Recent Logs</h3>
-      <div class="log-container">
-        <ul class="recent-logs">
-          <li v-for="log in recentLogTitles" :key="log.id">{{ log.title }}</li>
-        </ul>
+      <div class="action-list">
+        <button
+          v-for="action in quickActions"
+          :key="action.label"
+          class="action-button"
+          @click="action.action"
+        >
+          <span class="button-label">
+            <component :is="action.icon" :size="16" aria-hidden="true" />
+            {{ action.label }}
+            <ArrowRight :size="15" class="arrow-icon" />
+          </span>
+        </button>
       </div>
     </template>
   </Card>
 </template>
 
 <style scoped>
-h3 {
-  font-size: 16px;
-  margin-bottom: 0px;
+.quick-actions {
+  width: 20%;
 }
 
-.action .incident-input {
-  width: 30%;
-}
-
-.action .temperature-input {
-  width: 5%;
-}
-
-.action {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  margin-top: 10px;
-  align-items: center;
-}
-
-.log-container {
-  margin-top: 10px;
-}
-
-.recent-logs {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.action-list {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.action-button {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.action-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.action-button:active {
+  background-color: var(--primary-active);
+}
+
+.button-label {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.recent-logs li {
-  padding: 10px 12px;
-  border: 1px solid var(--stroke);
-  border-radius: 10px;
-  background-color: var(--bg);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.recent-logs li:hover {
-  background-color: rgba(0, 102, 255, 0.08);
-  border-color: var(--primary);
-}
-
-.recent-logs li:active {
-  background-color: rgba(0, 102, 255, 0.14);
+.arrow-icon {
+  margin-left: auto;
 }
 </style>
