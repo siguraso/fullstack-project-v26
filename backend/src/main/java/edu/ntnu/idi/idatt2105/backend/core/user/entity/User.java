@@ -18,7 +18,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -53,6 +59,10 @@ public class User {
   @Email
   @Column(unique = true, length = 255)
   private String email;
+
+  @NotBlank(message = "password is required")
+  @Column(nullable = false)
+  private String password;
 
   @CreatedDate
   private LocalDateTime createdAt;
