@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
-  @Value("${jwt.secret:P4kn5UgshsweSxp40CnJpRYoWCjliPuKUxjU1Wd9TtU}")
+  @Value("${security.jwt.secret}")
   private String jwtSecret;
 
-  @Value("${jwt.expiration:3600000}")
+  @Value("${security.jwt.expiration-ms}")
   private long jwtExpiration;
 
   @Value("${jwt.refresh-expiration:604800000}")
