@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import Sidebar from './components/Sidebar.vue';
-import Dashboard from './views/dashboard/Dashboard.vue';
-
+import Sidebar from './components/Sidebar.vue'
+import Dashboard from './views/dashboard/Dashboard.vue'
 </script>
 
 <template>

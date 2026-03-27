@@ -1,41 +1,39 @@
 <script lang="ts" setup>
-import Card from '@/components/ui/Card.vue';
-import PieChart from './components/PieChart.vue';
-
+import Card from '@/components/ui/Card.vue'
+import PieChart from './components/PieChart.vue'
+import QuickActions from './components/QuickActions.vue'
 </script>
 
 <template>
-    <h1>Dashboard</h1>
-    <div class="dashboard-grid">
-      <Card>
-      <template #card-header>
-        Task Completion
-      </template>
+  <h1>Dashboard</h1>
+  <div class="dashboard-grid">
+    <Card>
+      <template #card-header> Task Completion </template>
 
       <template #card-content>
-        <PieChart :greenPiece="3432" :orangePiece="7540" :greenLabel="'completed'" :orangeLabel="'not completed'" />
+        <PieChart
+          :greenPiece="3432"
+          :orangePiece="7540"
+          :greenLabel="'completed'"
+          :orangeLabel="'not completed'"
+        />
       </template>
     </Card>
 
     <Card>
-      <template #card-header>
-        Task Completion
-      </template>
+      <template #card-header> Task Completion </template>
 
       <template #card-content>
-        <PieChart :greenPiece="3432" :orangePiece="7540" :greenLabel="'completed'" :orangeLabel="'not completed'" />
+        <PieChart
+          :greenPiece="3432"
+          :orangePiece="7540"
+          :greenLabel="'completed'"
+          :orangeLabel="'not completed'"
+        />
       </template>
     </Card>
 
-    <Card>
-      <template #card-header>
-        Task Completion
-      </template>
-
-      <template #card-content>
-        <PieChart :greenPiece="3432" :orangePiece="7540" :greenLabel="'completed'" :orangeLabel="'not completed'" />
-      </template>
-    </Card>
+    <QuickActions />
   </div>
 </template>
 
