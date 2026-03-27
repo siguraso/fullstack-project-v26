@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+// placeholders
 const menuItems = [
   'Dashboard',
   'Food Compliance',
@@ -37,21 +38,21 @@ function setActive(index: number) {
   </div>
 </template>
 
-<style>
+<style scoped>
 
 .sidebar {
-  width: 15%;
-  min-width: 260px;
+  width: var(--sidebar-width, 220px);
+  min-width: var(--sidebar-width, 220px);
   height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   background-color: var(--bg);
   border-right: 1px solid var(--stroke);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
 }
 
 .sidebar ul {
@@ -81,7 +82,6 @@ function setActive(index: number) {
 .menu-button-inactive {
   background-color: transparent;
   color: var(--neutral);
-  /*border: 2px solid var(--stroke);*/
   border: none;
   outline: none;
   font-size: 14px;
