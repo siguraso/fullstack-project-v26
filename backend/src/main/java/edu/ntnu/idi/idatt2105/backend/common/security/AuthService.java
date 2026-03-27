@@ -54,8 +54,7 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", user.getTenant().getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName()
-    );
+        "lastName", user.getLastName());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -68,8 +67,7 @@ public class AuthService {
         user.getEmail(),
         user.getFirstName() + " " + user.getLastName(),
         user.getTenant().getId(),
-        "USER"
-    );
+        "USER");
   }
 
   public AuthDtos.LoginResponse register(AuthDtos.RegisterRequest request) {
@@ -81,17 +79,12 @@ public class AuthService {
       throw new UnauthorizedException("Email already registered");
     }
 
-    // Find or create tenant
+    // Find tenant
     Tenant tenant = tenantRepository.findByOrgNumber(request.orgNumber());
     if (tenant == null) {
-      log.info("Creating new tenant with org number: {}", request.orgNumber());
-      tenant = new Tenant();
-      tenant.setOrgNumber(request.orgNumber());
-      tenant.setName("Organization " + request.orgNumber());
-      tenant.setCountry("NO");
-      tenant.setActive(true);
-      tenant = tenantRepository.save(tenant);
-      log.info("Tenant created with ID: {}", tenant.getId());
+      log.warn("Tenant with org: {} does not exist.", request.orgNumber());
+      throw new UnauthorizedException("Tenant does not exist");
+
     }
 
     // Create new user
@@ -112,8 +105,7 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", tenant.getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName()
-    );
+        "lastName", user.getLastName());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -124,8 +116,7 @@ public class AuthService {
         user.getEmail(),
         user.getFirstName() + " " + user.getLastName(),
         tenant.getId(),
-        "USER"
-    );
+        "USER");
   }
 
   public AuthDtos.RefreshResponse refresh(AuthDtos.RefreshRequest request) {
@@ -153,8 +144,7 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", user.getTenant().getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName()
-    );
+        "lastName", user.getLastName());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     log.info("Access token refreshed successfully for user: {}", email);
@@ -162,4 +152,3 @@ public class AuthService {
     return new AuthDtos.RefreshResponse(accessToken);
   }
 }
-
