@@ -58,6 +58,7 @@ const pieStyle = computed(() => {
         <span class="box box-green" />
         <span class="legend-label">{{ greenLabel }}: {{ green }}</span>
       </div>
+      <br />
       <div class="legend-row">
         <span class="box box-orange" />
         <span class="legend-label">{{ orangeLabel }}: {{ orange }}</span>
@@ -126,15 +127,15 @@ const pieStyle = computed(() => {
 }
 
 .legend-row span {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   line-height: 1;
 }
 
 .box {
   width: 0.8rem;
   height: 0.8rem;
-  display: inline-flex;
   align-items: center;
 }
 

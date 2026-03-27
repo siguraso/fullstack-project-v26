@@ -1,11 +1,11 @@
 @font-face {
-  font-family: "Plus Jakarta Sans";
+  font-family: 'Plus Jakarta Sans';
   src: url('./fonts/PlusJakartaSans-Regular.ttf');
 }
 
 :root {
   --bg: #ffffff;
-  --primary: #0066FF;
+  --primary: #0066ff;
   --primary-hover: rgb(0, 65, 162);
   --primary-active: rgb(0, 50, 125);
   --secondary: #00e676;
@@ -15,10 +15,12 @@
 }
 
 html * {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-html, body, #app {
+html,
+body,
+#app {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -38,6 +40,9 @@ button {
   background-color: var(--primary);
   color: var(--bg);
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 button:hover {
