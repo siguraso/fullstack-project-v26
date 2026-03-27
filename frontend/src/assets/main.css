@@ -6,6 +6,8 @@
 :root {
   --bg: #ffffff;
   --primary: #0066FF;
+  --primary-hover: rgb(0, 65, 162);
+  --primary-active: rgb(0, 50, 125);
   --secondary: #00e676;
   --tertiary: #ff9100;
   --neutral: #000000;
@@ -20,4 +22,35 @@ html, body, #app {
   margin: 0;
   padding: 0;
   height: 100%;
+}
+
+input {
+  height: 25px;
+  padding: 5px;
+  border-radius: 10px;
+  border: 2px solid var(--stroke);
+}
+
+button {
+  border-radius: 10px;
+  height: 35px;
+  border: none;
+  background-color: var(--primary);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+}
+
+button:active {
+  background-color: var(--primary-active);
+}
+
+select {
+  height: 40px;
+  padding: 5px;
+  border-radius: 10px;
+  border: 2px solid var(--stroke);
 }
