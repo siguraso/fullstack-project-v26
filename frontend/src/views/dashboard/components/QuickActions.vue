@@ -3,8 +3,6 @@ import { ref } from 'vue'
 import Card from '@/components/ui/Card.vue'
 import { ArrowRight, Thermometer, TriangleAlert, ClipboardCheck, BadgeCheck } from '@lucide/vue'
 
-const temperatureInput = ref('')
-
 const quickActions = [
   {
     label: 'New Temperature Log',
@@ -53,10 +51,6 @@ const quickActions = [
 </template>
 
 <style scoped>
-.quick-actions {
-  width: 20%;
-}
-
 .action-list {
   display: flex;
   flex-direction: column;
