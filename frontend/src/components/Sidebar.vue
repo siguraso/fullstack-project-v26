@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
+import {
+  LayoutDashboard,
+  ClipboardCheck,
+  ListTodo,
+  ScrollText,
+  SearchCheck,
+  TriangleAlert,
+} from '@lucide/vue'
 
+// placeholders
 const menuItems = [
-  'Dashboard',
-  'Food Compliance',
-  'Alcohol Compliance',
-  'Logging',
-  'Dashboard',
-];
+  { label: 'Dashboard', icon: LayoutDashboard },
+  { label: 'Checklists', icon: ClipboardCheck },
+  { label: 'Tasks', icon: ListTodo },
+  { label: 'Logs', icon: ScrollText },
+  { label: 'Inspections', icon: SearchCheck },
+  { label: 'Incidents', icon: TriangleAlert },
+]
 
-const activeIndex = ref(0);
+const activeIndex = ref(0)
 
 function setActive(index: number) {
-  activeIndex.value = index;
+  activeIndex.value = index
 }
 </script>
 
@@ -21,12 +31,15 @@ function setActive(index: number) {
     <h2>Regula</h2>
     <h3>storename</h3>
     <ul class="menu">
-      <li v-for="(item, index) in menuItems" :key="item + index">
+      <li v-for="(item, index) in menuItems" :key="item.label + index">
         <button
           :class="index === activeIndex ? 'menu-button' : 'menu-button-inactive'"
           @click="setActive(index)"
         >
-          {{ item }}
+          <span class="menu-button-content">
+            <component :is="item.icon" :size="16" aria-hidden="true" />
+            {{ item.label }}
+          </span>
         </button>
       </li>
     </ul>
@@ -37,21 +50,20 @@ function setActive(index: number) {
   </div>
 </template>
 
-<style>
-
+<style scoped>
 .sidebar {
-  width: 15%;
-  min-width: 260px;
+  width: var(--sidebar-width, 220px);
+  min-width: var(--sidebar-width, 220px);
   height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   background-color: var(--bg);
   border-right: 1px solid var(--stroke);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
 }
 
 .sidebar ul {
@@ -81,7 +93,6 @@ function setActive(index: number) {
 .menu-button-inactive {
   background-color: transparent;
   color: var(--neutral);
-  /*border: 2px solid var(--stroke);*/
   border: none;
   outline: none;
   font-size: 14px;
@@ -91,17 +102,26 @@ function setActive(index: number) {
   background-color: var(--stroke);
 }
 
-.menu-button, .menu-button-inactive {
+.menu-button,
+.menu-button-inactive {
   width: 210px;
   box-sizing: border-box;
   height: 30px;
   margin-bottom: 10px;
   border-radius: 10px;
+  text-align: left;
+  padding-left: 12px;
   transition:
     background-color 220ms ease,
     color 220ms ease,
     border-color 220ms ease,
     transform 120ms ease;
+}
+
+.menu-button-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .menu-button-inactive:active {
@@ -129,5 +149,4 @@ function setActive(index: number) {
   height: 30px;
   border-radius: 8px;
 }
-
 </style>
