@@ -22,12 +22,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @Entity
+@Data
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
