@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 
 @Data
 public class CreateUser {
@@ -25,4 +26,6 @@ public class CreateUser {
 
   @NotBlank
   private String password;
+
+  private UserRole role;
 }

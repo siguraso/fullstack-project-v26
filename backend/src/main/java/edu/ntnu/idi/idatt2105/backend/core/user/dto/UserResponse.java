@@ -1,6 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.core.user.dto;
 
 import lombok.Data;
+import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 
 @Data
 public class UserResponse {
@@ -11,4 +12,5 @@ public class UserResponse {
   private String lastName;
   private String username;
   private String email;
+  private UserRole role;
 }

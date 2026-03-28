@@ -5,6 +5,7 @@ import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
+import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 import java.util.Map;
 import java.util.Optional;
@@ -54,7 +55,8 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", user.getTenant().getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName());
+        "lastName", user.getLastName(),
+        "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -67,7 +69,7 @@ public class AuthService {
         user.getEmail(),
         user.getFirstName() + " " + user.getLastName(),
         user.getTenant().getId(),
-        "USER");
+        user.getRole().name());
   }
 
   public AuthDtos.LoginResponse register(AuthDtos.RegisterRequest request) {
@@ -96,6 +98,7 @@ public class AuthService {
     user.setUsername(request.email()); // Use email as username
     user.setTenant(tenant);
     user.setActive(true);
+    user.setRole(UserRole.STAFF);
 
     user = userRepository.save(user);
     log.info("User registered successfully with ID: {}", user.getId());
@@ -105,7 +108,8 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", tenant.getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName());
+        "lastName", user.getLastName(),
+        "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -116,7 +120,7 @@ public class AuthService {
         user.getEmail(),
         user.getFirstName() + " " + user.getLastName(),
         tenant.getId(),
-        "USER");
+        user.getRole().name());
   }
 
   public AuthDtos.RefreshResponse refresh(AuthDtos.RefreshRequest request) {
@@ -144,7 +148,8 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", user.getTenant().getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName());
+        "lastName", user.getLastName(),
+        "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     log.info("Access token refreshed successfully for user: {}", email);
