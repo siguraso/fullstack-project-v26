@@ -40,12 +40,28 @@ function readResponseMessage(payload: unknown): string | null {
   return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null
 }
 
-function readToken(payload: unknown): string | null {
+function unwrapApiResponse(payload: unknown): unknown {
   if (!payload || typeof payload !== 'object') {
-    return null
+    return payload
   }
 
   const record = payload as Record<string, unknown>
+
+  if ('data' in record) {
+    return record.data
+  }
+
+  return payload
+}
+
+function readToken(payload: unknown): string | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  const record = unwrappedPayload as Record<string, unknown>
   const candidate =
     record.token ?? record.accessToken ?? record.access_token ?? record.jwt ?? record.idToken
 
