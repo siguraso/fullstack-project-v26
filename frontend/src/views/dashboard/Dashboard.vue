@@ -11,6 +11,12 @@ type DashboardState = 'ready' | 'loading' | 'error'
 const dashboardState = ref<DashboardState>('ready')
 const hasAssignedTasks = ref(true)
 
+import { Thermometer, TriangleAlert, ClipboardCheck, BadgeCheck } from '@lucide/vue'
+import InfoCard from './components/info-cards/InfoCard.vue'
+import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
+import TemperatureOverviewCard from './components/info-cards/TemperatureOverviewCard.vue'
+import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue'
+
 // placeholders
 const primaryChart = {
   greenPiece: 3432,
@@ -39,6 +45,18 @@ const retryLoad = () => {
       :routes="['/dashboard', '/dashboard/food-compliance', '/dashboard/alcohol-compliance']"
     />
   </header>
+
+  <h2>Quick Overview</h2>
+
+  <div class="info-cards">
+    <ChecklistCompletionCard />
+
+    <TemperatureOverviewCard />
+
+    <ActiveDeviationCard />
+  </div>
+
+  <!--
   <div class="dashboard-grid">
     <Card class="tile tile-main-chart">
       <template #card-header> Daily Checklist Completion</template>
@@ -127,9 +145,20 @@ const retryLoad = () => {
       </template>
     </Card>
   </div>
-</template>
+--></template>
 
 <style scoped>
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.info-card {
+  width: 80%;
+  justify-self: center;
+}
+
+/*
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -229,4 +258,5 @@ const retryLoad = () => {
       'tasks';
   }
 }
+  */
 </style>
