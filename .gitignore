@@ -57,3 +57,4 @@ failsafe-reports/
 .cache/
 .temp/
 tmp/
+frontend/env.d.ts
