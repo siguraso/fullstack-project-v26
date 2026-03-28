@@ -10,11 +10,12 @@ type DashboardState = 'ready' | 'loading' | 'error'
 const dashboardState = ref<DashboardState>('ready')
 const hasAssignedTasks = ref(true)
 
+// placeholders
 const primaryChart = {
   greenPiece: 3432,
   orangePiece: 7540,
-  greenLabel: 'completed',
-  orangeLabel: 'not completed',
+  greenLabel: 'Checks Completed',
+  orangeLabel: 'Checks Not Completed',
 }
 
 const secondaryChart = {
@@ -33,7 +34,7 @@ const retryLoad = () => {
   <h1>Dashboard</h1>
   <div class="dashboard-grid">
     <Card class="tile tile-main-chart">
-      <template #card-header> Task Completion </template>
+      <template #card-header> Daily Checklist Completion</template>
 
       <template #card-content>
         <div v-if="dashboardState === 'loading'" class="placeholder-stack">
