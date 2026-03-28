@@ -1,21 +1,17 @@
 import { describe, it, expect } from 'vitest'
 
-import { flushPromises, mount } from '@vue/test-utils'
-import App from '../App.vue'
-import router from '../router'
+import { mount } from '@vue/test-utils'
+import LoginView from '../views/LoginView.vue'
 
 describe('App', () => {
-  it('renders the login page', async () => {
-    router.push('/login')
-    await router.isReady()
-
-    const wrapper = mount(App, {
+  it('renders the login page', () => {
+    const wrapper = mount(LoginView, {
       global: {
-        plugins: [router],
+        stubs: {
+          RouterLink: true,
+        },
       },
     })
-
-    await flushPromises()
 
     expect(wrapper.text()).toContain('Welcome back')
     expect(wrapper.text()).toContain('Sign in to continue to your workspace.')

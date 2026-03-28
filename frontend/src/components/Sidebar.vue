@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -8,6 +9,7 @@ import {
   SearchCheck,
   TriangleAlert,
 } from '@lucide/vue'
+import { clearAuthSession, getAuthSession } from '@/services/auth'
 
 // placeholders
 const menuItems = [
@@ -20,9 +22,17 @@ const menuItems = [
 ]
 
 const activeIndex = ref(0)
+const router = useRouter()
+const session = getAuthSession()
+const userLabel = computed(() => session?.email ?? 'Signed in user')
 
 function setActive(index: number) {
   activeIndex.value = index
+}
+
+async function logout() {
+  clearAuthSession()
+  await router.push('/login')
 }
 </script>
 
@@ -44,8 +54,8 @@ function setActive(index: number) {
       </li>
     </ul>
     <div class="user-info">
-      <p>John Doe</p>
-      <button>Logout</button>
+      <p>{{ userLabel }}</p>
+      <button type="button" @click="logout">Logout</button>
     </div>
   </div>
 </template>

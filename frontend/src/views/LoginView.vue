@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { login } from '@/services/auth'
 
 const form = reactive({
   email: '',
@@ -7,21 +9,36 @@ const form = reactive({
   remember: false,
 })
 
+const router = useRouter()
 const isSubmitting = ref(false)
-const statusMessage = ref('')
+const feedbackMessage = ref('')
+const feedbackTone = ref<'info' | 'error'>('info')
 
-function handleSubmit() {
+async function handleSubmit() {
   if (isSubmitting.value) {
     return
   }
 
   isSubmitting.value = true
-  statusMessage.value = ''
+  feedbackMessage.value = ''
 
-  window.setTimeout(() => {
+  try {
+    await login(
+      {
+        email: form.email.trim(),
+        password: form.password,
+      },
+      form.remember,
+    )
+
+    await router.push('/dashboard')
+  } catch (error) {
+    feedbackTone.value = 'error'
+    feedbackMessage.value =
+      error instanceof Error ? error.message : 'Unable to sign in right now. Please try again.'
+  } finally {
     isSubmitting.value = false
-    statusMessage.value = 'Frontend ready. Connect this form to the login REST endpoint when it is available.'
-  }, 900)
+  }
 }
 </script>
 
@@ -87,8 +104,10 @@ function handleSubmit() {
                 id="email"
                 v-model="form.email"
                 type="email"
+                required
                 autocomplete="email"
                 placeholder="you@company.com"
+                :disabled="isSubmitting"
               />
             </div>
           </div>
@@ -104,15 +123,17 @@ function handleSubmit() {
                 id="password"
                 v-model="form.password"
                 type="password"
+                required
                 autocomplete="current-password"
                 placeholder="••••••••"
+                :disabled="isSubmitting"
               />
             </div>
           </div>
 
           <div class="row">
             <label class="remember">
-              <input v-model="form.remember" type="checkbox" />
+              <input v-model="form.remember" type="checkbox" :disabled="isSubmitting" />
               <span>Remember me</span>
             </label>
             <button type="button" class="link-button">Forgot password?</button>
@@ -122,7 +143,9 @@ function handleSubmit() {
             {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
           </button>
 
-          <p v-if="statusMessage" class="status">{{ statusMessage }}</p>
+          <p v-if="feedbackMessage" :class="['status', `status-${feedbackTone}`]">
+            {{ feedbackMessage }}
+          </p>
         </form>
 
         <p class="footer">
@@ -420,6 +443,11 @@ input:focus {
   color: var(--text-muted);
   font-size: 12.5px;
   line-height: 1.5;
+}
+
+.status-error {
+  border-left-color: #d64545;
+  color: #b42318;
 }
 
 .footer {
