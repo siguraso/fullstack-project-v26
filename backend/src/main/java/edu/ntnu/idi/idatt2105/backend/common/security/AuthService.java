@@ -5,6 +5,7 @@ import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
+import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 import java.util.Map;
 import java.util.Optional;
@@ -67,7 +68,7 @@ public class AuthService {
         user.getEmail(),
         user.getFirstName() + " " + user.getLastName(),
         user.getTenant().getId(),
-        "USER");
+        user.getRole().name());
   }
 
   public AuthDtos.LoginResponse register(AuthDtos.RegisterRequest request) {
@@ -96,6 +97,7 @@ public class AuthService {
     user.setUsername(request.email()); // Use email as username
     user.setTenant(tenant);
     user.setActive(true);
+    user.setRole(UserRole.STAFF);
 
     user = userRepository.save(user);
     log.info("User registered successfully with ID: {}", user.getId());
@@ -116,7 +118,7 @@ public class AuthService {
         user.getEmail(),
         user.getFirstName() + " " + user.getLastName(),
         tenant.getId(),
-        "USER");
+        user.getRole().name());
   }
 
   public AuthDtos.RefreshResponse refresh(AuthDtos.RefreshRequest request) {

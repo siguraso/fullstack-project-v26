@@ -4,8 +4,8 @@ VALUES ('Kule kulinger AS', '123456789', 'Høgskoleringen 67', 'Trondheim', 'NO'
 
 -- Insert test users
 -- Note: password is a bcrypt hash placeholder (replace with a real bcrypt hash if you want to login with these)
-INSERT INTO users (tenant_id, first_name, last_name, contact_phone, active, username, email, password)
+INSERT INTO users (tenant_id, role, first_name, last_name, contact_phone, active, username, email, password)
 VALUES
-    (1, 'Sigurd', 'Sigurdsson', '+4798765432', TRUE, 'sigurd', 'sigurd@test.no', '$2a$10$9q3.3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3'),
-    (1, 'John', 'Doe', '+4798765432', TRUE, 'john', 'john@test.no', '$2a$10$9q3.3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3'),
-    (1, 'Jane', 'Smith', '+4798765433', TRUE, 'jane', 'jane@test.no', '$2a$10$9q3.3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3');
+    (1, 'ADMIN', 'Sigurd', 'Sigurdsson', '+4798765432', TRUE, 'sigurd', 'sigurd@test.no', '$2a$10$9q3.3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3'),
+    (1, 'MANAGER', 'John', 'Doe', '+4798765432', TRUE, 'john', 'john@test.no', '$2a$10$9q3.3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3'),
+    (1, 'STAFF', 'Jane', 'Smith', '+4798765433', TRUE, 'jane', 'jane@test.no', '$2a$10$9q3.3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3q3');

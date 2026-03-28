@@ -11,6 +11,7 @@ import edu.ntnu.idi.idatt2105.backend.core.user.dto.CreateUser;
 import edu.ntnu.idi.idatt2105.backend.core.user.mapper.UserMapper;
 import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserResponse;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
+import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 
 @Service
@@ -44,6 +45,7 @@ public class UserService {
     user.setUsername(dto.getUsername());
     user.setEmail(dto.getEmail());
     user.setPassword(dto.getPassword()); // TODO: hash
+    user.setRole(dto.getRole() != null ? dto.getRole() : UserRole.STAFF);
 
     User saved = userRepository.save(user);
 
