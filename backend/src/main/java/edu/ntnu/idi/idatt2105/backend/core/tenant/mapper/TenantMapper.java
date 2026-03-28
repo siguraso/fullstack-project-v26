@@ -31,14 +31,6 @@ public class TenantMapper {
         dto.setContactEmail(entity.getContactEmail());
         dto.setContactPhone(entity.getContactPhone());
         dto.setActive(entity.isActive());
-        
-        // Format timestamps as strings
-        if (entity.getCreatedAt() != null) {
-            dto.setCreatedAt(entity.getCreatedAt().toString());
-        }
-        if (entity.getUpdatedAt() != null) {
-            dto.setUpdatedAt(entity.getUpdatedAt().toString());
-        }
 
         return dto;
     }
