@@ -55,7 +55,8 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", user.getTenant().getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName());
+        "lastName", user.getLastName(),
+        "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -107,7 +108,8 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", tenant.getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName());
+        "lastName", user.getLastName(),
+        "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
@@ -146,7 +148,8 @@ public class AuthService {
         "userId", user.getId(),
         "organizationId", user.getTenant().getId(),
         "firstName", user.getFirstName(),
-        "lastName", user.getLastName());
+        "lastName", user.getLastName(),
+        "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     log.info("Access token refreshed successfully for user: {}", email);
