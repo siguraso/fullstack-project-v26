@@ -4,6 +4,7 @@ import Card from '@/components/ui/Card.vue'
 import PieChart from './components/PieChart.vue'
 import QuickActions from './components/QuickActions.vue'
 import MyTasks from './components/MyTasks.vue'
+import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 type DashboardState = 'ready' | 'loading' | 'error'
 
@@ -31,7 +32,13 @@ const retryLoad = () => {
 </script>
 
 <template>
-  <h1>Dashboard</h1>
+  <header>
+    <ViewHeader
+      title="Dashboard"
+      :options="['Global', 'Food Compliance', 'Alcohol Compliance']"
+      :routes="['/dashboard', '/dashboard/food-compliance', '/dashboard/alcohol-compliance']"
+    />
+  </header>
   <div class="dashboard-grid">
     <Card class="tile tile-main-chart">
       <template #card-header> Daily Checklist Completion</template>
