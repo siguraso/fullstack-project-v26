@@ -59,6 +59,12 @@ public class Tenant {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }
 
 
