@@ -10,7 +10,7 @@ public class UserMapper {
   public UserResponse toResponse(User user) {
     UserResponse dto = new UserResponse();
     dto.setId(user.getId());
-    dto.setTenant_id(user.getTenant().getId());
+    dto.setTenantId(user.getTenant().getId());
     dto.setFirstName(user.getFirstName());
     dto.setLastName(user.getLastName());
     dto.setUsername(user.getUsername());
@@ -20,4 +20,3 @@ public class UserMapper {
   }
 
 }
-
