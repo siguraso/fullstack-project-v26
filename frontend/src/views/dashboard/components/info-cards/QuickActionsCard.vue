@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import Card from '@/components/ui/Card.vue'
 import {
   ArrowRight,
   Thermometer,

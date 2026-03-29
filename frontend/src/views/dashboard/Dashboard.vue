@@ -1,11 +1,7 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
 import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 type DashboardState = 'ready' | 'loading' | 'error'
-
-const dashboardState = ref<DashboardState>('ready')
-const hasAssignedTasks = ref(true)
 
 import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
 import TemperatureOverviewCard from './components/info-cards/TemperatureOverviewCard.vue'
@@ -13,25 +9,6 @@ import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue
 import PendingChecklists from './components/PendingChecklists.vue'
 import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
 import TeamActivity from './components/TeamActivity.vue'
-
-// placeholders
-const primaryChart = {
-  greenPiece: 3432,
-  orangePiece: 7540,
-  greenLabel: 'Checks Completed',
-  orangeLabel: 'Checks Not Completed',
-}
-
-const secondaryChart = {
-  greenPiece: 1850,
-  orangePiece: 220,
-  greenLabel: 'on schedule',
-  orangeLabel: 'overdue',
-}
-
-const retryLoad = () => {
-  dashboardState.value = 'ready'
-}
 </script>
 
 <template>

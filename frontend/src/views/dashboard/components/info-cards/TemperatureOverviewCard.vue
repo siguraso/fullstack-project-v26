@@ -6,7 +6,6 @@ import InfoCard from './InfoCard.vue'
 
 const numberOfCriticalLocations = ref(2) // TODO replace with actual data fetching
 const criticalLocations = ref(['Freezer 1', 'Fridge 2']) // TODO replace with actual data fetching
-const headerColor = ref('var(--quinary)')
 </script>
 
 <template>

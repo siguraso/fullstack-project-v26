@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Proportions } from '@lucide/vue'
-import Card from './Card.vue'
-
 interface TaskListItemProps {
   taskTitle: string
   taskType: string
