@@ -12,6 +12,7 @@ import TemperatureOverviewCard from './components/info-cards/TemperatureOverview
 import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue'
 import PendingChecklists from './components/PendingChecklists.vue'
 import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
+import TeamActivity from './components/TeamActivity.vue'
 
 // placeholders
 const primaryChart = {
@@ -42,8 +43,6 @@ const retryLoad = () => {
     />
   </header>
 
-  <!-- <h2>Quick Overview</h2> -->
-
   <div class="info-cards">
     <QuickActionsCard />
 
@@ -54,21 +53,43 @@ const retryLoad = () => {
     <ActiveDeviationCard />
   </div>
 
-  <h2>Pending Checklists</h2>
+  <div class="second-row">
+    <div class="second-row-component">
+      <h2>Pending Checklists</h2>
 
-  <PendingChecklists />
+      <PendingChecklists />
+    </div>
+
+    <div class="second-row-component">
+      <h2>Team Activity</h2>
+
+      <TeamActivity />
+    </div>
+  </div>
 </template>
 
 <style scoped>
 .info-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  overflow-x: scroll;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .info-card {
-  width: 80%;
+  width: 85%;
   justify-self: center;
   margin-bottom: 20px;
+}
+
+.second-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1rem;
+}
+
+.second-row-component {
+  width: 100%;
+  align-items: center;
 }
 </style>

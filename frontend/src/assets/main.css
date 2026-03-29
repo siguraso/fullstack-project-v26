@@ -5,6 +5,7 @@
 
 :root {
   --bg: #ffffff;
+  --bg-secondary: #efefef;
   --primary: #0066ff;
   --primary-hover: rgb(0, 75, 187);
   --primary-active: rgb(0, 34, 85);

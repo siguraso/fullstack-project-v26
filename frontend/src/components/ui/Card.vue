@@ -16,7 +16,7 @@
 .card {
   background-color: var(--bg);
   border: 1px solid var(--stroke);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 16px;
 }
 

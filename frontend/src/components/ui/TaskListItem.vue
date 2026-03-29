@@ -35,15 +35,16 @@ const props = defineProps<TaskListItemProps>()
 }
 
 .task-item {
-  border: 1px solid var(--stroke);
-  padding-left: 13px;
-  padding-right: 13px;
-  border-radius: 10px;
+  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 15px;
   padding-bottom: 15px;
+  border-radius: 8px;
+}
+
+.task-item:hover {
+  background-color: var(--bg-secondary);
 }
 
 .task-header {
