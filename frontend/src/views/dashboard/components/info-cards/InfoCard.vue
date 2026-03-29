@@ -11,7 +11,7 @@ const props = defineProps<InfoCardProps>()
 </script>
 
 <template>
-  <Card>
+  <Card class="card">
     <template #card-header>
       <div class="header" :style="{ color: props.cardColor }">
         <component :is="props.icon" size="20" aria-hidden="true" />
@@ -20,7 +20,7 @@ const props = defineProps<InfoCardProps>()
     </template>
 
     <template #card-content>
-      <slot />
+      <slot class="card-content" />
     </template>
   </Card>
 </template>
@@ -38,5 +38,9 @@ const props = defineProps<InfoCardProps>()
 
 .description {
   margin: 0;
+}
+
+.card-content {
+  align-items: center;
 }
 </style>

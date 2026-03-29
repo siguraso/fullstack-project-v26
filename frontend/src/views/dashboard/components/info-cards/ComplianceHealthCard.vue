@@ -44,6 +44,8 @@ const pieStyle = computed(() => {
 })
 </script>
 
+<!--Work in progress ;-;-->
+
 <template>
   <InfoCard
     class="info-card"
@@ -52,6 +54,9 @@ const pieStyle = computed(() => {
     :cardColor="statusColor"
   >
     <div class="compliance-wrapper">
+      <div class="status-section">
+        <h3 class="status-title">{{ complianceStatus }}</h3>
+      </div>
       <div class="pie-container">
         <div class="pie-chart">
           <div
@@ -62,20 +67,6 @@ const pieStyle = computed(() => {
           />
           <div class="stack-circle" />
           <p>{{ Math.round(complianceRate) }}%</p>
-        </div>
-      </div>
-
-      <div class="status-section">
-        <h3 class="status-title">{{ complianceStatus }}</h3>
-        <div class="metrics">
-          <div class="metric">
-            <span class="box box-compliant" />
-            <span class="metric-label">Compliant: {{ compliantItems }}</span>
-          </div>
-          <div class="metric">
-            <span class="box box-non-compliant" />
-            <span class="metric-label">Non-Compliant: {{ nonCompliantItems }}</span>
-          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,14 @@
 <script lang="ts" setup>
 import Card from '@/components/ui/Card.vue'
-import { ArrowRight, Thermometer, TriangleAlert, ClipboardCheck, BadgeCheck } from '@lucide/vue'
+import {
+  ArrowRight,
+  Thermometer,
+  TriangleAlert,
+  ClipboardCheck,
+  BadgeCheck,
+  ActivitySquareIcon,
+} from '@lucide/vue'
+import InfoCard from './InfoCard.vue'
 
 const quickActions = [
   {
@@ -27,29 +35,34 @@ const quickActions = [
 </script>
 
 <template>
-  <Card class="quick-actions">
-    <template #card-header> Quick Actions </template>
-
-    <template #card-content>
-      <div class="action-list">
-        <button
-          v-for="action in quickActions"
-          :key="action.label"
-          class="action-button"
-          @click="action.action"
-        >
-          <span class="button-label">
-            <component :is="action.icon" :size="16" aria-hidden="true" />
-            {{ action.label }}
-            <ArrowRight :size="15" class="arrow-icon" />
-          </span>
-        </button>
-      </div>
-    </template>
-  </Card>
+  <InfoCard
+    class="info-card"
+    title="Quick Actions"
+    :icon="ActivitySquareIcon"
+    :cardColor="'var(--quaternary)'"
+  >
+    <div class="action-list">
+      <button
+        v-for="action in quickActions"
+        :key="action.label"
+        class="action-button"
+        @click="action.action"
+      >
+        <span class="button-label">
+          <component :is="action.icon" :size="16" aria-hidden="true" />
+          {{ action.label }}
+          <ArrowRight :size="15" class="arrow-icon" />
+        </span>
+      </button>
+    </div>
+  </InfoCard>
 </template>
 
 <style scoped>
+.title {
+  color: var(--quaternary);
+}
+
 .action-list {
   display: flex;
   flex-direction: column;

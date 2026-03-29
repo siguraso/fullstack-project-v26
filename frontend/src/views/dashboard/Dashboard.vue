@@ -1,9 +1,5 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import Card from '@/components/ui/Card.vue'
-import PieChart from './components/PieChart.vue'
-import QuickActions from './components/QuickActions.vue'
-import MyTasks from './components/MyTasks.vue'
 import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 type DashboardState = 'ready' | 'loading' | 'error'
@@ -11,12 +7,11 @@ type DashboardState = 'ready' | 'loading' | 'error'
 const dashboardState = ref<DashboardState>('ready')
 const hasAssignedTasks = ref(true)
 
-import { Thermometer, TriangleAlert, ClipboardCheck, BadgeCheck } from '@lucide/vue'
-import InfoCard from './components/info-cards/InfoCard.vue'
 import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
 import TemperatureOverviewCard from './components/info-cards/TemperatureOverviewCard.vue'
 import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue'
-import ComplianceHealthCard from './components/info-cards/ComplianceHealthCard.vue'
+import PendingChecklists from './components/PendingChecklists.vue'
+import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
 
 // placeholders
 const primaryChart = {
@@ -47,29 +42,33 @@ const retryLoad = () => {
     />
   </header>
 
-  <h2>Quick Overview</h2>
+  <!-- <h2>Quick Overview</h2> -->
 
   <div class="info-cards">
+    <QuickActionsCard />
+
     <ChecklistCompletionCard />
 
     <TemperatureOverviewCard />
 
     <ActiveDeviationCard />
-
-    <ComplianceHealthCard />
   </div>
 
   <h2>Pending Checklists</h2>
+
+  <PendingChecklists />
 </template>
 
 <style scoped>
 .info-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  overflow-x: scroll;
 }
 
 .info-card {
   width: 80%;
   justify-self: center;
+  margin-bottom: 20px;
 }
 </style>
