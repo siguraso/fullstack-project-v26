@@ -4,11 +4,11 @@ import ViewHeader from '@/components/ui/ViewHeader.vue'
 type DashboardState = 'ready' | 'loading' | 'error'
 
 import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
-import TemperatureOverviewCard from './components/info-cards/TemperatureOverviewCard.vue'
 import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue'
 import PendingChecklists from './components/PendingChecklists.vue'
 import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
 import TeamActivity from './components/TeamActivity.vue'
+import CriticalAlerts from './components/CriticalAlerts.vue'
 </script>
 
 <template>
@@ -20,14 +20,14 @@ import TeamActivity from './components/TeamActivity.vue'
     />
   </header>
 
-  <div class="info-cards">
-    <QuickActionsCard />
+  <CriticalAlerts />
 
+  <div class="info-cards">
     <ChecklistCompletionCard />
 
-    <TemperatureOverviewCard />
+    <ActiveDeviationCard />
 
-    <!-- <ActiveDeviationCard /> -->
+    <QuickActionsCard />
   </div>
 
   <div class="second-row">
@@ -48,20 +48,18 @@ import TeamActivity from './components/TeamActivity.vue'
 <style scoped>
 .info-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: 1fr 1fr 2fr;
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.info-card {
-  width: 85%;
-  justify-self: center;
-  margin-bottom: 20px;
+.info-cards > :nth-child(3) {
+  grid-column: auto;
 }
 
 .second-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: 1.5fr 1fr;
   gap: 1rem;
 }
 

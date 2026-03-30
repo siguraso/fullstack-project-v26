@@ -9,12 +9,7 @@ const numberOfClosedDeviations = ref(12) // TODO replace with actual data fetchi
 </script>
 
 <template>
-  <InfoCard
-    class="info-card"
-    title="Active Deviations"
-    :icon="AlertTriangle"
-    cardColor="var(--tertiary)"
-  >
+  <InfoCard class="info-card" title="Deviations" :icon="AlertTriangle" iconColor="#feddb5">
     <h3>{{ numberOfActiveDeviations }}</h3>
     <p>Active Deviations</p>
     <p class="deviation-subtext">

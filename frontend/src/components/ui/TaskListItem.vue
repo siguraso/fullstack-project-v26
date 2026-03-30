@@ -12,7 +12,9 @@ const props = defineProps<TaskListItemProps>()
 <template>
   <div class="task-item">
     <div class="task-description">
-      <component :is="props.icon" />
+      <div class="icon">
+        <component :is="props.icon" />
+      </div>
       <div class="task-header">
         <h3 class="task-title">{{ props.taskTitle }}</h3>
         <p class="task-subtext">Type: {{ props.taskType }}</p>
@@ -59,5 +61,33 @@ const props = defineProps<TaskListItemProps>()
   margin-top: 0px;
   margin-bottom: 0px;
   color: var(--text-secondary);
+}
+
+.icon {
+  display: flex;
+  background-color: var(--bg);
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.finish-btn {
+  background-color: var(--bg);
+  color: var(--neutral);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.finish-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.finish-btn:active {
+  background-color: var(--bg-active);
 }
 </style>

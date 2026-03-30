@@ -4,7 +4,7 @@ import Card from '@/components/ui/Card.vue'
 interface InfoCardProps {
   title: string
   icon: any
-  cardColor: string
+  iconColor: string
 }
 
 const props = defineProps<InfoCardProps>()
@@ -14,7 +14,9 @@ const props = defineProps<InfoCardProps>()
   <Card class="card">
     <template #card-header>
       <div class="header">
-        <component :is="props.icon" size="20" aria-hidden="true" />
+        <div class="card-icon" :style="{ backgroundColor: props.iconColor }">
+          <component :is="props.icon" size="24" aria-hidden="true" />
+        </div>
         <span class="title">{{ props.title }}</span>
       </div>
     </template>
@@ -32,8 +34,21 @@ const props = defineProps<InfoCardProps>()
   gap: 10px;
 }
 
+.card {
+  margin: 0;
+}
+
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+}
+
 .title {
-  font-weight: bold;
+  font-weight: 1000;
 }
 
 .description {

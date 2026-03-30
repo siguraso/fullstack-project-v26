@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import {
-  ArrowRight,
+  ChevronRight,
   Thermometer,
   TriangleAlert,
   ClipboardCheck,
   BadgeCheck,
-  ActivitySquareIcon,
+  Activity,
 } from '@lucide/vue'
 import InfoCard from './InfoCard.vue'
 
@@ -34,12 +34,7 @@ const quickActions = [
 </script>
 
 <template>
-  <InfoCard
-    class="info-card"
-    title="Quick Actions"
-    :icon="ActivitySquareIcon"
-    :cardColor="'var(--quaternary)'"
-  >
+  <InfoCard class="info-card" title="Quick Actions" :icon="Activity" :iconColor="'#b5fed1'">
     <div class="action-list">
       <button
         v-for="action in quickActions"
@@ -48,9 +43,9 @@ const quickActions = [
         @click="action.action"
       >
         <span class="button-label">
-          <component :is="action.icon" :size="16" aria-hidden="true" />
+          <component :is="action.icon" :size="20" aria-hidden="true" />
           {{ action.label }}
-          <ArrowRight :size="15" class="arrow-icon" />
+          <ChevronRight :size="16" aria-hidden="true" class="arrow-icon" />
         </span>
       </button>
     </div>
@@ -63,22 +58,32 @@ const quickActions = [
 }
 
 .action-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto auto;
   gap: 10px;
 }
 
 .action-button {
   width: 100%;
   padding: 10px;
-  color: white;
+  color: var(--neutral);
   border: none;
   border-radius: 5px;
   cursor: pointer;
   text-align: left;
+  font-size: 12px;
+  background-color: var(--bg);
   transition:
     background-color 220ms ease,
     color 220ms ease;
+}
+
+.action-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.action-button:active {
+  background-color: var(--bg-active);
 }
 
 .button-label {

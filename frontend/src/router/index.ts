@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { isAuthenticated } from '../services/auth'
-import DashboardView from '../views/DashboardView.vue'
+import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
