@@ -20,7 +20,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.Deviatio
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/deviations")
 @RequiredArgsConstructor
 public class DeviationController {
 
