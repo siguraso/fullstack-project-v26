@@ -38,6 +38,6 @@ public class ChecklistTemplate {
     @Enumerated(EnumType.STRING)
     private ChecklistFrequency frequency;
 
-    @OneToMany(mappedBy = "checklist", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "checklistTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChecklistItemTemplate> items = new ArrayList<>();
 }
