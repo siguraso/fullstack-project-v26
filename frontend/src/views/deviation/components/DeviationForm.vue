@@ -211,20 +211,20 @@ select {
 
 .severity-btn.low.active {
   background: #e9fff2;
-  border-color: var(--secondary);
-  color: var(--neutral);
+  border-color: #23975c;
+  color: #1a1c1e;
 }
 
 .severity-btn.medium.active {
   background: #fff8e6;
-  border-color: var(--tertiary);
-  color: var(--neutral);
+  border-color: #b3891a;
+  color: #1a1c1e;
 }
 
 .severity-btn.high.active {
   background: #fff0e9;
-  border-color: var(--tertiary);
-  color: var(--neutral);
+  border-color: #c96f3a;
+  color: #1a1c1e;
 }
 
 .severity-btn.critical.active {

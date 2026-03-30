@@ -1,9 +1,9 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import QuickActionBar from '@/views/deviation/components/QuickActionBar.vue'
-import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
-import DeviationTable from '@/views/deviation/components/DeviationTable.vue'
+import QuickActionBar from './components/QuickActionBar.vue'
+import DeviationForm from './components/DeviationForm.vue'
+import DeviationTable from './components/DeviationTable.vue'
 import { useDeviationStore, type Deviation } from '@/stores/deviation'
 
 const store = useDeviationStore()

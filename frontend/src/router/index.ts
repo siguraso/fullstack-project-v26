@@ -4,7 +4,7 @@ import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import UserView from '../views/UserView.vue'
-import DeviationView from "@/views/deviation/DeviationView.vue";
+import DeviationView from "../views/deviation/DeviationView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,13 +38,15 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
       path: '/deviation',
       name: 'deviation',
       component: DeviationView,
       meta: {
         requiresAuth: true,
-      }
-    },
+      },
+    }
   ],
 })
 
