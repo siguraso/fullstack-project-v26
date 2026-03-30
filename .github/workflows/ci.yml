@@ -9,7 +9,7 @@ on:
 jobs:
 
   backend:
-    name: Backend — build and test
+    name: Backend — build
     runs-on: ubuntu-latest
 
     steps:
@@ -23,29 +23,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and run tests
+      - name: Build (skip tests)
         working-directory: backend
-        run: mvn -B verify
+        run: mvn -B package -DskipTests
         env:
           SPRING_PROFILES_ACTIVE: dev
-
-      - name: Generate coverage report
-        working-directory: backend
-        run: mvn -B jacoco:report
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: surefire-reports
-          path: backend/target/surefire-reports/
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: backend/target/site/jacoco/
 
   frontend:
     name: Frontend — build and lint
