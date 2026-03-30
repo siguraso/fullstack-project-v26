@@ -4,7 +4,6 @@ import ViewHeader from '@/components/ui/ViewHeader.vue'
 type DashboardState = 'ready' | 'loading' | 'error'
 
 import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
-import TemperatureOverviewCard from './components/info-cards/TemperatureOverviewCard.vue'
 import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue'
 import PendingChecklists from './components/PendingChecklists.vue'
 import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
@@ -57,7 +56,7 @@ import TeamActivity from './components/TeamActivity.vue'
 
 .second-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: 1.5fr 1fr;
   gap: 1rem;
 }
 
