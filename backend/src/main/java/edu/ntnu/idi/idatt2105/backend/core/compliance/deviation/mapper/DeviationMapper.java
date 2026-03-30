@@ -18,6 +18,7 @@ public class DeviationMapper {
         dto.setStatus(entity.getStatus().name());
         dto.setSeverity(entity.getSeverity().name());
         dto.setCategory(entity.getCategory().name());
+        dto.setModule(entity.getModule());
 
         dto.setChecklistItemId(entity.getChecklistItemId());
         dto.setLogId(entity.getLogId());

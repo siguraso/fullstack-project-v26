@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Card from '@/components/ui/Card.vue'
 import { User2Icon, ChevronDownIcon } from '@lucide/vue'
 import { ref, computed } from 'vue'
 
@@ -64,26 +65,22 @@ const formatTimeAgo = (date: Date): string => {
 
 <template>
   <div v-if="activity.length > 0">
-    <div class="activity-container">
-      <div class="activity-list">
-        <div v-for="(item, index) in displayedActivities" :key="index" class="activity-item">
-          <div class="activity-icon">
-            <User2Icon :size="32" />
-          </div>
-          <div class="activity-content">
-            <div class="activity-header">
-              <p class="username">{{ item.username }}</p>
-              <span class="timestamp">{{ formatTimeAgo(item.dateFinished) }}</span>
-            </div>
-            <p class="activity-task">{{ item.task }}</p>
-          </div>
-        </div>
+    <div v-for="(item, index) in displayedActivities" :key="index" class="activity-item">
+      <div class="activity-icon">
+        <User2Icon :size="32" />
       </div>
-      <button v-if="activity.length > 3" @click="showAll = !showAll" class="show-more-btn">
-        <span>{{ showAll ? 'Show Less' : 'Show More' }}</span>
-        <ChevronDownIcon :size="16" :class="{ rotated: showAll }" />
-      </button>
+      <div class="activity-content">
+        <div class="activity-header">
+          <p class="username">{{ item.username }}</p>
+          <span class="timestamp">{{ formatTimeAgo(item.dateFinished) }}</span>
+        </div>
+        <p class="activity-task">{{ item.task }}</p>
+      </div>
     </div>
+    <button v-if="activity.length > 3" @click="showAll = !showAll" class="show-more-btn">
+      <span>{{ showAll ? 'Show Less' : 'Show More' }}</span>
+      <ChevronDownIcon :size="16" :class="{ rotated: showAll }" />
+    </button>
   </div>
   <div v-else class="no-items-container">
     <p class="no-items">There seems there has been no recent activity...</p>
