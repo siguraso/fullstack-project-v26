@@ -3,6 +3,11 @@
   src: url('./fonts/PlusJakartaSans-Regular.ttf');
 }
 
+@font-face {
+  font-family: Inter;
+  src: url(./fonts/Inter_18pt-Regular.ttf);
+}
+
 :root {
   --bg: #f3f4f5;
   --bg-hover: rgb(202, 202, 202);
@@ -31,7 +36,7 @@
 }
 
 html * {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 html,

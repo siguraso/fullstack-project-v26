@@ -48,7 +48,7 @@ const props = defineProps<InfoCardProps>()
 }
 
 .title {
-  font-weight: bold;
+  font-weight: 1000;
 }
 
 .description {
