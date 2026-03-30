@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -12,22 +12,30 @@ import {
 import { clearAuthSession, getAuthSession } from '@/services/auth'
 
 // placeholders
-const menuItems = [
-  { label: 'Dashboard', icon: LayoutDashboard },
-  { label: 'Checklists', icon: ClipboardCheck },
+const menuItems: {
+  label: string
+  icon: any
+  route?: string
+}[] = [
+  { label: 'Dashboard', icon: LayoutDashboard, route: '/dashboard' },
+  { label: 'Checklist', icon: ClipboardCheck, route: '/checklists' },
   { label: 'Tasks', icon: ListTodo },
   { label: 'Logs', icon: ScrollText },
   { label: 'Inspections', icon: SearchCheck },
-  { label: 'Incidents', icon: TriangleAlert },
+  { label: 'Incidents', icon: TriangleAlert }, // TODO: Change to deviation?
 ]
 
-const activeIndex = ref(0)
+const route = useRoute()
 const router = useRouter()
 const session = getAuthSession()
 const userLabel = computed(() => session?.email ?? 'Signed in user')
 
-function setActive(index: number) {
-  activeIndex.value = index
+const activeIndex = computed(() => menuItems.findIndex((item) => item.route === route.path))
+
+function navigate(item: any) {
+  if (item.route) {
+    router.push(item.route)
+  }
 }
 
 async function logout() {
@@ -44,8 +52,9 @@ async function logout() {
       <li v-for="(item, index) in menuItems" :key="item.label + index">
         <button
           :class="index === activeIndex ? 'menu-button' : 'menu-button-inactive'"
-          @click="setActive(index)"
+          @click="navigate(item)"
         >
+          <!--Set to router link?-->
           <span class="menu-button-content">
             <component :is="item.icon" :size="16" aria-hidden="true" />
             {{ item.label }}
