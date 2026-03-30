@@ -6,6 +6,14 @@ export interface LoginPayload {
   password: string
 }
 
+export interface RegisterPayload {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  orgNumber: string
+}
+
 export interface AuthSession {
   email: string
   remember: boolean
@@ -86,6 +94,15 @@ function persistSession(session: AuthSession) {
   getStorage(session.remember).setItem(AUTH_SESSION_KEY, JSON.stringify(session))
 }
 
+function createSession(email: string, remember: boolean, responseBody: unknown): AuthSession {
+  return {
+    email,
+    remember,
+    token: readToken(responseBody),
+    raw: responseBody,
+  }
+}
+
 export function getAuthSession(): AuthSession | null {
   return (
     parseSession(window.localStorage.getItem(AUTH_SESSION_KEY)) ??
@@ -118,12 +135,30 @@ export async function login(payload: LoginPayload, remember: boolean): Promise<A
     throw new Error(readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.')
   }
 
-  const session: AuthSession = {
-    email: payload.email,
-    remember,
-    token: readToken(responseBody),
-    raw: responseBody,
+  const session = createSession(payload.email, remember, responseBody)
+
+  persistSession(session)
+
+  return session
+}
+
+export async function register(payload: RegisterPayload, remember: boolean): Promise<AuthSession> {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
+
+  const responseBody = await parseResponseBody(response)
+
+  if (!response.ok) {
+    throw new Error(readResponseMessage(responseBody) ?? 'Unable to create your account right now.')
   }
+
+  const session = createSession(payload.email, remember, responseBody)
 
   persistSession(session)
 

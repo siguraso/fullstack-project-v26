@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { login } from '@/services/auth'
+import { register } from '@/services/auth'
 
 const form = reactive({
+  firstName: '',
+  lastName: '',
+  orgNumber: '',
   email: '',
   password: '',
-  remember: false,
+  remember: true,
 })
 
 const router = useRouter()
@@ -14,8 +17,8 @@ const isSubmitting = ref(false)
 const feedbackMessage = ref('')
 const feedbackTone = ref<'info' | 'error'>('info')
 
-function goToRegister() {
-  void router.push('/register')
+function goToLogin() {
+  void router.push('/login')
 }
 
 async function handleSubmit() {
@@ -27,8 +30,11 @@ async function handleSubmit() {
   feedbackMessage.value = ''
 
   try {
-    await login(
+    await register(
       {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        orgNumber: form.orgNumber.trim(),
         email: form.email.trim(),
         password: form.password,
       },
@@ -39,7 +45,7 @@ async function handleSubmit() {
   } catch (error) {
     feedbackTone.value = 'error'
     feedbackMessage.value =
-      error instanceof Error ? error.message : 'Unable to sign in right now. Please try again.'
+      error instanceof Error ? error.message : 'Unable to create your account right now. Please try again.'
   } finally {
     isSubmitting.value = false
   }
@@ -92,11 +98,71 @@ async function handleSubmit() {
         </div>
 
         <header class="heading">
-          <h1>Welcome back</h1>
-          <p>Sign in to continue to your workspace.</p>
+          <h1>Create your account</h1>
+          <p>Register to access your workspace and compliance tools.</p>
         </header>
 
         <form class="form" @submit.prevent="handleSubmit">
+          <div class="field-grid">
+            <div class="field">
+              <label for="first-name">First name</label>
+              <div class="input-wrap">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M5 20a7 7 0 0 1 14 0" />
+                </svg>
+                <input
+                  id="first-name"
+                  v-model="form.firstName"
+                  type="text"
+                  required
+                  autocomplete="given-name"
+                  placeholder="Jane"
+                  :disabled="isSubmitting"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="last-name">Last name</label>
+              <div class="input-wrap">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M5 20a7 7 0 0 1 14 0" />
+                </svg>
+                <input
+                  id="last-name"
+                  v-model="form.lastName"
+                  type="text"
+                  required
+                  autocomplete="family-name"
+                  placeholder="Doe"
+                  :disabled="isSubmitting"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="org-number">Organisation number</label>
+            <div class="input-wrap">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20V8l8-4 8 4v12" />
+                <path d="M9 20v-5h6v5" />
+                <path d="M8 10h.01M12 10h.01M16 10h.01" />
+              </svg>
+              <input
+                id="org-number"
+                v-model="form.orgNumber"
+                type="text"
+                required
+                autocomplete="organization"
+                placeholder="123456789"
+                :disabled="isSubmitting"
+              />
+            </div>
+          </div>
+
           <div class="field">
             <label for="email">Email</label>
             <div class="input-wrap">
@@ -128,8 +194,9 @@ async function handleSubmit() {
                 v-model="form.password"
                 type="password"
                 required
-                autocomplete="current-password"
-                placeholder="••••••••"
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="Minimum 8 characters"
                 :disabled="isSubmitting"
               />
             </div>
@@ -138,13 +205,13 @@ async function handleSubmit() {
           <div class="row">
             <label class="remember">
               <input v-model="form.remember" type="checkbox" :disabled="isSubmitting" />
-              <span>Remember me</span>
+              <span>Keep me signed in</span>
             </label>
-            <button type="button" class="link-button">Forgot password?</button>
+            <span class="helper-text">Use your existing tenant organisation number.</span>
           </div>
 
           <button class="submit-button" type="submit" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
+            {{ isSubmitting ? 'Creating account...' : 'Create account' }}
           </button>
 
           <p v-if="feedbackMessage" :class="['status', `status-${feedbackTone}`]">
@@ -153,8 +220,8 @@ async function handleSubmit() {
         </form>
 
         <p class="footer">
-          No account yet?
-          <button type="button" class="footer-link" @click="goToRegister">Create one free →</button>
+          Already have an account?
+          <button type="button" class="footer-link" @click="goToLogin">Sign in instead →</button>
         </p>
 
         <div class="accents" aria-hidden="true">
@@ -255,7 +322,7 @@ async function handleSubmit() {
 }
 
 .card {
-  width: min(100%, 420px);
+  width: min(100%, 520px);
   border: 1px solid var(--border);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
@@ -307,6 +374,12 @@ async function handleSubmit() {
   gap: 14px;
 }
 
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .field {
   display: grid;
   gap: 7px;
@@ -340,6 +413,7 @@ label {
   pointer-events: none;
 }
 
+input[type='text'],
 input[type='email'],
 input[type='password'] {
   width: 100%;
@@ -400,17 +474,17 @@ input:focus {
   accent-color: var(--primary);
 }
 
-.link-button,
+.helper-text {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .footer-link {
   border: 0;
   background: transparent;
   padding: 0;
   color: var(--primary);
   cursor: pointer;
-}
-
-.link-button {
-  font-size: 12.5px;
   font-weight: 600;
 }
 
@@ -459,10 +533,6 @@ input:focus {
   text-align: center;
   color: var(--text-muted);
   font-size: 12.5px;
-}
-
-.footer-link {
-  font-weight: 600;
 }
 
 .accents {
@@ -524,6 +594,10 @@ input:focus {
 
   .card {
     padding: 36px 24px 28px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
   }
 
   .row {
