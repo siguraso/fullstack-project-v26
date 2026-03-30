@@ -4,13 +4,10 @@
 }
 
 :root {
-  --bg: #ffffff;
-  --bg-secondary: #efefef;
-  --primary: #0066ff;
-  --secondary: #00d56e;
-  --tertiary: #ff9100;
-  --quaternary: #9c27b0;
-  --quinary: #00bcd4;
+  --bg: #f3f4f5;
+  --bg-hover: rgb(202, 202, 202);
+  --bg-active: rgb(170, 170, 170);
+  --bg-secondary: #ffffff;
   --neutral: #000000;
   --neutral-hover: #333333;
   --neutral-active: #666666;
@@ -43,6 +40,7 @@ body,
   margin: 0;
   padding: 0;
   height: 100%;
+  background-color: var(--bg);
 }
 
 input {

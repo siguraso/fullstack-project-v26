@@ -24,7 +24,7 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
     class="info-card"
     title="Checklist Completion"
     :icon="ClipboardCheck"
-    cardColor="var(--secondary)"
+    iconColor="#d2e4fb"
   >
     <div class="checklist-label">
       <h3>{{ checklistCompleted }} / {{ checklistTotal }}</h3>
