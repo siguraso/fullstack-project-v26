@@ -5,21 +5,10 @@ import DashboardView from './views/dashboard/DashboardView.vue'
 
 <template>
   <div class="app-shell">
-    <Sidebar />
     <main class="main-content">
-      <DashboardView />
+      <router-view />
     </main>
   </div>
 </template>
 
-<style scoped>
-.app-shell {
-  --sidebar-width: max(15vw, 220px);
-  min-height: 100vh;
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  padding: 24px;
-}
-</style>
+<style scoped></style>
