@@ -210,7 +210,7 @@ td.title {
 
 .status-in_progress {
   background: #e8efff;
-  color: var(--primary);
+  color: var(--text);
 }
 
 .status-resolved {

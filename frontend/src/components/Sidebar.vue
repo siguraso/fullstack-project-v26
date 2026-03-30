@@ -8,16 +8,17 @@ import {
   ScrollText,
   SearchCheck,
   TriangleAlert,
+  UserRound,
 } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
 
-// placeholders
 const menuItems: {
   label: string
   icon: any
   route?: string
 }[] = [
   { label: 'Dashboard', icon: LayoutDashboard, route: '/dashboard' },
+  { label: 'Users', icon: UserRound, route: '/user' },
   { label: 'Checklist', icon: ClipboardCheck, route: '/checklists' },
   { label: 'Tasks', icon: ListTodo },
   { label: 'Logs', icon: ScrollText },
@@ -25,8 +26,8 @@ const menuItems: {
   { label: 'Incidents', icon: TriangleAlert }, // TODO: Change to deviation?
 ]
 
-const route = useRoute()
 const router = useRouter()
+const route = useRoute()
 const session = getAuthSession()
 const userLabel = computed(() => session?.email ?? 'Signed in user')
 
@@ -136,6 +137,11 @@ async function logout() {
     color 220ms ease,
     border-color 220ms ease,
     transform 120ms ease;
+}
+
+.menu-button-inactive:disabled {
+  cursor: default;
+  opacity: 0.75;
 }
 
 .menu-button-content {
