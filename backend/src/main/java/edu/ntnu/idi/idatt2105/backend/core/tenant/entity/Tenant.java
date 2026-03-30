@@ -19,7 +19,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,7 +28,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public class Tenant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Tenant name is required")
     @Column(nullable = false, length = 255)
@@ -66,5 +65,3 @@ public class Tenant {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 }
-
-
