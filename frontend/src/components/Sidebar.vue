@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -8,12 +8,13 @@ import {
   ScrollText,
   SearchCheck,
   TriangleAlert,
+  UserRound,
 } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
 
-// placeholders
 const menuItems = [
-  { label: 'Dashboard', icon: LayoutDashboard },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { label: 'Users', icon: UserRound, path: '/user' },
   { label: 'Checklists', icon: ClipboardCheck },
   { label: 'Tasks', icon: ListTodo },
   { label: 'Logs', icon: ScrollText },
@@ -21,13 +22,25 @@ const menuItems = [
   { label: 'Incidents', icon: TriangleAlert },
 ]
 
-const activeIndex = ref(0)
 const router = useRouter()
+const route = useRoute()
 const session = getAuthSession()
 const userLabel = computed(() => session?.email ?? 'Signed in user')
 
-function setActive(index: number) {
-  activeIndex.value = index
+function isActive(path?: string) {
+  if (!path) {
+    return false
+  }
+
+  return route.path === path || route.path.startsWith(`${path}/`)
+}
+
+async function handleNavigation(path?: string) {
+  if (!path || isActive(path)) {
+    return
+  }
+
+  await router.push(path)
 }
 
 async function logout() {
@@ -41,10 +54,11 @@ async function logout() {
     <h2>Regula</h2>
     <h3>storename</h3>
     <ul class="menu">
-      <li v-for="(item, index) in menuItems" :key="item.label + index">
+      <li v-for="item in menuItems" :key="item.label">
         <button
-          :class="index === activeIndex ? 'menu-button' : 'menu-button-inactive'"
-          @click="setActive(index)"
+          :class="isActive(item.path) ? 'menu-button' : 'menu-button-inactive'"
+          :disabled="!item.path"
+          @click="handleNavigation(item.path)"
         >
           <span class="menu-button-content">
             <component :is="item.icon" :size="16" aria-hidden="true" />
@@ -127,6 +141,11 @@ async function logout() {
     color 220ms ease,
     border-color 220ms ease,
     transform 120ms ease;
+}
+
+.menu-button-inactive:disabled {
+  cursor: default;
+  opacity: 0.75;
 }
 
 .menu-button-content {
