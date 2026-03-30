@@ -13,5 +13,5 @@ public interface DeviationRepository extends JpaRepository<Deviation, Long> {
 
     List<Deviation> findByTenantIdAndModule(Long tenantId, ComplianceModule module);
 
-    List<Deviation> findByTenantIdAndStatus(Long tenantId, boolean completed);
+    List<Deviation> findByTenantIdAndStatus(Long tenantId, DeviationStatus status);
 }
