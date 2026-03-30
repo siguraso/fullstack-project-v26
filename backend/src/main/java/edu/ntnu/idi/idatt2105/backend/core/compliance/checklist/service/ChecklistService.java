@@ -99,7 +99,11 @@ public class ChecklistService {
                 .orElseThrow(() -> new ResourceNotFoundException("Checklist item not found"));
 
         item.setCompleted(request.isCompleted());
-        item.setCompletedAt(LocalDate.now());
+        if (request.isCompleted()) {
+            item.setCompletedAt(LocalDate.now());
+        } else {
+            item.setCompletedAt(null);
+        }
         item.setComment(request.getComment());
 
         itemInstanceRepo.save(item);
