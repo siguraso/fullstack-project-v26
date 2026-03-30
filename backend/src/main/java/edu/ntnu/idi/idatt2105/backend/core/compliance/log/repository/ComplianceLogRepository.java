@@ -11,5 +11,5 @@ public interface ComplianceLogRepository extends JpaRepository<ComplianceLog, Lo
 
     List<ComplianceLog> findByTenantId(Long tenantId);
 
-    List<ComplianceLog> findByIdAndModule(Long tenantId, ComplianceModule module);
+    List<ComplianceLog> findByTenantIdAndModule(Long tenantId, ComplianceModule module);
 }
