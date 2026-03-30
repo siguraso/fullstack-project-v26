@@ -11,8 +11,8 @@ const props = withDefaults(
   {
     greenPiece: 0,
     orangePiece: 0,
-    greenLabel: 'Green',
-    orangeLabel: 'Orange',
+    greenLabel: undefined,
+    orangeLabel: undefined,
   },
 )
 
@@ -53,7 +53,7 @@ const pieStyle = computed(() => {
       <div class="stack-circle" />
       <p>{{ Math.round(greenPercent) }} %</p>
     </div>
-    <div class="legend">
+    <div v-if="props.greenLabel && props.orangeLabel" class="legend">
       <div class="legend-row">
         <span class="box box-green" />
         <span class="legend-label">{{ greenLabel }}: {{ green }}</span>

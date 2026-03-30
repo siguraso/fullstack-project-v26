@@ -5,11 +5,18 @@
 
 :root {
   --bg: #ffffff;
+  --bg-secondary: #efefef;
   --primary: #0066ff;
-  --primary-hover: rgb(0, 65, 162);
-  --primary-active: rgb(0, 50, 125);
-  --secondary: #00e676;
+  --secondary: #00d56e;
   --tertiary: #ff9100;
+  --quaternary: #9c27b0;
+  --quinary: #00bcd4;
+  --neutral: #000000;
+  --neutral-hover: #333333;
+  --neutral-active: #666666;
+  --cta-red: #ff4d4d;
+  --stroke: #d8d8d8;
+  --text-secondary: #727272;
   --neutral: #1a1c1e;
   --stroke: #e4e4e6;
   --surface: #ffffff;
@@ -47,9 +54,9 @@ input {
 
 button {
   border-radius: 10px;
-  height: 35px;
+  min-height: 35px;
   border: none;
-  background-color: var(--primary);
+  background-color: var(--neutral);
   color: var(--bg);
   cursor: pointer;
   transition:
@@ -58,11 +65,11 @@ button {
 }
 
 button:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--neutral-hover);
 }
 
 button:active {
-  background-color: var(--primary-active);
+  background-color: var(--neutral-active);
 }
 
 select {

@@ -121,6 +121,7 @@ async function logout() {
   border-radius: 10px;
   text-align: left;
   padding-left: 12px;
+  font-weight: bold;
   transition:
     background-color 220ms ease,
     color 220ms ease,

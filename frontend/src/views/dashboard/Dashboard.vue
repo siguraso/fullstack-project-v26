@@ -1,50 +1,72 @@
 <script lang="ts" setup>
-import Card from '@/components/ui/Card.vue'
-import PieChart from './components/PieChart.vue'
-import QuickActions from './components/QuickActions.vue'
+import ViewHeader from '@/components/ui/ViewHeader.vue'
+
+type DashboardState = 'ready' | 'loading' | 'error'
+
+import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
+import TemperatureOverviewCard from './components/info-cards/TemperatureOverviewCard.vue'
+import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue'
+import PendingChecklists from './components/PendingChecklists.vue'
+import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
+import TeamActivity from './components/TeamActivity.vue'
 </script>
 
 <template>
-  <h1>Dashboard</h1>
-  <div class="dashboard-grid">
-    <Card>
-      <template #card-header> Task Completion </template>
+  <header>
+    <ViewHeader
+      title="Dashboard"
+      :options="['Global', 'Food Compliance', 'Alcohol Compliance']"
+      :routes="['/dashboard', '/dashboard/food-compliance', '/dashboard/alcohol-compliance']"
+    />
+  </header>
 
-      <template #card-content>
-        <PieChart
-          :greenPiece="3432"
-          :orangePiece="7540"
-          :greenLabel="'completed'"
-          :orangeLabel="'not completed'"
-        />
-      </template>
-    </Card>
+  <div class="info-cards">
+    <QuickActionsCard />
 
-    <Card>
-      <template #card-header> Task Completion </template>
+    <ChecklistCompletionCard />
 
-      <template #card-content>
-        <PieChart
-          :greenPiece="3432"
-          :orangePiece="7540"
-          :greenLabel="'completed'"
-          :orangeLabel="'not completed'"
-        />
-      </template>
-    </Card>
+    <TemperatureOverviewCard />
 
-    <QuickActions />
+    <!-- <ActiveDeviationCard /> -->
+  </div>
+
+  <div class="second-row">
+    <div class="second-row-component">
+      <h2>Pending Checklists</h2>
+
+      <PendingChecklists />
+    </div>
+
+    <div class="second-row-component">
+      <h2>Team Activity</h2>
+
+      <TeamActivity />
+    </div>
   </div>
 </template>
 
 <style scoped>
-.dashboard-grid {
+.info-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.dashboard-grid > :nth-child(3) {
-  grid-column: 1 / -1;
+.info-card {
+  width: 85%;
+  justify-self: center;
+  margin-bottom: 20px;
+}
+
+.second-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1rem;
+}
+
+.second-row-component {
+  width: 100%;
+  align-items: center;
 }
 </style>
