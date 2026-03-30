@@ -28,3 +28,16 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
+
+CREATE TABLE IF NOT EXISTS compliance_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    created_by BIGINT NOT NULL,
+    module VARCHAR(20) NOT NULL,
+    log_type VARCHAR(50) NOT NULL,
+    log_value VARCHAR(100) NOT NULL,
+    log_status VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);

@@ -1,7 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.core.user.controller;
 
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
-import edu.ntnu.idi.idatt2105.backend.core.user.dto.CreateUser;
+import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserResponse;
 import edu.ntnu.idi.idatt2105.backend.core.user.service.UserService;
 import jakarta.validation.Valid;
@@ -32,10 +32,10 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
-        @Valid @RequestBody CreateUser dto) {
+            @Valid @RequestBody UserCreateRequest dto) {
         return ResponseEntity
-            .status(201)
-            .body(ApiResponse.ok("User created successfully", userService.createUser(dto)));
+                .status(201)
+                .body(ApiResponse.ok("User created successfully", userService.createUser(dto)));
     }
 
     @DeleteMapping("/{id}")

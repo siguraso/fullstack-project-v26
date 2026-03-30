@@ -7,10 +7,10 @@ import lombok.Data;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 
 @Data
-public class CreateUser {
+public class UserCreateRequest {
 
   @NotNull
-  private Long tenant_id; // TODO: set to long?
+  private Long tenantId;
 
   @NotBlank
   private String username;

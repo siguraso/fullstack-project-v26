@@ -7,7 +7,7 @@ import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 public class UserResponse {
 
   private Long id;
-  private Long tenant_id;
+  private Long tenantId;
   private String firstName;
   private String lastName;
   private String username;

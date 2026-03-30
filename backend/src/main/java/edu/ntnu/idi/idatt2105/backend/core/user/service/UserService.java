@@ -8,7 +8,7 @@ import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
-import edu.ntnu.idi.idatt2105.backend.core.user.dto.CreateUser;
+import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.user.mapper.UserMapper;
 import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserResponse;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
@@ -25,7 +25,8 @@ public class UserService {
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
 
-  public UserService(UserRepository userRepository, TenantRepository tenantRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+  public UserService(UserRepository userRepository, TenantRepository tenantRepository, UserMapper userMapper,
+      PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.tenantRepository = tenantRepository;
     this.userMapper = userMapper;
@@ -55,7 +56,7 @@ public class UserService {
     return userMapper.toResponse(user);
   }
 
-  public UserResponse createUser(CreateUser dto) {
+  public UserResponse createUser(UserCreateRequest dto) {
     if (userRepository.existsByEmail(dto.getEmail())) {
       throw new ValidationException("Email already exists: " + dto.getEmail());
     }
@@ -65,7 +66,7 @@ public class UserService {
     }
 
     User user = new User();
-    Tenant tenant = tenantRepository.findById(dto.getTenant_id())
+    Tenant tenant = tenantRepository.findById(dto.getTenantId())
         .orElseThrow(() -> new ResourceNotFoundException("Tenant ID not found"));
 
     user.setTenant(tenant);
@@ -89,6 +90,5 @@ public class UserService {
     user.setActive(false);
     userRepository.save(user);
   }
-
 
 }
