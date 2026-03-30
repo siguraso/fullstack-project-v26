@@ -42,7 +42,7 @@ public class ChecklistService {
 
         ChecklistTemplate template = new ChecklistTemplate();
         template.setTenant(tenant);
-        ;
+
         template.setName(request.getName());
         template.setFrequency(request.getFrequency());
         template.setModule(request.getModule());
@@ -73,7 +73,7 @@ public class ChecklistService {
 
         ChecklistInstance savedInstance = instanceRepo.save(instance);
 
-        List<ChecklistItemTemplate> templates = itemTemplateRepo.findByChecklistId(templateId);
+        List<ChecklistItemTemplate> templates = itemTemplateRepo.findByChecklistTemplateId(templateId);
 
         for (ChecklistItemTemplate t : templates) {
             ChecklistItemInstance item = new ChecklistItemInstance();

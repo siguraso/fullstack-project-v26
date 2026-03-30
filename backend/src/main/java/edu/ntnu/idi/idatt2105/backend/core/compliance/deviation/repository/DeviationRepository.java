@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.entity.Deviation;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
 
 public interface DeviationRepository extends JpaRepository<Deviation, Long> {
