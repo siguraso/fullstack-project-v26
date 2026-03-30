@@ -19,6 +19,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.Check
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemInstanceRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemTemplateRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistTemplateRepository;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class ChecklistService {
     private final ChecklistInstanceRepository instanceRepo;
     private final ChecklistItemInstanceRepository itemInstanceRepo;
     private final TenantRepository tenantRepo;
+    private final DeviationService deviationService;
     private final ChecklistInstanceMapper mapper;
 
     public ChecklistTemplate createTemplate(CreateChecklistTemplateRequest request) {
