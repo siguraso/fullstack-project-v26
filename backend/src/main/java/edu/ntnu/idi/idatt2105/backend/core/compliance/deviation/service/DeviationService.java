@@ -45,8 +45,12 @@ public class DeviationService {
         deviation.setSeverity(request.getSeverity());
         deviation.setCategory(request.getCategory());
 
-        deviation.setStatus(DeviationStatus.OPEN);
+        deviation.setStatus(request.getStatus());
         deviation.setCreatedAt(LocalDateTime.now());
+
+        if (request.getStatus() == DeviationStatus.RESOLVED) {
+            deviation.setResolvedAt(LocalDateTime.now());
+        }
 
         return mapper.toDTO(deviationRepo.save(deviation));
     }

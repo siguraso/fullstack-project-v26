@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationCategory;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationSeverity;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,9 +21,12 @@ public class CreateDeviationRequest {
     private String title;
     private String description;
 
-    @NotBlank
+    @NotNull
     private DeviationSeverity severity;
 
-    @NotBlank
+    @NotNull
     private DeviationCategory category;
+
+    @NotNull
+    private DeviationStatus status;
 }
