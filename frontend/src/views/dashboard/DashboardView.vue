@@ -8,6 +8,7 @@ import ActiveDeviationCard from './components/info-cards/ActiveDeviationCard.vue
 import PendingChecklists from './components/PendingChecklists.vue'
 import QuickActionsCard from './components/info-cards/QuickActionsCard.vue'
 import TeamActivity from './components/TeamActivity.vue'
+import CriticalAlerts from './components/CriticalAlerts.vue'
 </script>
 
 <template>
@@ -18,6 +19,8 @@ import TeamActivity from './components/TeamActivity.vue'
       :routes="['/dashboard', '/dashboard/food-compliance', '/dashboard/alcohol-compliance']"
     />
   </header>
+
+  <CriticalAlerts />
 
   <div class="info-cards">
     <ChecklistCompletionCard />
