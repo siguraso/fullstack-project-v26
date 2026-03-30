@@ -3,6 +3,7 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.log.service;
 import org.springframework.stereotype.Service;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.dto.LogCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.ComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.LogStatus;
@@ -18,17 +19,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ComplianceLogService {
 
-    private final ComplianceLogRepository complianceLogRepository;
-    private final TenantRepository tenantRepository;
-    private final UserRepository userRepository;
+    private final ComplianceLogRepository complianceLogRepo;
+    private final TenantRepository tenantRepo;
+    private final UserRepository userRepo;
+    private final DeviationService deviationService;
     private final ComplianceLogMapper mapper;
 
     public ComplianceLog createLog(LogCreateRequest request) {
 
-        Tenant tenant = tenantRepository.findById(request.getTenantId())
+        Tenant tenant = tenantRepo.findById(request.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepo.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ComplianceLog log = new ComplianceLog();
@@ -40,7 +42,10 @@ public class ComplianceLogService {
 
         log.setStatus(determineStatus(request.getValue())); // TODO: Determine how we want to set status
 
-        return complianceLogRepository.save(log);
+        if (log.getStatus() == LogStatus.CRITICAL) {
+            deviationService.createFromLog(log);
+        }
+        return complianceLogRepo.save(log);
     }
 
     // Temporary function for setting status
