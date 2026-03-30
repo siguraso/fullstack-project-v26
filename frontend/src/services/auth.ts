@@ -1,0 +1,131 @@
+const AUTH_SESSION_KEY = 'regula.auth.session'
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+
+export interface LoginPayload {
+  email: string
+  password: string
+}
+
+export interface AuthSession {
+  email: string
+  remember: boolean
+  token: string | null
+  raw: unknown
+}
+
+function getStorage(remember: boolean): Storage {
+  return remember ? window.localStorage : window.sessionStorage
+}
+
+function parseSession(value: string | null): AuthSession | null {
+  if (!value) {
+    return null
+  }
+
+  try {
+    return JSON.parse(value) as AuthSession
+  } catch {
+    return null
+  }
+}
+
+function readResponseMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return null
+  }
+
+  const record = payload as Record<string, unknown>
+  const candidate = record.message ?? record.error ?? record.detail
+
+  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null
+}
+
+function unwrapApiResponse(payload: unknown): unknown {
+  if (!payload || typeof payload !== 'object') {
+    return payload
+  }
+
+  const record = payload as Record<string, unknown>
+
+  if ('data' in record) {
+    return record.data
+  }
+
+  return payload
+}
+
+function readToken(payload: unknown): string | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  const record = unwrappedPayload as Record<string, unknown>
+  const candidate =
+    record.token ?? record.accessToken ?? record.access_token ?? record.jwt ?? record.idToken
+
+  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null
+}
+
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const contentType = response.headers.get('content-type') ?? ''
+
+  if (contentType.includes('application/json')) {
+    return response.json()
+  }
+
+  const text = await response.text()
+
+  return text.length > 0 ? { message: text } : null
+}
+
+function persistSession(session: AuthSession) {
+  window.localStorage.removeItem(AUTH_SESSION_KEY)
+  window.sessionStorage.removeItem(AUTH_SESSION_KEY)
+  getStorage(session.remember).setItem(AUTH_SESSION_KEY, JSON.stringify(session))
+}
+
+export function getAuthSession(): AuthSession | null {
+  return (
+    parseSession(window.localStorage.getItem(AUTH_SESSION_KEY)) ??
+    parseSession(window.sessionStorage.getItem(AUTH_SESSION_KEY))
+  )
+}
+
+export function isAuthenticated(): boolean {
+  return getAuthSession() !== null
+}
+
+export function clearAuthSession() {
+  window.localStorage.removeItem(AUTH_SESSION_KEY)
+  window.sessionStorage.removeItem(AUTH_SESSION_KEY)
+}
+
+export async function login(payload: LoginPayload, remember: boolean): Promise<AuthSession> {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
+
+  const responseBody = await parseResponseBody(response)
+
+  if (!response.ok) {
+    throw new Error(readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.')
+  }
+
+  const session: AuthSession = {
+    email: payload.email,
+    remember,
+    token: readToken(responseBody),
+    raw: responseBody,
+  }
+
+  persistSession(session)
+
+  return session
+}

@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/tenants")
+@RequestMapping("/api/tenants")
 @RequiredArgsConstructor
 public class TenantController {
 
@@ -31,7 +31,7 @@ public class TenantController {
     @PostMapping
     public ResponseEntity<TenantDTO> createTenant(@Valid @RequestBody TenantCreateRequest request) {
         TenantDTO created = tenantService.createTenant(request);
-        return ResponseEntity.created(URI.create("/api/v1/tenants/" + created.getId())).body(created);
+        return ResponseEntity.created(URI.create("/api/tenants/" + created.getId())).body(created);
     }
 
     @GetMapping("/{id}")
