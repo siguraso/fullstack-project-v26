@@ -69,7 +69,7 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
 
 .progress-fill {
   height: 100%;
-  background-color: var(--secondary);
+  background-color: var(--neutral);
   border-radius: inherit;
   transition: width 220ms ease;
 }

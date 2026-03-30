@@ -27,7 +27,7 @@ import TeamActivity from './components/TeamActivity.vue'
 
     <TemperatureOverviewCard />
 
-    <ActiveDeviationCard />
+    <!-- <ActiveDeviationCard /> -->
   </div>
 
   <div class="second-row">

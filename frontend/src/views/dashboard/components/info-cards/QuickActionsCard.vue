@@ -71,7 +71,6 @@ const quickActions = [
 .action-button {
   width: 100%;
   padding: 10px;
-  background-color: var(--primary);
   color: white;
   border: none;
   border-radius: 5px;
@@ -80,14 +79,6 @@ const quickActions = [
   transition:
     background-color 220ms ease,
     color 220ms ease;
-}
-
-.action-button:hover {
-  background-color: var(--primary-hover);
-}
-
-.action-button:active {
-  background-color: var(--primary-active);
 }
 
 .button-label {

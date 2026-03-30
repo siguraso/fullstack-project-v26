@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Bell, User2Icon } from '@lucide/vue'
 
 const props = withDefaults(
   defineProps<{
@@ -24,7 +25,7 @@ function setActive(index: number) {
     <h1 class="title">
       {{ props.title }}
     </h1>
-    <div class="actions">
+    <!-- <div class="actions">
       <button
         v-for="(option, index) in props.options"
         :key="option"
@@ -33,8 +34,14 @@ function setActive(index: number) {
       >
         {{ option }}
       </button>
-    </div>
+    </div> -->
     <div class="spacer" aria-hidden="true" />
+
+    <!--constant user field for the logged in user-->
+    <div class="user-field" aria-hidden="true">
+      <component :is="Bell" :size="20" aria-hidden="true" class="notification-bell" />
+      <component :is="User2Icon" :size="20" aria-hidden="true" class="profile-picture" />
+    </div>
   </div>
 </template>
 
@@ -55,7 +62,36 @@ function setActive(index: number) {
   justify-self: start;
 }
 
-.actions {
+.user-field {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  justify-self: end;
+}
+
+.profile-picture {
+  border-radius: 50%;
+  background-color: var(--stroke);
+  padding: 10px;
+}
+
+.notification-bell {
+  border-radius: 50%;
+  padding: 10px;
+  transition: background-color 220ms ease;
+}
+
+.notification-bell:hover {
+  background-color: var(--action-button-hover-bg);
+  cursor: pointer;
+}
+
+.notification-bell:active {
+  background-color: var(--action-button-bg);
+  cursor: pointer;
+}
+
+/* .actions {
   display: flex;
   grid-column: 2;
   justify-content: center;
@@ -91,7 +127,7 @@ function setActive(index: number) {
   padding: 6px 12px;
   cursor: pointer;
   font-weight: bold;
-}
+} */
 
 .spacer {
   justify-self: end;

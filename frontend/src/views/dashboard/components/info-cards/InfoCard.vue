@@ -13,7 +13,7 @@ const props = defineProps<InfoCardProps>()
 <template>
   <Card class="card">
     <template #card-header>
-      <div class="header" :style="{ color: props.cardColor }">
+      <div class="header">
         <component :is="props.icon" size="20" aria-hidden="true" />
         <span class="title">{{ props.title }}</span>
       </div>
