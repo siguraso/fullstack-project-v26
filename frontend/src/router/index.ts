@@ -5,14 +5,12 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import UserView from '../views/UserView.vue'
 import DeviationView from "../views/deviation/DeviationView.vue";
+import ChecklistView from '@/views/checklist/ChecklistView.vue';
+import MainLayout from '@/views/MainLayout.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/login',
-    },
     {
       path: '/login',
       name: 'login',
@@ -24,28 +22,31 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: DashboardView,
-      meta: {
-        requiresAuth: true,
-      },
+      path: "/",
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '/dashboard',
+          name: 'dashboard',
+          component: DashboardView,
+        },
+        {
+          path: '/deviation',
+          name: 'deviation',
+          component: DeviationView,
+        },
+        {
+          path: '/checklists',
+          name: 'checklist',
+          component: ChecklistView,
+        },
+      ]
     },
     {
       path: '/user',
       name: 'user',
       component: UserView,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/deviation',
-      name: 'deviation',
-      component: DeviationView,
-      meta: {
-        requiresAuth: true,
-      },
     }
   ],
 })
@@ -60,11 +61,7 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && authenticated) {
     return { name: 'dashboard' }
   }
-
-  if (to.name === 'deviation' && authenticated) {
-    return { name: 'deviation' }
-  }
-
+  
   return true
 })
 
