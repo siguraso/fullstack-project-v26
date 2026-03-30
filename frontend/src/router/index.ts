@@ -3,35 +3,39 @@ import { isAuthenticated } from '../services/auth'
 import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import DeviationView from "@/views/deviation/DeviationView.vue";
+import ChecklistView from '@/views/checklist/ChecklistView.vue';
+import MainLayout from '@/views/MainLayout.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/login',
-    },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: DashboardView,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/deviation',
-      name: 'deviation',
-      component: DeviationView,
-      meta: {
-        requiresAuth: true,
-      }
-    },
+      path: "/",
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '/dashboard',
+          name: 'dashboard',
+          component: DashboardView,
+        },
+        {
+          path: '/deviation',
+          name: 'deviation',
+          component: DeviationView,
+        },
+        {
+          path: '/checklists',
+          name: 'checklist',
+          component: ChecklistView,
+        },
+      ]
+    }
   ],
 })
 
@@ -45,11 +49,7 @@ router.beforeEach((to) => {
   if (to.name === 'login' && authenticated) {
     return { name: 'dashboard' }
   }
-
-  if (to.name === 'deviation' && authenticated) {
-    return { name: 'deviation' }
-  }
-
+  
   return true
 })
 
