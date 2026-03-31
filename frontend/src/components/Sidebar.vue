@@ -91,49 +91,21 @@ async function logout() {
 <template>
   <aside class="sidebar">
     <div class="brand-block">
+      <span class="brand-kicker">Compliance workspace</span>
       <h2>Regula</h2>
-      <h3>storename</h3>
+      <p class="brand-meta">storename</p>
     </div>
 
     <nav class="nav-shell" aria-label="Sidebar">
-      <ul class="nav-list">
-        <li v-for="item in primaryItems" :key="item.label">
-          <button
-            type="button"
-            class="nav-button"
-            :class="{ 'nav-button-active': isActive(item.to) }"
-            @click="navigate(item.to)"
-          >
-            <span class="nav-button-content">
-              <component :is="item.icon" :size="20" aria-hidden="true" />
-              <span>{{ item.label }}</span>
-            </span>
-          </button>
-        </li>
-      </ul>
+      <section class="nav-section">
+        <p class="nav-section-label">Overview</p>
 
-      <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
-        <button
-          type="button"
-          class="group-trigger"
-          :class="{ 'group-trigger-active': groupIsActive(group) }"
-          @click="toggleGroup(group.key)"
-        >
-          <span>{{ group.label }}</span>
-          <ChevronDown
-            :size="18"
-            aria-hidden="true"
-            class="group-chevron"
-            :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
-          />
-        </button>
-
-        <ul v-if="openGroups[group.key]" class="subnav-list">
-          <li v-for="item in group.items" :key="group.key + item.label">
+        <ul class="nav-list">
+          <li v-for="item in primaryItems" :key="item.label">
             <button
               type="button"
-              class="subnav-button"
-              :class="{ 'subnav-button-active': isActive(item.to) }"
+              class="nav-button"
+              :class="{ 'nav-button-active': isActive(item.to) }"
               @click="navigate(item.to)"
             >
               <span class="nav-button-content">
@@ -143,6 +115,43 @@ async function logout() {
             </button>
           </li>
         </ul>
+      </section>
+
+      <section class="nav-section">
+        <p class="nav-section-label">Compliance</p>
+
+        <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
+          <button
+            type="button"
+            class="group-trigger"
+            :class="{ 'group-trigger-active': groupIsActive(group) }"
+            @click="toggleGroup(group.key)"
+          >
+            <span>{{ group.label }}</span>
+            <ChevronDown
+              :size="16"
+              aria-hidden="true"
+              class="group-chevron"
+              :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
+            />
+          </button>
+
+          <ul v-if="openGroups[group.key]" class="subnav-list">
+            <li v-for="item in group.items" :key="group.key + item.label">
+              <button
+                type="button"
+                class="subnav-button"
+                :class="{ 'subnav-button-active': isActive(item.to) }"
+                @click="navigate(item.to)"
+              >
+                <span class="nav-button-content">
+                  <component :is="item.icon" :size="16" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </section>
       </section>
     </nav>
 
@@ -161,36 +170,63 @@ async function logout() {
   position: fixed;
   top: 0;
   left: 0;
-  padding: 26px 18px 20px;
+  padding: 20px 14px 16px;
   box-sizing: border-box;
-  background: linear-gradient(180deg, #f7f7f7 0%, #f1f2f3 100%);
-  border-right: 1px solid rgba(26, 28, 30, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfc 100%);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
 }
 
 .brand-block {
-  text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
+  padding: 6px 10px 0;
+}
+
+.brand-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .brand-block h2 {
   margin: 0;
-  font-size: 30px;
+  font-size: 26px;
   line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
-.brand-block h3 {
-  margin: 10px 0 0;
-  font-size: 14px;
-  font-weight: 600;
+.brand-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .nav-shell {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 18px;
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-section-label {
+  margin: 0;
+  padding: 0 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .nav-list,
@@ -198,12 +234,15 @@ async function logout() {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .nav-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .nav-button,
@@ -213,11 +252,12 @@ async function logout() {
   width: 100%;
   border: 0;
   background: transparent;
-  color: #5f6b7c;
-  border-radius: 18px;
+  color: var(--text-secondary);
+  border-radius: 10px;
   transition:
     background-color 180ms ease,
     color 180ms ease,
+    border-color 180ms ease,
     box-shadow 180ms ease,
     transform 120ms ease;
 }
@@ -225,22 +265,24 @@ async function logout() {
 .nav-button,
 .group-trigger,
 .logout-button {
-  min-height: 58px;
-  padding: 0 18px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid transparent;
 }
 
 .subnav-button {
-  min-height: 50px;
-  padding: 0 18px 0 32px;
+  min-height: 36px;
+  padding: 0 12px 0 14px;
+  border: 1px solid transparent;
 }
 
 .nav-button-content,
 .group-trigger {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 15px;
-  font-weight: 600;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .nav-button-content {
@@ -255,19 +297,21 @@ async function logout() {
 .subnav-button:hover,
 .group-trigger:hover,
 .logout-button:hover {
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--neutral);
+  background: rgba(26, 28, 30, 0.045);
+  color: var(--text);
 }
 
 .nav-button-active,
 .subnav-button-active {
-  background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  background: #f4f4f5;
+  color: var(--text);
+  border-color: #ececef;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .group-trigger-active {
-  color: #253247;
+  color: var(--text);
+  background: rgba(26, 28, 30, 0.03);
 }
 
 .group-chevron {
@@ -280,33 +324,35 @@ async function logout() {
 }
 
 .subnav-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 6px;
+  margin: 0 0 4px 12px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
 }
 
 .user-info {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-top: 20px;
+  gap: 10px;
+  padding: 18px 10px 0;
+  border-top: 1px solid var(--border);
 }
 
 .user-info p {
   margin: 0;
-  text-align: center;
+  text-align: left;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .logout-button {
-  background: #ffffff;
-  color: var(--neutral);
-  font-size: 14px;
+  justify-content: center;
+  background: #f7f7f8;
+  color: var(--text);
+  font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  border-color: #ececef;
+  box-shadow: none;
 }
 
 .logout-button:active,
