@@ -98,6 +98,8 @@ function createZone(newZone: Omit<TemperatureZone, 'id'>) {
       <CreateTemperatureZone @close="closeCreateZoneOverlay" @create="createZone" />
     </div>
   </div>
+
+  <TemperatureLogHistory />
 </template>
 
 <style scoped>
