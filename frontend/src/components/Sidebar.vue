@@ -95,69 +95,18 @@ async function logout() {
 
 <template>
   <aside class="sidebar">
+    <div class="brand-block">
+      <span class="brand-kicker">Compliance workspace</span>
+      <h2>Regula</h2>
+      <p class="brand-meta">storename</p>
+    </div>
+
     <nav class="nav-shell" aria-label="Sidebar">
-      <div class="nav-main">
-        <section class="nav-section">
-          <p class="nav-section-label">Overview</p>
+      <section class="nav-section">
+        <p class="nav-section-label">Overview</p>
 
-          <ul class="nav-list">
-            <li v-for="item in primaryItems" :key="item.label">
-              <button
-                type="button"
-                class="nav-button"
-                :class="{ 'nav-button-active': isActive(item.to) }"
-                @click="navigate(item.to)"
-              >
-                <span class="nav-button-content">
-                  <component :is="item.icon" :size="18" aria-hidden="true" />
-                  <span>{{ item.label }}</span>
-                </span>
-              </button>
-            </li>
-          </ul>
-        </section>
-
-        <section class="nav-section">
-          <p class="nav-section-label">Compliance</p>
-
-          <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
-            <button
-              type="button"
-              class="group-trigger"
-              :class="{ 'group-trigger-active': groupIsActive(group) }"
-              @click="toggleGroup(group.key)"
-            >
-              <span>{{ group.label }}</span>
-              <ChevronDown
-                :size="16"
-                aria-hidden="true"
-                class="group-chevron"
-                :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
-              />
-            </button>
-
-            <ul v-if="openGroups[group.key]" class="subnav-list">
-              <li v-for="item in group.items" :key="group.key + item.label">
-                <button
-                  type="button"
-                  class="subnav-button"
-                  :class="{ 'subnav-button-active': isActive(item.to) }"
-                  @click="navigate(item.to)"
-                >
-                  <span class="nav-button-content">
-                    <component :is="item.icon" :size="16" aria-hidden="true" />
-                    <span>{{ item.label }}</span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </section>
-        </section>
-      </div>
-
-      <section class="nav-section nav-section-bottom">
         <ul class="nav-list">
-          <li v-for="item in footerItems" :key="item.label">
+          <li v-for="item in primaryItems" :key="item.label">
             <button
               type="button"
               class="nav-button"
@@ -171,6 +120,43 @@ async function logout() {
             </button>
           </li>
         </ul>
+      </section>
+
+      <section class="nav-section">
+        <p class="nav-section-label">Compliance</p>
+
+        <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
+          <button
+            type="button"
+            class="group-trigger"
+            :class="{ 'group-trigger-active': groupIsActive(group) }"
+            @click="toggleGroup(group.key)"
+          >
+            <span>{{ group.label }}</span>
+            <ChevronDown
+              :size="16"
+              aria-hidden="true"
+              class="group-chevron"
+              :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
+            />
+          </button>
+
+          <ul v-if="openGroups[group.key]" class="subnav-list">
+            <li v-for="item in group.items" :key="group.key + item.label">
+              <button
+                type="button"
+                class="subnav-button"
+                :class="{ 'subnav-button-active': isActive(item.to) }"
+                @click="navigate(item.to)"
+              >
+                <span class="nav-button-content">
+                  <component :is="item.icon" :size="16" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </section>
       </section>
     </nav>
 
@@ -190,7 +176,10 @@ async function logout() {
   top: var(--navbar-height, 64px);
   left: 0;
   padding: 20px 14px 16px;
+  padding: 20px 14px 16px;
   box-sizing: border-box;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfc 100%);
+  border-right: 1px solid var(--border);
   background: linear-gradient(180deg, #ffffff 0%, #fbfbfc 100%);
   border-right: 1px solid var(--border);
   display: flex;
@@ -210,15 +199,33 @@ async function logout() {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  margin-bottom: 22px;
+  padding: 6px 10px 0;
+}
+
+.brand-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .brand-block h2 {
   margin: 0;
   font-size: 26px;
+  font-size: 26px;
   line-height: 1.1;
+  letter-spacing: -0.03em;
   letter-spacing: -0.03em;
 }
 
+.brand-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
 .brand-meta {
   margin: 6px 0 0;
   font-size: 13px;
@@ -230,26 +237,12 @@ async function logout() {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  flex: 1;
-  min-height: 0;
-}
-
-.nav-main {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
 }
 
 .nav-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.nav-section-bottom {
-  margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
 }
 
 .nav-section-label {
@@ -270,11 +263,15 @@ async function logout() {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .nav-group {
   display: flex;
   flex-direction: column;
+  gap: 4px;
   gap: 4px;
 }
 
@@ -287,9 +284,12 @@ async function logout() {
   background: transparent;
   color: var(--text-secondary);
   border-radius: 10px;
+  color: var(--text-secondary);
+  border-radius: 10px;
   transition:
     background-color 180ms ease,
     color 180ms ease,
+    border-color 180ms ease,
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 120ms ease;
@@ -301,9 +301,15 @@ async function logout() {
   min-height: 42px;
   padding: 0 12px;
   border: 1px solid transparent;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid transparent;
 }
 
 .subnav-button {
+  min-height: 36px;
+  padding: 0 12px 0 14px;
+  border: 1px solid transparent;
   min-height: 36px;
   padding: 0 12px 0 14px;
   border: 1px solid transparent;
@@ -313,6 +319,9 @@ async function logout() {
 .group-trigger {
   display: flex;
   align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
   gap: 10px;
   font-size: 14px;
   font-weight: 500;
@@ -332,6 +341,8 @@ async function logout() {
 .logout-button:hover {
   background: rgba(26, 28, 30, 0.045);
   color: var(--text);
+  background: rgba(26, 28, 30, 0.045);
+  color: var(--text);
 }
 
 .nav-button-active,
@@ -340,9 +351,15 @@ async function logout() {
   color: var(--text);
   border-color: #ececef;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: #f4f4f5;
+  color: var(--text);
+  border-color: #ececef;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .group-trigger-active {
+  color: var(--text);
+  background: rgba(26, 28, 30, 0.03);
   color: var(--text);
   background: rgba(26, 28, 30, 0.03);
 }
@@ -360,6 +377,9 @@ async function logout() {
   margin: 0 0 4px 12px;
   padding-left: 10px;
   border-left: 1px solid var(--border);
+  margin: 0 0 4px 12px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
 }
 
 .user-info {
@@ -369,12 +389,17 @@ async function logout() {
   gap: 10px;
   padding: 18px 10px 0;
   border-top: 1px solid var(--border);
+  gap: 10px;
+  padding: 18px 10px 0;
+  border-top: 1px solid var(--border);
 }
 
 .user-info p {
   margin: 0;
   text-align: left;
+  text-align: left;
   color: var(--text-secondary);
+  font-size: 12px;
   font-size: 12px;
 }
 
@@ -383,7 +408,13 @@ async function logout() {
   background: #f7f7f8;
   color: var(--text);
   font-size: 13px;
+  justify-content: center;
+  background: #f7f7f8;
+  color: var(--text);
+  font-size: 13px;
   font-weight: 600;
+  border-color: #ececef;
+  box-shadow: none;
   border-color: #ececef;
   box-shadow: none;
 }
