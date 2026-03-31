@@ -13,11 +13,7 @@ import CriticalAlerts from './components/CriticalAlerts.vue'
 
 <template>
   <header>
-    <ViewHeader
-      title="Dashboard"
-      :options="['Global', 'Food Compliance', 'Alcohol Compliance']"
-      :routes="['/dashboard', '/dashboard/food-compliance', '/dashboard/alcohol-compliance']"
-    />
+    <ViewHeader title="Dashboard" />
   </header>
 
   <CriticalAlerts />

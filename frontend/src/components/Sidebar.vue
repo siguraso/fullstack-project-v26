@@ -24,6 +24,8 @@ const menuItems: {
   { label: 'Tasks', icon: ListTodo, route: '/tasks' },
   { label: 'Logs', icon: ScrollText, route: '/logs' },
   { label: 'Inspections', icon: SearchCheck, route: '/inspections' },
+  // placeholder for real sidebar
+  { label: 'Temperature Logs', icon: SearchCheck, route: '/temperature-logs' },
 ]
 
 const router = useRouter()

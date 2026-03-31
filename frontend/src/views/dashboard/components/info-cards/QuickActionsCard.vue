@@ -7,7 +7,7 @@ import {
   BadgeCheck,
   Activity,
 } from '@lucide/vue'
-import InfoCard from './InfoCard.vue'
+import InfoCard from '@/components/ui/InfoCard.vue'
 
 const quickActions = [
   {
@@ -34,7 +34,12 @@ const quickActions = [
 </script>
 
 <template>
-  <InfoCard class="info-card" title="Quick Actions" :icon="Activity" :iconColor="'#b5fed1'">
+  <InfoCard
+    class="info-card"
+    title="Quick Actions"
+    :icon="Activity"
+    :iconBackgroundColor="'#b5fed1'"
+  >
     <div class="action-list">
       <button
         v-for="action in quickActions"
