@@ -95,7 +95,6 @@ async function logout() {
 
 <template>
   <aside class="sidebar">
-
     <nav class="nav-shell" aria-label="Sidebar">
       <div class="nav-main">
         <section class="nav-section">
