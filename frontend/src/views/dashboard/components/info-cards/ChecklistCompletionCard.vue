@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import InfoCard from './InfoCard.vue'
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { ClipboardCheck } from '@lucide/vue'
 import { computed } from 'vue'
 
@@ -20,12 +20,7 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
 </script>
 
 <template>
-  <InfoCard
-    class="info-card"
-    title="Checklist Completion"
-    :icon="ClipboardCheck"
-    iconColor="#d2e4fb"
-  >
+  <InfoCard title="Checklist Completion" :icon="ClipboardCheck" iconBackgroundColor="#d2e4fb">
     <div class="checklist-label">
       <h3>{{ checklistCompleted }} / {{ checklistTotal }}</h3>
       <p>Tasks Completed</p>

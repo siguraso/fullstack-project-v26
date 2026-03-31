@@ -5,8 +5,6 @@ import { Bell, User2Icon } from '@lucide/vue'
 const props = withDefaults(
   defineProps<{
     title?: string
-    options: string[]
-    routes: string[]
   }>(),
   {
     title: '',

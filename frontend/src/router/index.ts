@@ -13,6 +13,7 @@ import MainLayout from '@/views/MainLayout.vue'
 import SettingsView from '@/views/settings/SettingsView.vue'
 import UserPage from '@/views/user/UserPage.vue'
 import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
+import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,7 +82,12 @@ const router = createRouter({
           path: '/checklist-builder',
           component: ChecklistBuilderView,
         }
-      ]
+        {
+          path: '/temperature-logs',
+          name: 'temperature-logs',
+          component: TemperatureLogView,
+        },
+      ],
     },
   ],
 })

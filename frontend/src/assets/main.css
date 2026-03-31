@@ -9,7 +9,7 @@
 }
 
 :root {
-  --bg: #F8F9FA;
+  --bg: #f6f6f6;
   --bg-hover: rgb(202, 202, 202);
   --bg-active: rgb(170, 170, 170);
   --bg-secondary: #ffffff;
@@ -79,7 +79,18 @@ button:active {
 
 select {
   height: 40px;
-  padding: 5px;
+  padding-left: 10px;
+  background-color: var(--bg);
+  border: none;
   border-radius: 10px;
-  border: 2px solid var(--stroke);
+  border-right: 10px solid transparent;
+}
+
+input {
+  height: 40px;
+  padding-left: 12px;
+  background-color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  border-right: 10px solid transparent;
 }
