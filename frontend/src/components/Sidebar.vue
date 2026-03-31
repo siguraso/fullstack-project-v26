@@ -21,9 +21,9 @@ const menuItems: {
   { label: 'Users', icon: UserRound, route: '/user' },
   { label: 'Checklist', icon: ClipboardCheck, route: '/checklists' },
   { label: 'Deviations', icon: TriangleAlert, route: '/deviation' },
-  { label: 'Tasks', icon: ListTodo },
-  { label: 'Logs', icon: ScrollText },
-  { label: 'Inspections', icon: SearchCheck },
+  { label: 'Tasks', icon: ListTodo, route: '/tasks' },
+  { label: 'Logs', icon: ScrollText, route: '/logs' },
+  { label: 'Inspections', icon: SearchCheck, route: '/inspections' },
 ]
 
 const router = useRouter()

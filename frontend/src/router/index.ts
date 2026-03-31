@@ -4,6 +4,9 @@ import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import DeviationView from "../views/deviation/DeviationView.vue";
+import TasksView from '@/views/tasks/TasksView.vue';
+import LogsView from '@/views/logs/LogsView.vue';
+import InspectionsView from '@/views/inspections/InspectionsView.vue';
 import ChecklistView from '@/views/checklist/ChecklistView.vue';
 import MainLayout from '@/views/MainLayout.vue';
 import UserPage from '@/views/user/UserPage.vue';
@@ -40,6 +43,21 @@ const router = createRouter({
           path: '/checklists',
           name: 'checklist',
           component: ChecklistView,
+        },
+        {
+          path: '/tasks',
+          name: 'tasks',
+          component: TasksView,
+        },
+        {
+          path: '/logs',
+          name: 'logs',
+          component: LogsView,
+        },
+        {
+          path: '/inspections',
+          name: 'inspections',
+          component: InspectionsView,
         },
         {
           path: '/user',
