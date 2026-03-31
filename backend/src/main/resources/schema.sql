@@ -29,6 +29,22 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
+CREATE TABLE IF NOT EXISTS food_compliance_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    recorded_by BIGINT NOT NULL,
+    module VARCHAR(20) NOT NULL DEFAULT 'IK_FOOD' CHECK (module = 'IK_FOOD'),
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(2000),
+    log_status VARCHAR(20),
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    log_type VARCHAR(50) NOT NULL,
+    temperature_log_id BIGINT,
+    checklist_instance_id BIGINT,
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id),
+    FOREIGN KEY (recorded_by) REFERENCES users(id)
+);
+
 CREATE TABLE IF NOT EXISTS temperature_zones (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
@@ -61,6 +77,16 @@ CREATE TABLE IF NOT EXISTS temperature_compliance_logs (
 CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
+    recorded_by BIGINT NOT NULL,
+    module VARCHAR(20) NOT NULL DEFAULT 'IK_ALCOHOL' CHECK (module = 'IK_ALCOHOL'),
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(2000),
+    log_status VARCHAR(20),
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    log_type VARCHAR(50) NOT NULL,
+    id_checked BOOLEAN,
+    service_refused BOOLEAN,
+    estimated_age INT,
     recorded_by BIGINT NOT NULL,
     module VARCHAR(20) NOT NULL DEFAULT 'IK_ALCOHOL' CHECK (module = 'IK_ALCOHOL'),
     title VARCHAR(255) NOT NULL,
