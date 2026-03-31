@@ -20,10 +20,10 @@ const menuItems: {
   { label: 'Dashboard', icon: LayoutDashboard, route: '/dashboard' },
   { label: 'Users', icon: UserRound, route: '/user' },
   { label: 'Checklist', icon: ClipboardCheck, route: '/checklists' },
+  { label: 'Deviations', icon: TriangleAlert, route: '/deviation' },
   { label: 'Tasks', icon: ListTodo },
   { label: 'Logs', icon: ScrollText },
   { label: 'Inspections', icon: SearchCheck },
-  { label: 'Incidents', icon: TriangleAlert }, // TODO: Change to deviation?
 ]
 
 const router = useRouter()
