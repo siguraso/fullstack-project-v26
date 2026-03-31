@@ -1,43 +1,85 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  LayoutDashboard,
+  ChevronDown,
   ClipboardCheck,
-  ListTodo,
-  ScrollText,
+  LayoutDashboard,
   SearchCheck,
+  ScrollText,
   TriangleAlert,
-  UserRound,
 } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
 
-const menuItems: {
+interface NavItem {
   label: string
   icon: any
-  route?: string
-}[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, route: '/dashboard' },
-  { label: 'Users', icon: UserRound, route: '/user' },
-  { label: 'Checklist', icon: ClipboardCheck, route: '/checklists' },
-  { label: 'Create checklist', icon: '', route: '/checklist-builder' },
-  { label: 'Deviations', icon: TriangleAlert, route: '/deviation' },
-  { label: 'Tasks', icon: ListTodo, route: '/tasks' },
-  { label: 'Logs', icon: ScrollText, route: '/logs' },
-  { label: 'Inspections', icon: SearchCheck, route: '/inspections' },
+  to: RouteLocationRaw
+}
+
+interface NavGroup {
+  key: 'food' | 'alcohol'
+  label: string
+  items: NavItem[]
+}
+
+const primaryItems: NavItem[] = [
+  { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
+  { label: 'Deviations', icon: TriangleAlert, to: '/deviation' },
+  { label: 'Inspections', icon: SearchCheck, to: '/inspections' },
+]
+
+const complianceGroups: NavGroup[] = [
+  {
+    key: 'food',
+    label: 'IK-food',
+    items: [
+      {
+        label: 'Checklists',
+        icon: ClipboardCheck,
+        to: { path: '/checklists', query: { ik: 'food' } },
+      },
+      { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'food' } } },
+    ],
+  },
+  {
+    key: 'alcohol',
+    label: 'IK-alcohol',
+    items: [
+      {
+        label: 'Checklists',
+        icon: ClipboardCheck,
+        to: { path: '/checklists', query: { ik: 'alcohol' } },
+      },
+      { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'alcohol' } } },
+    ],
+  },
 ]
 
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
 const userLabel = computed(() => session?.email ?? 'Signed in user')
+const openGroups = reactive<Record<NavGroup['key'], boolean>>({
+  food: true,
+  alcohol: true,
+})
 
-const activeIndex = computed(() => menuItems.findIndex((item) => item.route === route.path))
+function isActive(destination: RouteLocationRaw) {
+  return router.resolve(destination).fullPath === route.fullPath
+}
 
-function navigate(item: any) {
-  if (item.route) {
-    router.push(item.route)
-  }
+function groupIsActive(group: NavGroup) {
+  return group.items.some((item) => isActive(item.to))
+}
+
+function navigate(destination: RouteLocationRaw) {
+  router.push(destination)
+}
+
+function toggleGroup(key: NavGroup['key']) {
+  openGroups[key] = !openGroups[key]
 }
 
 async function logout() {
@@ -47,28 +89,68 @@ async function logout() {
 </script>
 
 <template>
-  <div class="sidebar">
-    <h2>Regula</h2>
-    <h3>storename</h3>
-    <ul class="menu">
-      <li v-for="(item, index) in menuItems" :key="item.label + index">
+  <aside class="sidebar">
+    <div class="brand-block">
+      <h2>Regula</h2>
+      <h3>storename</h3>
+    </div>
+
+    <nav class="nav-shell" aria-label="Sidebar">
+      <ul class="nav-list">
+        <li v-for="item in primaryItems" :key="item.label">
+          <button
+            type="button"
+            class="nav-button"
+            :class="{ 'nav-button-active': isActive(item.to) }"
+            @click="navigate(item.to)"
+          >
+            <span class="nav-button-content">
+              <component :is="item.icon" :size="20" aria-hidden="true" />
+              <span>{{ item.label }}</span>
+            </span>
+          </button>
+        </li>
+      </ul>
+
+      <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
         <button
-          :class="index === activeIndex ? 'menu-button' : 'menu-button-inactive'"
-          @click="navigate(item)"
+          type="button"
+          class="group-trigger"
+          :class="{ 'group-trigger-active': groupIsActive(group) }"
+          @click="toggleGroup(group.key)"
         >
-          <!--Set to router link?-->
-          <span class="menu-button-content">
-            <component :is="item.icon" :size="16" aria-hidden="true" />
-            {{ item.label }}
-          </span>
+          <span>{{ group.label }}</span>
+          <ChevronDown
+            :size="18"
+            aria-hidden="true"
+            class="group-chevron"
+            :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
+          />
         </button>
-      </li>
-    </ul>
+
+        <ul v-if="openGroups[group.key]" class="subnav-list">
+          <li v-for="item in group.items" :key="group.key + item.label">
+            <button
+              type="button"
+              class="subnav-button"
+              :class="{ 'subnav-button-active': isActive(item.to) }"
+              @click="navigate(item.to)"
+            >
+              <span class="nav-button-content">
+                <component :is="item.icon" :size="18" aria-hidden="true" />
+                <span>{{ item.label }}</span>
+              </span>
+            </button>
+          </li>
+        </ul>
+      </section>
+    </nav>
+
     <div class="user-info">
       <p>{{ userLabel }}</p>
-      <button type="button" @click="logout">Logout</button>
+      <button type="button" class="logout-button" @click="logout">Logout</button>
     </div>
-  </div>
+  </aside>
 </template>
 
 <style scoped>
@@ -79,101 +161,158 @@ async function logout() {
   position: fixed;
   top: 0;
   left: 0;
-  background-color: var(--bg);
-  border-right: 1px solid var(--stroke);
+  padding: 26px 18px 20px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #f7f7f7 0%, #f1f2f3 100%);
+  border-right: 1px solid rgba(26, 28, 30, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin: 0;
 }
 
-.sidebar ul {
-  list-style-type: none;
+.brand-block {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.brand-block h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.brand-block h3 {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.nav-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav-list,
+.subnav-list {
+  list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.sidebar h2 {
-  font-size: 24px;
-  margin-bottom: 0px;
-}
-
-.sidebar h3 {
-  font-size: 14px;
-  margin-top: 10px;
-  margin-bottom: 30px;
-}
-
-.menu-button {
-  background-color: var(--neutral);
-  color: var(--bg);
-  border: none;
-  font-size: 14px;
-}
-
-.menu-button-inactive {
-  background-color: transparent;
-  color: var(--neutral);
-  border: none;
-  outline: none;
-  font-size: 14px;
-}
-
-.menu-button-inactive:hover {
-  background-color: var(--stroke);
-}
-
-.menu-button,
-.menu-button-inactive {
-  width: 210px;
-  box-sizing: border-box;
-  height: 30px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  text-align: left;
-  padding-left: 12px;
-  font-weight: bold;
-  transition:
-    background-color 220ms ease,
-    color 220ms ease,
-    border-color 220ms ease,
-    transform 120ms ease;
-}
-
-.menu-button-inactive:disabled {
-  cursor: default;
-  opacity: 0.75;
-}
-
-.menu-button-content {
+.nav-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
 }
 
-.menu-button-inactive:active {
-  transform: scale(0.98);
+.nav-button,
+.subnav-button,
+.group-trigger,
+.logout-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #5f6b7c;
+  border-radius: 18px;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 120ms ease;
+}
+
+.nav-button,
+.group-trigger,
+.logout-button {
+  min-height: 58px;
+  padding: 0 18px;
+}
+
+.subnav-button {
+  min-height: 50px;
+  padding: 0 18px 0 32px;
+}
+
+.nav-button-content,
+.group-trigger {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.nav-button-content {
+  justify-content: flex-start;
+}
+
+.group-trigger {
+  justify-content: space-between;
+}
+
+.nav-button:hover,
+.subnav-button:hover,
+.group-trigger:hover,
+.logout-button:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--neutral);
+}
+
+.nav-button-active,
+.subnav-button-active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.group-trigger-active {
+  color: #253247;
+}
+
+.group-chevron {
+  flex-shrink: 0;
+  transition: transform 180ms ease;
+}
+
+.group-chevron-collapsed {
+  transform: rotate(-90deg);
+}
+
+.subnav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .user-info {
   margin-top: auto;
-  padding: 20px;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
 }
 
 .user-info p {
   margin: 0;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 
-.user-info button {
-  margin-bottom: 0;
-  background-color: var(--neutral);
-  color: var(--bg);
-  border: none;
-  height: 30px;
-  border-radius: 8px;
+.logout-button {
+  background: #ffffff;
+  color: var(--neutral);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+}
+
+.logout-button:active,
+.nav-button:active,
+.subnav-button:active,
+.group-trigger:active {
+  transform: scale(0.99);
 }
 </style>
