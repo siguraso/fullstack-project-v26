@@ -11,7 +11,7 @@ import CriticalAlerts from './components/CriticalAlerts.vue'
 
 <template>
   <header>
-    <h1>Dashboard</h1>
+    <ViewHeader title="Dashboard" />
   </header>
 
   <CriticalAlerts />
