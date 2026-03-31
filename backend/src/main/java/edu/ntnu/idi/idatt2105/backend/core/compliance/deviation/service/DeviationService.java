@@ -16,7 +16,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationS
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.mapper.DeviationMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository.DeviationRepository;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.ComplianceLog;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
@@ -94,20 +94,20 @@ public class DeviationService {
         deviationRepo.save(deviation);
     }
 
-    public void createFromLog(ComplianceLog log) {
+    public void createFromLog(BaseComplianceLog log) {
 
         Deviation deviation = new Deviation();
         deviation.setTenant(log.getTenant());
         deviation.setModule(log.getModule());
 
         deviation.setTitle("Critical log detected");
-        deviation.setDescription("Value: " + log.getValue());
+        deviation.setDescription(log.getDescription() != null ? log.getDescription() : log.getTitle());
 
         deviation.setSeverity(DeviationSeverity.CRITICAL);
         deviation.setCategory(DeviationCategory.TEMPERATURE);
 
         deviation.setStatus(DeviationStatus.OPEN);
-        deviation.setCreatedBy(log.getCreatedBy());
+        deviation.setCreatedBy(log.getRecordedBy());
         deviation.setLogId(log.getId());
 
         deviation.setCreatedAt(LocalDateTime.now());
