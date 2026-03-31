@@ -28,7 +28,8 @@ public class AlcoholLogMapper extends BaseComplianceLogMapper<AlcoholComplianceL
         return dto;
     }
 
-    public AlcoholComplianceLog toEntity(AlcoholLogCreateRequest request, Tenant tenant, User recordedBy, LogStatus status) {
+    public AlcoholComplianceLog toEntity(AlcoholLogCreateRequest request, Tenant tenant, User recordedBy,
+            LogStatus status) {
         AlcoholComplianceLog entity = new AlcoholComplianceLog();
         entity.setTenant(tenant);
         entity.setRecordedBy(recordedBy);
