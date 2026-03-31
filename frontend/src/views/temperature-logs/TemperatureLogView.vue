@@ -2,6 +2,7 @@
 import ViewHeader from '@/components/ui/ViewHeader.vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
 import StorageUnitOverview from './components/StorageUnitOverview.vue'
+import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 </script>
 
 <template>
@@ -13,6 +14,8 @@ import StorageUnitOverview from './components/StorageUnitOverview.vue'
     <CreateTemperatureLog />
     <StorageUnitOverview />
   </div>
+
+  <TemperatureLogHistory />
 </template>
 
 <style scoped>
