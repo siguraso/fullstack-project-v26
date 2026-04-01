@@ -20,7 +20,7 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service.AlcoholLogService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/ikalcohol/logs")
+@RequestMapping("/api/ikalcohol/logs")
 public class AlcoholLogController {
 
     private final AlcoholLogService service;

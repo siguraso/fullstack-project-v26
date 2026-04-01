@@ -20,7 +20,7 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.service.TemperatureL
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/ikfood/temperature-logs")
+@RequestMapping("/api/ikfood/temperature-logs")
 public class TemperatureLogController {
 
     private final TemperatureLogService service;

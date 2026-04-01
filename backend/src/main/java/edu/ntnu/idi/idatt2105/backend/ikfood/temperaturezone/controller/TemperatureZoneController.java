@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/ikfood/temperature-zones")
+@RequestMapping("/api/ikfood/temperature-zones")
 @RequiredArgsConstructor
 public class TemperatureZoneController {
 
