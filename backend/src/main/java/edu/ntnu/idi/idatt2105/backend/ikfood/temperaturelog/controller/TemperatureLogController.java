@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.ikfood.log.controller;
+package edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.controller;
 
 import java.util.List;
 
@@ -13,40 +13,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
-import edu.ntnu.idi.idatt2105.backend.ikfood.log.dto.FoodLogCreateRequest;
-import edu.ntnu.idi.idatt2105.backend.ikfood.log.dto.FoodLogDTO;
-import edu.ntnu.idi.idatt2105.backend.ikfood.log.mapper.FoodLogMapper;
-import edu.ntnu.idi.idatt2105.backend.ikfood.log.service.FoodLogService;
+import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogCreateRequest;
+import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogDTO;
+import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.mapper.TemperatureLogMapper;
+import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.service.TemperatureLogService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/ikfood/logs")
-public class FoodLogController {
+@RequestMapping("/api/v1/ikfood/temperature-logs")
+public class TemperatureLogController {
 
-    private final FoodLogService service;
-    private final FoodLogMapper mapper;
+    private final TemperatureLogService service;
+    private final TemperatureLogMapper mapper;
 
-    public FoodLogController(FoodLogService service, FoodLogMapper mapper) {
+    public TemperatureLogController(TemperatureLogService service, TemperatureLogMapper mapper) {
         this.service = service;
         this.mapper = mapper;
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public ResponseEntity<ApiResponse<FoodLogDTO>> createLog(@Valid @RequestBody FoodLogCreateRequest request) {
+    public ResponseEntity<ApiResponse<TemperatureLogDTO>> createLog(@Valid @RequestBody TemperatureLogCreateRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(service.createLog(request)));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public ResponseEntity<ApiResponse<List<FoodLogDTO>>> getLogs() {
-        List<FoodLogDTO> logs = service.getAllForCurrentOrg().stream().map(mapper::toDTO).toList();
+    public ResponseEntity<ApiResponse<List<TemperatureLogDTO>>> getLogs() {
+        List<TemperatureLogDTO> logs = service.getAllForCurrentOrg().stream().map(mapper::toDTO).toList();
         return ResponseEntity.ok(ApiResponse.ok(logs));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public ResponseEntity<ApiResponse<FoodLogDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TemperatureLogDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(mapper.toDTO(service.getById(id))));
     }
 
@@ -54,7 +54,8 @@ public class FoodLogController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.ok(ApiResponse.ok("Food compliance log deleted", null));
+        return ResponseEntity.ok(ApiResponse.ok("Temperature log deleted", null));
     }
 }
+
 

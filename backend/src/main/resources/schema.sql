@@ -29,7 +29,20 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
-CREATE TABLE IF NOT EXISTS food_compliance_logs (
+CREATE TABLE IF NOT EXISTS temperature_zones (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    lower_limit_celsius DOUBLE NOT NULL,
+    upper_limit_celsius DOUBLE NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE (tenant_id, name),
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+);
+
+CREATE TABLE IF NOT EXISTS temperature_compliance_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
     recorded_by BIGINT NOT NULL,
@@ -38,11 +51,11 @@ CREATE TABLE IF NOT EXISTS food_compliance_logs (
     description VARCHAR(2000),
     log_status VARCHAR(20),
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    log_type VARCHAR(50) NOT NULL,
-    temperature_log_id BIGINT,
-    checklist_instance_id BIGINT,
+    temperature_zone_id BIGINT NOT NULL,
+    temperature_celsius DOUBLE NOT NULL,
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
-    FOREIGN KEY (recorded_by) REFERENCES users(id)
+    FOREIGN KEY (recorded_by) REFERENCES users(id),
+    FOREIGN KEY (temperature_zone_id) REFERENCES temperature_zones(id)
 );
 
 CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
