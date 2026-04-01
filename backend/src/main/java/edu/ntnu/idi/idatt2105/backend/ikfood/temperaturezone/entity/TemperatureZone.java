@@ -36,4 +36,3 @@ public class TemperatureZone {
     @Column(nullable = false)
     private boolean active = true;
 }
-
