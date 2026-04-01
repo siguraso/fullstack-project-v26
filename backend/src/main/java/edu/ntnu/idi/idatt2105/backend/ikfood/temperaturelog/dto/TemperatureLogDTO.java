@@ -16,5 +16,3 @@ public class TemperatureLogDTO extends BaseComplianceLogDTO {
     private String note;
     private boolean deviationCreated;
 }
-
-
