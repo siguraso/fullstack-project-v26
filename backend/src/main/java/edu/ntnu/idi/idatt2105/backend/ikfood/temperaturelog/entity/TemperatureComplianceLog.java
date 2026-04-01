@@ -7,7 +7,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "temperature_compliance_logs")
 public class TemperatureComplianceLog extends BaseComplianceLog {
@@ -17,22 +21,6 @@ public class TemperatureComplianceLog extends BaseComplianceLog {
 
     @Column(name = "temperature_celsius", nullable = false)
     private Double temperatureCelsius;
-
-    public TemperatureZone getTemperatureZone() {
-        return temperatureZone;
-    }
-
-    public void setTemperatureZone(TemperatureZone temperatureZone) {
-        this.temperatureZone = temperatureZone;
-    }
-
-    public Double getTemperatureCelsius() {
-        return temperatureCelsius;
-    }
-
-    public void setTemperatureCelsius(Double temperatureCelsius) {
-        this.temperatureCelsius = temperatureCelsius;
-    }
 }
 
 
