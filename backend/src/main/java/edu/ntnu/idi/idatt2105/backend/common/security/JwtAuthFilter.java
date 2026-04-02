@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.common.security;
 
+import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,36 +29,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       FilterChain filterChain) throws ServletException, IOException {
     try {
       final String authHeader = request.getHeader("Authorization");
-      final String jwt;
-      final String email;
-      final String role;
 
-      if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        filterChain.doFilter(request, response);
-        return;
-      }
+      if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        final String jwt = authHeader.substring(7);
 
-      jwt = authHeader.substring(7);
+        if (jwtService.isTokenValid(jwt)) {
+          final String email = jwtService.extractEmail(jwt);
+          final String role = jwtService.extractRole(jwt);
+          final Long organizationId = jwtService.extractOrganizationId(jwt);
 
-      if (!jwtService.isTokenValid(jwt)) {
-        filterChain.doFilter(request, response);
-        return;
-      }
+          if (organizationId != null) {
+            TenantContext.setCurrentOrg(organizationId);
+          }
 
-      email = jwtService.extractEmail(jwt);
-      role = jwtService.extractRole(jwt);
+          if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            List<SimpleGrantedAuthority> authorities =
+                role != null
+                    ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    : Collections.emptyList();
 
-      if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        List<SimpleGrantedAuthority> authorities =
-            role != null
-                ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                : Collections.emptyList();
-
-        UsernamePasswordAuthenticationToken authenticationToken =
-            new UsernamePasswordAuthenticationToken(email, null, authorities);
-        authenticationToken.setDetails(
-            new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(email, null, authorities);
+            authenticationToken.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+          }
+        }
       }
     } catch (JwtException e) {
       logger.error("JWT validation failed: " + e.getMessage());
@@ -65,6 +62,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       logger.error("Authentication error: " + e.getMessage());
     }
 
-    filterChain.doFilter(request, response);
+    try {
+      filterChain.doFilter(request, response);
+    } finally {
+      TenantContext.clear();
+    }
   }
 }
