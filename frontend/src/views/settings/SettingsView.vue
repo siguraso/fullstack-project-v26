@@ -987,10 +987,9 @@ onMounted(() => {
 .table-head,
 .table-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(120px, 0.75fr) minmax(0, 1fr) minmax(
-      110px,
-      0.65fr
-    ) minmax(160px, 0.85fr);
+  grid-template-columns:
+    minmax(0, 1.5fr) minmax(120px, 0.75fr) minmax(0, 1fr) minmax(110px, 0.65fr)
+    minmax(160px, 0.85fr);
   gap: 14px;
   align-items: center;
 }
