@@ -1,7 +1,27 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useDeviationStore, type Deviation } from '@/stores/deviation'
 
 const store = useDeviationStore()
+const props = withDefaults(
+  defineProps<{
+    category?: Deviation['category']
+    title?: string
+  }>(),
+  {
+    title: 'Existing Deviations',
+  },
+)
+
+const rows = computed(() =>
+  store.filtered.filter((deviation) => !props.category || deviation.category === props.category),
+)
+
+const emptyMessage = computed(() =>
+  props.category
+    ? 'No temperature deviations found for current filters.'
+    : 'No deviations found for current filters.',
+)
 
 function formatCategory(value: Deviation['category']) {
   return value.charAt(0) + value.slice(1).toLowerCase()
@@ -41,7 +61,7 @@ function statusClass(value: Deviation['status']) {
 <template>
   <div class="table-wrap">
     <div class="table-head">
-      <h3>Existing Deviations</h3>
+      <h3>{{ props.title }}</h3>
 
       <div class="filters">
         <select v-model="store.filters.status">
@@ -76,7 +96,7 @@ function statusClass(value: Deviation['status']) {
         </thead>
 
         <tbody>
-        <tr v-for="d in store.filtered" :key="d.id ?? d.title">
+        <tr v-for="d in rows" :key="d.id ?? d.title">
           <td class="title">{{ d.title }}</td>
           <td>{{ formatCategory(d.category) }}</td>
           <td>
@@ -89,8 +109,8 @@ function statusClass(value: Deviation['status']) {
           <td>{{ formatDate(d.createdAt) }}</td>
           <td><button class="view" type="button">View</button></td>
         </tr>
-        <tr v-if="store.filtered.length === 0">
-          <td colspan="7" class="empty">No deviations found for current filters.</td>
+        <tr v-if="rows.length === 0">
+          <td colspan="7" class="empty">{{ emptyMessage }}</td>
         </tr>
         </tbody>
       </table>
