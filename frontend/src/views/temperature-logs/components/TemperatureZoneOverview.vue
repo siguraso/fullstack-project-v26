@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'edit-zone', zone: TemperatureZone): void
+  (event: 'create-zone'): void
 }>()
 
 const pageSize = 4
@@ -38,6 +39,10 @@ function pageRight() {
 function openEditOverlay(zone: TemperatureZone) {
   emit('edit-zone', zone)
 }
+
+function openCreateOverlay() {
+  emit('create-zone')
+}
 </script>
 
 <template>
@@ -50,7 +55,7 @@ function openEditOverlay(zone: TemperatureZone) {
     :addToHeader="true"
   >
     <template #extra-header-content>
-      <button class="add-button">+</button>
+      <button class="add-button" @click="openCreateOverlay">+</button>
     </template>
     <table class="log-table">
       <thead class="log-table-header">

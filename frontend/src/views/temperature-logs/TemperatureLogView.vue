@@ -3,6 +3,7 @@ import ViewHeader from '@/components/ui/ViewHeader.vue'
 import type { TemperatureZone } from '@/types/temperature-zone'
 import { computed, nextTick, ref } from 'vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
+import CreateTemperatureZone from './components/CreateTemperatureZone.vue'
 import TemperatureZoneOverview from './components/TemperatureZoneOverview.vue'
 import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 import EditTemperatureZone from './components/EditTemperatureZone.vue'
@@ -17,6 +18,7 @@ const zones = ref<TemperatureZone[]>(
 )
 
 const isEditZoneOverlayOpen = ref(false)
+const isCreateZoneOverlayOpen = ref(false)
 const selectedZone = ref<TemperatureZone | null>(null)
 const overlayZone = computed(() => (isEditZoneOverlayOpen.value ? selectedZone.value : null))
 
@@ -46,6 +48,20 @@ async function deleteZone(zoneId: number) {
   zones.value = zones.value.filter((zone) => zone.id !== zoneId)
   await closeEditZoneOverlay()
 }
+
+function openCreateZoneOverlay() {
+  isCreateZoneOverlayOpen.value = true
+}
+
+function closeCreateZoneOverlay() {
+  isCreateZoneOverlayOpen.value = false
+}
+
+function createZone(newZone: Omit<TemperatureZone, 'id'>) {
+  const nextId = zones.value.length ? Math.max(...zones.value.map((zone) => zone.id)) + 1 : 1
+  zones.value = [...zones.value, { id: nextId, ...newZone }]
+  closeCreateZoneOverlay()
+}
 </script>
 
 <template>
@@ -60,6 +76,7 @@ async function deleteZone(zoneId: number) {
         class="temperature-zone-overview"
         :zones="zones"
         @edit-zone="openEditZoneOverlay"
+        @create-zone="openCreateZoneOverlay"
       />
     </div>
 
@@ -72,6 +89,14 @@ async function deleteZone(zoneId: number) {
         @save="saveZoneChanges"
         @delete="deleteZone"
       />
+    </div>
+
+    <div
+      v-if="isCreateZoneOverlayOpen"
+      class="overlay-backdrop"
+      @click.self="closeCreateZoneOverlay"
+    >
+      <CreateTemperatureZone @close="closeCreateZoneOverlay" @create="createZone" />
     </div>
   </div>
 </template>
