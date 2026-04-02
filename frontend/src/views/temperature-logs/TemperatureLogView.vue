@@ -98,17 +98,6 @@ function createZone(newZone: Omit<TemperatureZone, 'id'>) {
       <CreateTemperatureZone @close="closeCreateZoneOverlay" @create="createZone" />
     </div>
   </div>
-
-    <TemperatureLogHistory />
-
-    <div v-if="overlayZone" class="overlay-backdrop" @click.self="closeEditZoneOverlay">
-      <EditTemperatureZone
-        :zone="overlayZone"
-        @close="closeEditZoneOverlay"
-        @save="saveZoneChanges"
-      />
-    </div>
-  </div>
 </template>
 
 <style scoped>
