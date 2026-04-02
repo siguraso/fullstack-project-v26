@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 import type { TemperatureZone } from '@/types/temperature-zone'
 import { computed, nextTick, ref } from 'vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
@@ -67,7 +66,7 @@ function createZone(newZone: Omit<TemperatureZone, 'id'>) {
 <template>
   <div class="temperature-log-content">
     <header>
-      <ViewHeader title="Temperature Logs" />
+      <h1>Temperature Logs</h1>
     </header>
 
     <div class="top-row">

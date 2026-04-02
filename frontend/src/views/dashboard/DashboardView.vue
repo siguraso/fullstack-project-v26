@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import ViewHeader from '@/components/ui/ViewHeader.vue'
-
 type DashboardState = 'ready' | 'loading' | 'error'
 
 import ChecklistCompletionCard from './components/info-cards/ChecklistCompletionCard.vue'
@@ -13,7 +11,7 @@ import CriticalAlerts from './components/CriticalAlerts.vue'
 
 <template>
   <header>
-    <ViewHeader title="Dashboard" />
+    <h1>Dashboard</h1>
   </header>
 
   <CriticalAlerts />
