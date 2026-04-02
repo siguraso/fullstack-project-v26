@@ -3,13 +3,14 @@ import { isAuthenticated } from '../services/auth'
 import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-import DeviationView from "../views/deviation/DeviationView.vue";
-import TasksView from '@/views/tasks/TasksView.vue';
-import LogsView from '@/views/logs/LogsView.vue';
-import InspectionsView from '@/views/inspections/InspectionsView.vue';
-import ChecklistView from '@/views/checklist/ChecklistView.vue';
-import MainLayout from '@/views/MainLayout.vue';
-import UserPage from '@/views/user/UserPage.vue';
+import DeviationView from '../views/deviation/DeviationView.vue'
+import TasksView from '@/views/tasks/TasksView.vue'
+import LogsView from '@/views/logs/LogsView.vue'
+import InspectionsView from '@/views/inspections/InspectionsView.vue'
+import ChecklistView from '@/views/checklist/ChecklistView.vue'
+import MainLayout from '@/views/MainLayout.vue'
+import UserPage from '@/views/user/UserPage.vue'
+import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,7 +26,7 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: "/",
+      path: '/',
       component: MainLayout,
       meta: { requiresAuth: true },
       children: [
@@ -64,7 +65,12 @@ const router = createRouter({
           name: 'user',
           component: UserPage,
         },
-      ]
+        {
+          path: '/temperature-logs',
+          name: 'temperature-logs',
+          component: TemperatureLogView,
+        },
+      ],
     },
   ],
 })
@@ -79,7 +85,7 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && authenticated) {
     return { name: 'dashboard' }
   }
-  
+
   return true
 })
 
