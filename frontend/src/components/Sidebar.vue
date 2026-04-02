@@ -7,7 +7,9 @@ import {
   ClipboardCheck,
   LayoutDashboard,
   SearchCheck,
+  Settings,
   ScrollText,
+  Thermometer,
   TriangleAlert,
 } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
@@ -41,6 +43,7 @@ const complianceGroups: NavGroup[] = [
         to: { path: '/checklists', query: { ik: 'food' } },
       },
       { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'food' } } },
+      { label: 'Temperature Logs', icon: Thermometer, to: '/temperature' },
     ],
   },
   {
@@ -56,6 +59,8 @@ const complianceGroups: NavGroup[] = [
     ],
   },
 ]
+
+const footerItems: NavItem[] = [{ label: 'Settings', icon: Settings, to: '/settings' }]
 
 const router = useRouter()
 const route = useRoute()
@@ -97,11 +102,68 @@ async function logout() {
     </div>
 
     <nav class="nav-shell" aria-label="Sidebar">
-      <section class="nav-section">
-        <p class="nav-section-label">Overview</p>
+      <div class="nav-main">
+        <section class="nav-section">
+          <p class="nav-section-label">Overview</p>
 
+          <ul class="nav-list">
+            <li v-for="item in primaryItems" :key="item.label">
+              <button
+                type="button"
+                class="nav-button"
+                :class="{ 'nav-button-active': isActive(item.to) }"
+                @click="navigate(item.to)"
+              >
+                <span class="nav-button-content">
+                  <component :is="item.icon" :size="18" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </section>
+
+        <section class="nav-section">
+          <p class="nav-section-label">Compliance</p>
+
+          <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
+            <button
+              type="button"
+              class="group-trigger"
+              :class="{ 'group-trigger-active': groupIsActive(group) }"
+              @click="toggleGroup(group.key)"
+            >
+              <span>{{ group.label }}</span>
+              <ChevronDown
+                :size="16"
+                aria-hidden="true"
+                class="group-chevron"
+                :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
+              />
+            </button>
+
+            <ul v-if="openGroups[group.key]" class="subnav-list">
+              <li v-for="item in group.items" :key="group.key + item.label">
+                <button
+                  type="button"
+                  class="subnav-button"
+                  :class="{ 'subnav-button-active': isActive(item.to) }"
+                  @click="navigate(item.to)"
+                >
+                  <span class="nav-button-content">
+                    <component :is="item.icon" :size="16" aria-hidden="true" />
+                    <span>{{ item.label }}</span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </section>
+        </section>
+      </div>
+
+      <section class="nav-section nav-section-bottom">
         <ul class="nav-list">
-          <li v-for="item in primaryItems" :key="item.label">
+          <li v-for="item in footerItems" :key="item.label">
             <button
               type="button"
               class="nav-button"
@@ -115,43 +177,6 @@ async function logout() {
             </button>
           </li>
         </ul>
-      </section>
-
-      <section class="nav-section">
-        <p class="nav-section-label">Compliance</p>
-
-        <section v-for="group in complianceGroups" :key="group.key" class="nav-group">
-          <button
-            type="button"
-            class="group-trigger"
-            :class="{ 'group-trigger-active': groupIsActive(group) }"
-            @click="toggleGroup(group.key)"
-          >
-            <span>{{ group.label }}</span>
-            <ChevronDown
-              :size="16"
-              aria-hidden="true"
-              class="group-chevron"
-              :class="{ 'group-chevron-collapsed': !openGroups[group.key] }"
-            />
-          </button>
-
-          <ul v-if="openGroups[group.key]" class="subnav-list">
-            <li v-for="item in group.items" :key="group.key + item.label">
-              <button
-                type="button"
-                class="subnav-button"
-                :class="{ 'subnav-button-active': isActive(item.to) }"
-                @click="navigate(item.to)"
-              >
-                <span class="nav-button-content">
-                  <component :is="item.icon" :size="16" aria-hidden="true" />
-                  <span>{{ item.label }}</span>
-                </span>
-              </button>
-            </li>
-          </ul>
-        </section>
       </section>
     </nav>
 
@@ -211,12 +236,26 @@ async function logout() {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.nav-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .nav-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.nav-section-bottom {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 
 .nav-section-label {
