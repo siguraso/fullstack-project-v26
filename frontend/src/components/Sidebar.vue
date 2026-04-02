@@ -12,7 +12,6 @@ import {
   Thermometer,
   TriangleAlert,
 } from '@lucide/vue'
-import { clearAuthSession, getAuthSession } from '@/services/auth'
 
 interface NavItem {
   label: string
@@ -85,11 +84,6 @@ function navigate(destination: RouteLocationRaw) {
 
 function toggleGroup(key: NavGroup['key']) {
   openGroups[key] = !openGroups[key]
-}
-
-async function logout() {
-  clearAuthSession()
-  await router.push('/login')
 }
 </script>
 
