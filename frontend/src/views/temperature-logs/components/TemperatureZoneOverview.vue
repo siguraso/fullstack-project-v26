@@ -1,27 +1,23 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
+import type { TemperatureZone } from '@/types/temperature-zone'
 import { Box, ChevronLeft } from '@lucide/vue'
 import { computed, ref } from 'vue'
 
-const zones = [
-  { id: 1, name: 'Fridge1', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 2, name: 'Freezer room', lowerLimitCelcius: -25.0, upperLimitCelcius: -15.0 },
-  { id: 3, name: 'Room', lowerLimitCelcius: 15.0, upperLimitCelcius: 25.0 },
-  { id: 4, name: 'Fridge2', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 5, name: 'Fridge3', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 6, name: 'Fridge4', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 7, name: 'Fridge5', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 8, name: 'Fridge6', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 9, name: 'Fridge7', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-  { id: 10, name: 'Fridge8', lowerLimitCelcius: 0.0, upperLimitCelcius: 5.0 },
-]
+const props = defineProps<{
+  zones: TemperatureZone[]
+}>()
+
+const emit = defineEmits<{
+  (event: 'edit-zone', zone: TemperatureZone): void
+}>()
 
 const pageSize = 4
 const currentPage = ref(1)
 
 const zonesSplit = computed(() =>
-  Array.from({ length: Math.ceil(zones.length / pageSize) }, (_, index) =>
-    zones.slice(index * pageSize, index * pageSize + pageSize),
+  Array.from({ length: Math.ceil(props.zones.length / pageSize) }, (_, index) =>
+    props.zones.slice(index * pageSize, index * pageSize + pageSize),
   ),
 )
 
@@ -38,6 +34,10 @@ function pageRight() {
     currentPage.value += 1
   }
 }
+
+function openEditOverlay(zone: TemperatureZone) {
+  emit('edit-zone', zone)
+}
 </script>
 
 <template>
@@ -47,7 +47,11 @@ function pageRight() {
     :icon="Box"
     iconBackgroundColor="var(--neutral)"
     iconColor="white"
+    :addToHeader="true"
   >
+    <template #extra-header-content>
+      <button class="add-button">+</button>
+    </template>
     <table class="log-table">
       <thead class="log-table-header">
         <tr>
@@ -62,7 +66,9 @@ function pageRight() {
           <td>{{ zone.name }}</td>
           <td>{{ zone.lowerLimitCelcius }}°C</td>
           <td>{{ zone.upperLimitCelcius }}°C</td>
-          <td><button class="edit-btn">Edit</button></td>
+          <td>
+            <button class="edit-btn" @click="openEditOverlay(zone)">Edit</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -77,6 +83,12 @@ function pageRight() {
 </template>
 
 <style scoped>
+.add-button {
+  margin-left: auto;
+  width: 32px;
+  font-size: 15px;
+}
+
 .log-table {
   width: 100%;
   border-collapse: collapse;
