@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ViewHeader from '@/components/ui/ViewHeader.vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
-import StorageUnitOverview from './components/StorageUnitOverview.vue'
+import TemperatureZoneOverview from './components/TemperatureZoneOverview.vue'
 import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 </script>
 
@@ -11,8 +11,8 @@ import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
   </header>
 
   <div class="top-row">
-    <CreateTemperatureLog />
-    <StorageUnitOverview />
+    <CreateTemperatureLog class="create-log" />
+    <TemperatureZoneOverview class="temperature-zone-overview" />
   </div>
 
   <TemperatureLogHistory />
@@ -24,5 +24,13 @@ import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
   grid-template-columns: 1fr 2fr;
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.temperature-zone-overview {
+  align-self: start;
+}
+
+.create-log {
+  align-self: start;
 }
 </style>
