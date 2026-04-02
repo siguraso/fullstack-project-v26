@@ -41,6 +41,11 @@ async function saveZoneChanges(updatedZone: TemperatureZone) {
   selectedZone.value = updatedZone
   await closeEditZoneOverlay()
 }
+
+async function deleteZone(zoneId: number) {
+  zones.value = zones.value.filter((zone) => zone.id !== zoneId)
+  await closeEditZoneOverlay()
+}
 </script>
 
 <template>
@@ -65,6 +70,7 @@ async function saveZoneChanges(updatedZone: TemperatureZone) {
         :zone="overlayZone"
         @close="closeEditZoneOverlay"
         @save="saveZoneChanges"
+        @delete="deleteZone"
       />
     </div>
   </div>
