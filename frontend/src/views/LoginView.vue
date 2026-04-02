@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '@/services/auth'
+import { Key } from '@lucide/vue'
 
 const form = reactive({
   email: '',
@@ -74,20 +75,9 @@ async function handleSubmit() {
     <section class="scene">
       <div class="card">
         <div class="brand">
-          <svg
-            class="brand-mark"
-            width="24"
-            height="38"
-            viewBox="0 0 24 38"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="10" r="8" stroke="currentColor" stroke-width="3.5" />
-            <rect x="9.5" y="16" width="5" height="18" rx="2" fill="currentColor" />
-            <rect x="14.5" y="26" width="6" height="4" rx="1.5" fill="currentColor" />
-            <rect x="14.5" y="30" width="4" height="2" rx="1" fill="var(--bg)" />
-          </svg>
+          <div class="brand-mark">
+            <Key class="logo-icon" />
+          </div>
           <span class="brand-name">Regula</span>
         </div>
 
@@ -174,8 +164,7 @@ async function handleSubmit() {
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(0, 102, 255, 0.08), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.09), transparent 24%),
-    var(--bg);
+    radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.09), transparent 24%), var(--bg);
 }
 
 .backdrop {
@@ -272,9 +261,23 @@ async function handleSubmit() {
   margin-bottom: 36px;
 }
 
-.brand-mark,
 .brand-name {
   color: var(--neutral);
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--neutral);
+}
+
+.logo-icon {
+  transform: rotate(-45deg);
+  color: var(--bg-secondary);
 }
 
 .brand-name {

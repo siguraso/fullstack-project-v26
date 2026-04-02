@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { AlarmClock, CircleCheckBig, FolderKanban, Sparkles } from '@lucide/vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 type TaskStatus = 'Today' | 'Scheduled' | 'Blocked'
 
@@ -14,10 +13,34 @@ interface TaskItem {
 }
 
 const tasks: TaskItem[] = [
-  { id: 1, title: 'Review cold storage temperatures', owner: 'Sigurd', due: '08:30', status: 'Today' },
-  { id: 2, title: 'Follow up on cleaning supplier delivery', owner: 'Amalie', due: '10:15', status: 'Scheduled' },
-  { id: 3, title: 'Update opening shift handover notes', owner: 'Linnea', due: '13:00', status: 'Today' },
-  { id: 4, title: 'Replace damaged dry goods labels', owner: 'Marcus', due: 'Awaiting stock', status: 'Blocked' },
+  {
+    id: 1,
+    title: 'Review cold storage temperatures',
+    owner: 'Sigurd',
+    due: '08:30',
+    status: 'Today',
+  },
+  {
+    id: 2,
+    title: 'Follow up on cleaning supplier delivery',
+    owner: 'Amalie',
+    due: '10:15',
+    status: 'Scheduled',
+  },
+  {
+    id: 3,
+    title: 'Update opening shift handover notes',
+    owner: 'Linnea',
+    due: '13:00',
+    status: 'Today',
+  },
+  {
+    id: 4,
+    title: 'Replace damaged dry goods labels',
+    owner: 'Marcus',
+    due: 'Awaiting stock',
+    status: 'Blocked',
+  },
 ]
 
 const taskSummary = computed(() => {
@@ -36,7 +59,7 @@ function statusClass(status: TaskStatus) {
 
 <template>
   <div class="tasks-view">
-    <ViewHeader title="Tasks" :options="[]" :routes="[]" />
+    <h1>Tasks</h1>
 
     <section class="hero-card">
       <div>

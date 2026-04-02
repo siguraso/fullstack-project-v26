@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 import { BadgeCheck, Clock3, KeyRound, Mail, MapPin, ShieldCheck, UserRound } from '@lucide/vue'
 
 type OrgUser = {
@@ -50,7 +49,12 @@ const users: OrgUser[] = [
     location: 'Bristol',
     status: 'Active',
     lastActive: 'Today, 08:24',
-    permissions: ['Dashboard access', 'Checklist publishing', 'Incident review', 'Team assignments'],
+    permissions: [
+      'Dashboard access',
+      'Checklist publishing',
+      'Incident review',
+      'Team assignments',
+    ],
   },
   {
     initials: 'JM',
@@ -181,7 +185,7 @@ function statusClass(status: OrgUser['status']) {
 
 <template>
   <div class="user-page">
-    <ViewHeader title="Users" :options="[]" :routes="[]" />
+    <h1>Users</h1>
 
     <section class="summary-grid">
       <article v-for="card in summaryCards" :key="card.label" class="summary-card">
@@ -291,7 +295,11 @@ function statusClass(status: OrgUser['status']) {
             <div class="table-cell">
               <span class="mobile-label">Permissions</span>
               <div class="permission-list">
-                <span v-for="permission in user.permissions" :key="permission" class="permission-tag">
+                <span
+                  v-for="permission in user.permissions"
+                  :key="permission"
+                  class="permission-tag"
+                >
                   {{ permission }}
                 </span>
               </div>
@@ -339,11 +347,7 @@ function statusClass(status: OrgUser['status']) {
         </div>
 
         <div class="stack-list">
-          <article
-            v-for="entry in permissionCoverage"
-            :key="entry.permission"
-            class="stack-item"
-          >
+          <article v-for="entry in permissionCoverage" :key="entry.permission" class="stack-item">
             <div>
               <strong>{{ entry.permission }}</strong>
               <p>Users with this permission</p>

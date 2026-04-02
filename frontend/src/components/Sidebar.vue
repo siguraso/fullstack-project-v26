@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
@@ -10,7 +10,6 @@ import {
   TriangleAlert,
   UserRound,
 } from '@lucide/vue'
-import { clearAuthSession, getAuthSession } from '@/services/auth'
 
 const menuItems: {
   label: string
@@ -30,8 +29,6 @@ const menuItems: {
 
 const router = useRouter()
 const route = useRoute()
-const session = getAuthSession()
-const userLabel = computed(() => session?.email ?? 'Signed in user')
 
 const activeIndex = computed(() => menuItems.findIndex((item) => item.route === route.path))
 
@@ -40,17 +37,10 @@ function navigate(item: any) {
     router.push(item.route)
   }
 }
-
-async function logout() {
-  clearAuthSession()
-  await router.push('/login')
-}
 </script>
 
 <template>
   <div class="sidebar">
-    <h2>Regula</h2>
-    <h3>storename</h3>
     <ul class="menu">
       <li v-for="(item, index) in menuItems" :key="item.label + index">
         <button
@@ -65,10 +55,6 @@ async function logout() {
         </button>
       </li>
     </ul>
-    <div class="user-info">
-      <p>{{ userLabel }}</p>
-      <button type="button" @click="logout">Logout</button>
-    </div>
   </div>
 </template>
 
@@ -76,33 +62,22 @@ async function logout() {
 .sidebar {
   width: var(--sidebar-width, 220px);
   min-width: var(--sidebar-width, 220px);
-  height: 100vh;
+  height: calc(100vh - var(--navbar-height, 64px));
   position: fixed;
-  top: 0;
+  top: var(--navbar-height, 64px);
   left: 0;
   background-color: var(--bg);
   border-right: 1px solid var(--stroke);
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0;
+  padding: 10px 0px 0px 0px;
 }
 
 .sidebar ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
-}
-
-.sidebar h2 {
-  font-size: 24px;
-  margin-bottom: 0px;
-}
-
-.sidebar h3 {
-  font-size: 14px;
-  margin-top: 10px;
-  margin-bottom: 30px;
 }
 
 .menu-button {
@@ -154,27 +129,5 @@ async function logout() {
 
 .menu-button-inactive:active {
   transform: scale(0.98);
-}
-
-.user-info {
-  margin-top: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-info p {
-  margin: 0;
-}
-
-.user-info button {
-  margin-bottom: 0;
-  background-color: var(--neutral);
-  color: var(--bg);
-  border: none;
-  height: 30px;
-  border-radius: 8px;
 }
 </style>
