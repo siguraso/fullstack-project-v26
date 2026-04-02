@@ -114,7 +114,7 @@ function openEditOverlay(zone: TemperatureZone) {
 .paging {
   display: flex;
   justify-content: flex-start;
-  margin-top: 12px;
+  margin-top: 10px;
   gap: 10px;
 }
 
