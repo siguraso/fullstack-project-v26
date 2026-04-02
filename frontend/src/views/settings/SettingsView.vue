@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Bell, Building2, ShieldCheck, SlidersHorizontal } from '@lucide/vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 const preferenceGroups = [
   {
@@ -26,7 +25,6 @@ const preferenceGroups = [
 
 <template>
   <div class="settings-view">
-    <ViewHeader title="Settings" :options="[]" :routes="[]" />
 
     <section class="hero-card">
       <div>
