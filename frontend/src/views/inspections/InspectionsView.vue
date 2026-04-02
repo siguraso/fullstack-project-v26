@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { CalendarClock, ClipboardCheck, ScanSearch, Shield } from '@lucide/vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 type InspectionStatus = 'Ready' | 'Scheduled' | 'Follow-up'
 
@@ -14,9 +13,30 @@ interface InspectionItem {
 }
 
 const inspections: InspectionItem[] = [
-  { id: 1, title: 'Weekly hygiene walkthrough', area: 'Kitchen', owner: 'Store lead', date: 'Tomorrow 09:00', status: 'Ready' },
-  { id: 2, title: 'Supplier traceability review', area: 'Storage', owner: 'Operations', date: 'Friday 11:30', status: 'Scheduled' },
-  { id: 3, title: 'Fire safety follow-up', area: 'Back office', owner: 'Facility team', date: 'Next week', status: 'Follow-up' },
+  {
+    id: 1,
+    title: 'Weekly hygiene walkthrough',
+    area: 'Kitchen',
+    owner: 'Store lead',
+    date: 'Tomorrow 09:00',
+    status: 'Ready',
+  },
+  {
+    id: 2,
+    title: 'Supplier traceability review',
+    area: 'Storage',
+    owner: 'Operations',
+    date: 'Friday 11:30',
+    status: 'Scheduled',
+  },
+  {
+    id: 3,
+    title: 'Fire safety follow-up',
+    area: 'Back office',
+    owner: 'Facility team',
+    date: 'Next week',
+    status: 'Follow-up',
+  },
 ]
 
 function statusClass(status: InspectionStatus) {
@@ -26,15 +46,15 @@ function statusClass(status: InspectionStatus) {
 
 <template>
   <div class="inspections-view">
-    <ViewHeader title="Inspections" :options="[]" :routes="[]" />
+    <h1>Inspections</h1>
 
     <section class="hero-grid">
       <article class="lead-card">
         <p class="section-label">Inspection Hub</p>
         <h2>Prepare upcoming checks before this turns into a larger workflow.</h2>
         <p>
-          The layout is built so you can later plug in scheduled inspections, owners, documents,
-          and readiness states without redesigning the whole page.
+          The layout is built so you can later plug in scheduled inspections, owners, documents, and
+          readiness states without redesigning the whole page.
         </p>
       </article>
 

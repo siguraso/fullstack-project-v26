@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Activity, BookText, Clock3, ShieldCheck } from '@lucide/vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 
 type LogLevel = 'Info' | 'Warning' | 'Resolved'
 
@@ -47,7 +46,7 @@ function levelClass(level: LogLevel) {
 
 <template>
   <div class="logs-view">
-    <ViewHeader title="Logs" :options="[]" :routes="[]" />
+    <h1>Logs</h1>
 
     <section class="overview-grid">
       <article class="feature-card">
