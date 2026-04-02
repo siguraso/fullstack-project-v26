@@ -12,7 +12,6 @@ import {
   Thermometer,
   TriangleAlert,
 } from '@lucide/vue'
-import { clearAuthSession, getAuthSession } from '@/services/auth'
 
 interface NavItem {
   label: string
@@ -85,11 +84,6 @@ function navigate(destination: RouteLocationRaw) {
 
 function toggleGroup(key: NavGroup['key']) {
   openGroups[key] = !openGroups[key]
-}
-
-async function logout() {
-  clearAuthSession()
-  await router.push('/login')
 }
 </script>
 
@@ -191,9 +185,9 @@ async function logout() {
 .sidebar {
   width: var(--sidebar-width, 220px);
   min-width: var(--sidebar-width, 220px);
-  height: 100vh;
+  height: calc(100vh - var(--navbar-height, 64px));
   position: fixed;
-  top: 0;
+  top: var(--navbar-height, 64px);
   left: 0;
   padding: 20px 14px 16px;
   box-sizing: border-box;
