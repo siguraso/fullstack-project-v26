@@ -3,7 +3,6 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance
 import java.time.LocalDate;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistItemTemplate;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistTemplate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,9 +23,6 @@ public class ChecklistItemInstance {
 
     @ManyToOne
     private ChecklistInstance checklist;
-
-    @ManyToOne
-    ChecklistTemplate template;
 
     private boolean completed;
 
