@@ -10,6 +10,7 @@ import InspectionsView from '@/views/inspections/InspectionsView.vue';
 import ChecklistView from '@/views/checklist/ChecklistView.vue';
 import MainLayout from '@/views/MainLayout.vue';
 import UserPage from '@/views/user/UserPage.vue';
+import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -64,6 +65,10 @@ const router = createRouter({
           name: 'user',
           component: UserPage,
         },
+        {
+          path: '/checklist-builder',
+          component: ChecklistBuilderView,
+        }
       ]
     },
   ],
