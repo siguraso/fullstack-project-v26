@@ -22,3 +22,42 @@ export async function updateChecklistItem(id: number, completed: boolean) {
 
   if (!res.ok) throw new Error('Failed to update item')
 }
+
+export async function getTemplates(tenantId: number) {
+  const res = await fetch(`${API_URL}/templates?tenantId=${tenantId}`)
+  return res.json()
+}
+
+export async function createTemplate(payload: any) {
+  return fetch(`${API_URL}/templates`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function updateTemplate(id: number, payload: any) {
+  return fetch(`${API_URL}/templates/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getLibraryItems(tenantId: number) {
+  const res = await fetch(`/api/checklist-library?tenantId=${tenantId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json'},
+  })
+  return res.json()
+}
+
+export async function createLibraryItem(tenantId: number, payload: any) {
+  const res = await fetch(`/api/checklist-library?tenantId=${tenantId}`, {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+
+  return res.json()
+}
