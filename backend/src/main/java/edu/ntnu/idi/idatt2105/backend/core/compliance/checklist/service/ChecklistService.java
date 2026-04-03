@@ -7,16 +7,20 @@ import org.springframework.stereotype.Service;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistInstanceDTO;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistTemplateDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CompleteChecklistItemRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CreateChecklistTemplateRequest;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.ChecklistItemLibrary;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistItemTemplate;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistTemplate;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.enums.ChecklistStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistInstanceMapper;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistTemplateMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistInstanceRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemInstanceRepository;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemLibraryRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemTemplateRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistTemplateRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
@@ -33,16 +37,17 @@ public class ChecklistService {
     private final ChecklistInstanceRepository instanceRepo;
     private final ChecklistItemInstanceRepository itemInstanceRepo;
     private final TenantRepository tenantRepo;
-    private final DeviationService deviationService;
-    private final ChecklistInstanceMapper mapper;
+    private final ChecklistInstanceMapper instanceMapper;
+    private final ChecklistTemplateMapper templateMapper;
+    private final ChecklistItemLibraryRepository libraryRepo;
 
     public ChecklistTemplate createTemplate(CreateChecklistTemplateRequest request) {
+
         Tenant tenant = tenantRepo.findById(request.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
         ChecklistTemplate template = new ChecklistTemplate();
         template.setTenant(tenant);
-
         template.setName(request.getName());
         template.setFrequency(request.getFrequency());
         template.setModule(request.getModule());
@@ -50,11 +55,17 @@ public class ChecklistService {
         ChecklistTemplate savedTemplate = templateRepo.save(template);
 
         int order = 0;
-        for (String description : request.getItems()) {
+
+        for (Long itemId : request.getItemIds()) {
+            ChecklistItemLibrary libItem = libraryRepo.findById(itemId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Library item not found"));
+
             ChecklistItemTemplate item = new ChecklistItemTemplate();
             item.setChecklistTemplate(savedTemplate);
-            item.setDescription(description);
+            item.setLibraryItem(libItem);
+            item.setDescription(libItem.getDescription()); // snapshot
             item.setSortOrder(order++);
+
             itemTemplateRepo.save(item);
         }
 
@@ -73,7 +84,8 @@ public class ChecklistService {
 
         ChecklistInstance savedInstance = instanceRepo.save(instance);
 
-        List<ChecklistItemTemplate> templates = itemTemplateRepo.findByChecklistTemplateId(templateId);
+        List<ChecklistItemTemplate> templates = itemTemplateRepo.findByChecklistTemplate_Id(templateId)
+                .getChecklistTemplate().getItems();
 
         for (ChecklistItemTemplate t : templates) {
             ChecklistItemInstance item = new ChecklistItemInstance();
@@ -90,7 +102,7 @@ public class ChecklistService {
 
         List<ChecklistInstance> instances = instanceRepo.findByTenantIdAndDate(tenantId, LocalDate.now());
 
-        return instances.stream().map(mapper::toDto).toList();
+        return instances.stream().map(instanceMapper::toDto).toList();
     }
 
     public void completeItem(Long itemId, CompleteChecklistItemRequest request) {
@@ -109,6 +121,43 @@ public class ChecklistService {
         itemInstanceRepo.save(item);
 
         updateCheckListStatus(item.getChecklist().getId());
+    }
+
+    public List<ChecklistTemplateDTO> getTemplates(Long tenantId) {
+
+        List<ChecklistTemplate> templates = templateRepo.findByTenant_Id(tenantId);
+
+        return templates.stream().map(templateMapper::toDto).toList();
+    }
+
+    public ChecklistTemplateDTO updateTemplate(Long id, CreateChecklistTemplateRequest request) {
+
+        ChecklistTemplate template = templateRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+
+        template.setName(request.getName());
+        template.setFrequency(request.getFrequency());
+        template.setModule(request.getModule());
+
+        template.getItems().clear();
+
+        int order = 0;
+
+        for (Long itemId : request.getItemIds()) {
+
+            ChecklistItemLibrary libItem = libraryRepo.findById(itemId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Library item not found"));
+
+            ChecklistItemTemplate newItem = new ChecklistItemTemplate();
+            newItem.setChecklistTemplate(template);
+            newItem.setDescription(libItem.getDescription());
+            newItem.setLibraryItem(libItem);
+            newItem.setSortOrder(order++);
+
+            template.getItems().add(newItem);
+        }
+
+        return templateMapper.toDto(templateRepo.save(template));
     }
 
     private void updateCheckListStatus(Long checklistId) {
