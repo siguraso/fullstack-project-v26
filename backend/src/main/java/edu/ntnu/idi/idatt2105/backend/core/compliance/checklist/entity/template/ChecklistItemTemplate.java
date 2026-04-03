@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template;
 
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.ChecklistItemLibrary;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,4 +26,8 @@ public class ChecklistItemTemplate {
     private String description;
 
     private int sortOrder;
+
+    @ManyToOne
+    @JoinColumn(name = "library_item_id")
+    private ChecklistItemLibrary libraryItem;
 }
