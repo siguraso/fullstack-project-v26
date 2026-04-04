@@ -16,6 +16,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationS
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.mapper.DeviationMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository.DeviationRepository;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
@@ -104,7 +105,7 @@ public class DeviationService {
         deviation.setDescription(log.getDescription() != null ? log.getDescription() : log.getTitle());
 
         deviation.setSeverity(DeviationSeverity.CRITICAL);
-        deviation.setCategory(DeviationCategory.TEMPERATURE);
+        deviation.setCategory(resolveCategoryFromModule(log.getModule()));
 
         deviation.setStatus(DeviationStatus.OPEN);
         deviation.setCreatedBy(log.getRecordedBy());
@@ -113,5 +114,12 @@ public class DeviationService {
         deviation.setCreatedAt(LocalDateTime.now());
 
         deviationRepo.save(deviation);
+    }
+
+    private DeviationCategory resolveCategoryFromModule(ComplianceModule module) {
+        if (module == ComplianceModule.IK_ALCOHOL) {
+            return DeviationCategory.ALCOHOL;
+        }
+        return DeviationCategory.TEMPERATURE;
     }
 }
