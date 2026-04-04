@@ -3,15 +3,18 @@ package edu.ntnu.idi.idatt2105.backend.core.user.controller;
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
 import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserResponse;
+import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserUpdateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
@@ -36,6 +39,13 @@ public class UserController {
         return ResponseEntity
                 .status(201)
                 .body(ApiResponse.ok("User created successfully", userService.createUser(dto)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UserUpdateRequest dto) {
+        return ResponseEntity.ok(ApiResponse.ok("User updated successfully", userService.updateUser(id, dto)));
     }
 
     @DeleteMapping("/{id}")
