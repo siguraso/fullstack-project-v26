@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantDTO;
@@ -24,9 +25,20 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/tenants")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class TenantController {
 
     private final TenantService tenantService;
+
+    @GetMapping("/current")
+    public ResponseEntity<TenantDTO> getCurrentTenant() {
+        return ResponseEntity.ok(tenantService.getCurrentTenant());
+    }
+
+    @PutMapping("/current")
+    public ResponseEntity<TenantDTO> updateCurrentTenant(@Valid @RequestBody TenantUpdateRequest request) {
+        return ResponseEntity.ok(tenantService.updateCurrentTenant(request));
+    }
 
     @PostMapping
     public ResponseEntity<TenantDTO> createTenant(@Valid @RequestBody TenantCreateRequest request) {
