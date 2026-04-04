@@ -143,6 +143,11 @@ public class AuthService {
 
     User user = optionalUser.get();
 
+    if (!user.isActive()) {
+      log.warn("Inactive user attempted token refresh: {}", email);
+      throw new UnauthorizedException("User account is inactive");
+    }
+
     // Generate new access token
     Map<String, Object> extraClaims = Map.of(
         "userId", user.getId(),
