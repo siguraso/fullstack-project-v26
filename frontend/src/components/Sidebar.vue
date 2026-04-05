@@ -20,6 +20,7 @@ const menuItems: {
   { label: 'Dashboard', icon: LayoutDashboard, route: '/dashboard' },
   { label: 'Users', icon: UserRound, route: '/user' },
   { label: 'Checklist', icon: ClipboardCheck, route: '/checklists' },
+  { label: 'Create checklist', icon: '', route: '/checklist-builder' },
   { label: 'Deviations', icon: TriangleAlert, route: '/deviation' },
   { label: 'Tasks', icon: ListTodo, route: '/tasks' },
   { label: 'Logs', icon: ScrollText, route: '/logs' },
