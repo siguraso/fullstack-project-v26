@@ -1,17 +1,24 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Bell, Key, User2Icon } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
+import { useTenantStore } from '@/stores/tenant'
 
 const router = useRouter()
 const session = getAuthSession()
 const userLabel = computed(() => session?.email ?? 'Signed in user')
+const tenantStore = useTenantStore()
+const storeName = computed(() => tenantStore.tenantName)
 
 async function logout() {
   clearAuthSession()
   await router.push('/login')
 }
+
+onMounted(() => {
+  tenantStore.fetchTenant()
+})
 </script>
 
 <template>
@@ -22,7 +29,7 @@ async function logout() {
       </div>
       <h2>Regula</h2>
       <div class="spacer-line" aria-hidden="true" />
-      <h3 class="storename">storename</h3>
+      <h3 class="storename">{{ storeName }}</h3>
     </div>
 
     <div class="user-info">
