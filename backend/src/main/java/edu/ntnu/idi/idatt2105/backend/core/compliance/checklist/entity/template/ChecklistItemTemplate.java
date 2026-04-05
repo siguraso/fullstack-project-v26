@@ -23,6 +23,8 @@ public class ChecklistItemTemplate {
     @JoinColumn(name = "checklist_id")
     private ChecklistTemplate checklistTemplate;
 
+    private String title;
+
     private String description;
 
     private int sortOrder;
