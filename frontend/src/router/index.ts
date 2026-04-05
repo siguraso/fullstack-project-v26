@@ -11,7 +11,6 @@ import InspectionsView from '@/views/inspections/InspectionsView.vue'
 import ChecklistView from '@/views/checklist/ChecklistView.vue'
 import MainLayout from '@/views/MainLayout.vue'
 import SettingsView from '@/views/settings/SettingsView.vue'
-import UserPage from '@/views/user/UserPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,11 +64,6 @@ const router = createRouter({
           path: '/inspections',
           name: 'inspections',
           component: InspectionsView,
-        },
-        {
-          path: '/user',
-          name: 'user',
-          component: UserPage,
         },
         {
           path: '/settings',
