@@ -7,12 +7,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "alcohol_compliance_logs")
+@Getter
+@Setter
 public class AlcoholComplianceLog extends BaseComplianceLog {
 
     @Enumerated(EnumType.STRING)
@@ -28,41 +31,8 @@ public class AlcoholComplianceLog extends BaseComplianceLog {
     @Column(name = "estimated_age")
     private Integer estimatedAge;
 
-    @PrePersist
     @PreUpdate
     public void enforceModule() {
         setModule(ComplianceModule.IK_ALCOHOL);
-    }
-
-    public AlcoholLogType getLogType() {
-        return logType;
-    }
-
-    public void setLogType(AlcoholLogType logType) {
-        this.logType = logType;
-    }
-
-    public Boolean getIdChecked() {
-        return idChecked;
-    }
-
-    public void setIdChecked(Boolean idChecked) {
-        this.idChecked = idChecked;
-    }
-
-    public Boolean getServiceRefused() {
-        return serviceRefused;
-    }
-
-    public void setServiceRefused(Boolean serviceRefused) {
-        this.serviceRefused = serviceRefused;
-    }
-
-    public Integer getEstimatedAge() {
-        return estimatedAge;
-    }
-
-    public void setEstimatedAge(Integer estimatedAge) {
-        this.estimatedAge = estimatedAge;
     }
 }
