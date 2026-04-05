@@ -6,8 +6,8 @@ import {
   Clock3,
   KeyRound,
   MapPin,
+  RefreshCw,
   ShieldCheck,
-  SlidersHorizontal,
   UserRound,
 } from '@lucide/vue'
 import Card from '@/components/ui/Card.vue'
@@ -435,15 +435,14 @@ onMounted(() => {
       <div class="hero-actions">
         <button
           type="button"
-          class="secondary-button"
+          class="hero-icon hero-refresh-button"
           :disabled="isBootstrapping || isRefreshingUsers || isSavingTenant"
           @click="bootstrapPage"
+          aria-label="Refresh data"
+          title="Refresh data"
         >
-          Refresh data
+          <RefreshCw :size="28" aria-hidden="true" />
         </button>
-        <div class="hero-icon">
-          <SlidersHorizontal :size="28" aria-hidden="true" />
-        </div>
       </div>
     </section>
 
@@ -473,10 +472,7 @@ onMounted(() => {
         class="main-panel"
       >
         <div class="panel-intro">
-          <div>
-            <strong>Workspace identity</strong>
-            <p>Updates here are written to `/api/tenants/current` and shown across the workspace.</p>
-          </div>
+          
           <span
             class="status-pill"
             :class="tenant ? (tenant.active ? 'status-active' : 'status-inactive') : 'status-neutral'"
@@ -834,6 +830,22 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.72);
   display: grid;
   place-items: center;
+}
+
+.hero-refresh-button {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: var(--text);
+  transition:
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.hero-refresh-button:hover {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.hero-refresh-button:active {
+  transform: scale(0.98);
 }
 
 .summary-grid,
