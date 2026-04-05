@@ -23,11 +23,12 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.Check
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemLibraryRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemTemplateRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistTemplateRepository;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class ChecklistService {
@@ -63,11 +64,14 @@ public class ChecklistService {
             ChecklistItemTemplate item = new ChecklistItemTemplate();
             item.setChecklistTemplate(savedTemplate);
             item.setLibraryItem(libItem);
+            item.setTitle(libItem.getTitle());
             item.setDescription(libItem.getDescription()); // snapshot
             item.setSortOrder(order++);
 
             itemTemplateRepo.save(item);
         }
+
+        generateInstance(savedTemplate.getId());
 
         return savedTemplate;
     }
@@ -84,8 +88,7 @@ public class ChecklistService {
 
         ChecklistInstance savedInstance = instanceRepo.save(instance);
 
-        List<ChecklistItemTemplate> templates = itemTemplateRepo.findByChecklistTemplate_Id(templateId)
-                .getChecklistTemplate().getItems();
+        List<ChecklistItemTemplate> templates = itemTemplateRepo.findByChecklistTemplate_Id(templateId);
 
         for (ChecklistItemTemplate t : templates) {
             ChecklistItemInstance item = new ChecklistItemInstance();
@@ -160,6 +163,15 @@ public class ChecklistService {
         return templateMapper.toDto(templateRepo.save(template));
     }
 
+    public void deleteTemplate(Long id) {
+        ChecklistTemplate template = templateRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+
+        instanceRepo.deleteByTemplate_id(id);
+
+        templateRepo.delete(template);
+    }
+
     private void updateCheckListStatus(Long checklistId) {
         List<ChecklistItemInstance> items = itemInstanceRepo.findByChecklistId(checklistId);
 
@@ -178,5 +190,14 @@ public class ChecklistService {
         }
 
         instanceRepo.save(checklist);
+    }
+
+    public void toggleTemplate(Long id) {
+        ChecklistTemplate template = templateRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+
+        template.setActive(!template.isActive());
+
+        templateRepo.save(template);
     }
 }
