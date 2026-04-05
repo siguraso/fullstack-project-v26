@@ -6,6 +6,7 @@ import lombok.Data;
 public class ChecklistItemTemplateDTO {
 
     private Long id;
+    private String title;
     private String description;
     private int sortOrder;
 }

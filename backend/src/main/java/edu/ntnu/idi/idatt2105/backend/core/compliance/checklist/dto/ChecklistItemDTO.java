@@ -6,6 +6,7 @@ import lombok.Data;
 public class ChecklistItemDTO {
 
     private Long id;
+    private String title;
     private String description;
     private boolean completed;
     private String comment;
