@@ -87,11 +87,6 @@ async function logout() {
 
 <template>
   <aside class="sidebar">
-    <div class="brand-block">
-      <span class="brand-kicker">Compliance workspace</span>
-      <h2>Regula</h2>
-      <p class="brand-meta">storename</p>
-    </div>
 
     <nav class="nav-shell" aria-label="Sidebar">
       <div class="nav-main">
