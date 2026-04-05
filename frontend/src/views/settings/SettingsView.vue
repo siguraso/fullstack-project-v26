@@ -24,6 +24,7 @@ import {
   type User,
   type UserUpdatePayload,
 } from '@/services/settings'
+import { useTenantStore } from '@/stores/tenant'
 
 type TenantForm = {
   name: string
@@ -44,6 +45,7 @@ type UserForm = {
 }
 
 const DEFAULT_ROLE_OPTIONS = ['ADMIN', 'MANAGER', 'EMPLOYEE']
+const tenantStore = useTenantStore()
 
 const tenant = ref<Tenant | null>(null)
 const users = ref<User[]>([])
@@ -266,6 +268,7 @@ async function loadTenant() {
   try {
     const payload = await getCurrentTenant()
     tenant.value = payload
+    tenantStore.setTenant(payload)
     applyTenantToForm(payload)
   } catch (error) {
     tenantError.value = toErrorMessage(error, 'Unable to load workspace details.')
@@ -327,6 +330,7 @@ async function saveTenant() {
   try {
     const updatedTenant = await updateCurrentTenant(buildTenantPayload())
     tenant.value = updatedTenant
+    tenantStore.setTenant(updatedTenant)
     applyTenantToForm(updatedTenant)
     tenantSuccess.value = 'Workspace settings saved.'
   } catch (error) {
