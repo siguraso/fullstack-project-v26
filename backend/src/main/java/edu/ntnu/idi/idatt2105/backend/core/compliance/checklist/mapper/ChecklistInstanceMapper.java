@@ -26,6 +26,7 @@ public class ChecklistInstanceMapper {
     private ChecklistItemDTO mapItem(ChecklistItemInstance item) {
         ChecklistItemDTO dto = new ChecklistItemDTO();
         dto.setId(item.getId());
+        dto.setTitle(item.getTemplateItem().getTitle());
         dto.setDescription(item.getTemplateItem().getDescription());
         dto.setCompleted(item.isCompleted());
         dto.setComment(item.getComment());

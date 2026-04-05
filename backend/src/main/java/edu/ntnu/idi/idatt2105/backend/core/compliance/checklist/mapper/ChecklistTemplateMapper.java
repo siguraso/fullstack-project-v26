@@ -16,11 +16,16 @@ public class ChecklistTemplateMapper {
         dto.setName(entity.getName());
         dto.setModule(entity.getModule().name());
         dto.setFrequency(entity.getFrequency().name());
+        dto.setActive(entity.isActive());
 
         dto.setItems(
                 entity.getItems().stream().map(item -> {
                     ChecklistItemTemplateDTO i = new ChecklistItemTemplateDTO();
+                    if (item.getLibraryItem() == null) {
+                        throw new IllegalStateException("Missing library item");
+                    }
                     i.setId(item.getLibraryItem().getId());
+                    i.setTitle(item.getLibraryItem().getTitle());
                     i.setDescription(item.getDescription());
                     i.setSortOrder(item.getSortOrder());
                     return i;
