@@ -1,13 +1,9 @@
 import type { Deviation } from '@/stores/deviation'
+import { unwrap, parseJsonSafely } from './util/util'
+import type { ApiEnvelope } from './util/util'
 
 const API = 'http://localhost:8080/api/deviations'
 const DEFAULT_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID ?? 1)
-
-type ApiEnvelope<T> = {
-  success?: boolean
-  message?: string | null
-  data?: T
-}
 
 type DeviationModule = Deviation['module']
 
@@ -41,28 +37,6 @@ function normalizeDeviation(raw: unknown, fallbackModule?: DeviationModule): Dev
   }
 }
 
-function unwrap<T>(payload: T | ApiEnvelope<T>): T {
-  if (payload && typeof payload === 'object' && 'data' in payload) {
-    return (payload as ApiEnvelope<T>).data as T
-  }
-
-  return payload as T
-}
-
-async function parseJsonSafely(response: Response): Promise<unknown> {
-  const contentType = response.headers.get('content-type') ?? ''
-
-  if (!contentType.includes('application/json')) {
-    return null
-  }
-
-  try {
-    return await response.json()
-  } catch {
-    return null
-  }
-}
-
 export async function getDeviations(tenantId = DEFAULT_TENANT_ID): Promise<Deviation[]> {
   const res = await fetch(`${API}?tenantId=${tenantId}`)
   const payload = await parseJsonSafely(res)
@@ -73,7 +47,7 @@ export async function getDeviations(tenantId = DEFAULT_TENANT_ID): Promise<Devia
   }
 
   return unwrapped
-    .map(item => normalizeDeviation(item))
+    .map((item) => normalizeDeviation(item))
     .filter((item): item is Deviation => item !== null)
 }
 

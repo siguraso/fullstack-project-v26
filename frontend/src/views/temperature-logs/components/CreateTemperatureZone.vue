@@ -19,8 +19,9 @@ function closeOverlay() {
 function createZone() {
   emit('create', {
     name: name.value,
-    lowerLimitCelcius: lowerLimit.value,
-    upperLimitCelcius: upperLimit.value,
+    lowerLimitCelsius: lowerLimit.value,
+    upperLimitCelsius: upperLimit.value,
+    active: true,
   })
 }
 </script>

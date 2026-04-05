@@ -1,6 +1,8 @@
 const AUTH_SESSION_KEY = 'regula.auth.session'
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
+type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF'
+
 export interface LoginPayload {
   email: string
   password: string
@@ -18,7 +20,17 @@ export interface AuthSession {
   email: string
   remember: boolean
   token: string | null
-  raw: unknown
+  role: UserRole | null
+  raw: LoginResponseData | null
+}
+
+interface LoginResponseData {
+  accessToken?: string
+  refreshToken?: string
+  email?: string
+  fullName?: string
+  organizationId?: number
+  role?: UserRole
 }
 
 function getStorage(remember: boolean): Storage {
@@ -76,6 +88,33 @@ function readToken(payload: unknown): string | null {
   return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null
 }
 
+function readRole(payload: unknown): UserRole | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  const record = unwrappedPayload as Record<string, unknown>
+  const candidate = record.role
+
+  if (candidate === 'ADMIN' || candidate === 'MANAGER' || candidate === 'STAFF') {
+    return candidate
+  }
+
+  return null
+}
+
+function readLoginResponseData(payload: unknown): LoginResponseData | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  return unwrappedPayload as LoginResponseData
+}
+
 async function parseResponseBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get('content-type') ?? ''
 
@@ -99,7 +138,8 @@ function createSession(email: string, remember: boolean, responseBody: unknown):
     email,
     remember,
     token: readToken(responseBody),
-    raw: responseBody,
+    role: readRole(responseBody),
+    raw: readLoginResponseData(responseBody),
   }
 }
 
@@ -132,7 +172,9 @@ export async function login(payload: LoginPayload, remember: boolean): Promise<A
   const responseBody = await parseResponseBody(response)
 
   if (!response.ok) {
-    throw new Error(readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.')
+    throw new Error(
+      readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.',
+    )
   }
 
   const session = createSession(payload.email, remember, responseBody)
