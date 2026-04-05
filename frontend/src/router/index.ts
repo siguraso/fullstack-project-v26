@@ -11,7 +11,6 @@ import InspectionsView from '@/views/inspections/InspectionsView.vue'
 import ChecklistView from '@/views/checklist/ChecklistView.vue'
 import MainLayout from '@/views/MainLayout.vue'
 import SettingsView from '@/views/settings/SettingsView.vue'
-import UserPage from '@/views/user/UserPage.vue'
 import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
 import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
 

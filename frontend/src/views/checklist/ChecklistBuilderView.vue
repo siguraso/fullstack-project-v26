@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import TemplateLibrary from './components/TemplateLibrary.vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 import {
   createLibraryItem,
   createTemplate,
