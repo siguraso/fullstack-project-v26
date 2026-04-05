@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { getAuthSession } from '@/services/auth'
-import type { TemperatureZone } from '@/types/temperature-zone'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { Box, ChevronLeft } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 

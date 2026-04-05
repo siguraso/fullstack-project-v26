@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import ViewHeader from '@/components/ui/ViewHeader.vue'
-import type { TemperatureZone } from '@/types/temperature-zone'
+import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
 import CreateTemperatureZone from './components/CreateTemperatureZone.vue'
 import TemperatureZoneOverview from './components/TemperatureZoneOverview.vue'
 import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 import EditTemperatureZone from './components/EditTemperatureZone.vue'
+import { fetchTemperatureLogs } from '@/services/temperatureLog'
 import {
   deleteTemperatureZone,
   editTemperatureZone,
@@ -15,8 +17,11 @@ import {
 import { addTemperatureZone } from '@/services/temperatureZone'
 
 const zones = ref<TemperatureZone[]>([])
+const logs = ref<TemperatureLog[]>([])
 const isLoadingZones = ref(false)
+const isLoadingLogs = ref(false)
 const zoneLoadError = ref('')
+const logLoadError = ref('')
 
 async function loadZones() {
   isLoadingZones.value = true
@@ -33,14 +38,33 @@ async function loadZones() {
   }
 }
 
+async function loadLogs() {
+  isLoadingLogs.value = true
+  logLoadError.value = ''
+
+  try {
+    logs.value = await fetchTemperatureLogs()
+  } catch (error) {
+    logLoadError.value = error instanceof Error ? error.message : 'Failed to fetch temperature logs'
+    console.error('Failed to fetch temperature logs', error)
+  } finally {
+    isLoadingLogs.value = false
+  }
+}
+
 onMounted(() => {
   void loadZones()
+  void loadLogs()
 })
 
 const isEditZoneOverlayOpen = ref(false)
 const isCreateZoneOverlayOpen = ref(false)
 const selectedZone = ref<TemperatureZone | null>(null)
 const overlayZone = computed(() => (isEditZoneOverlayOpen.value ? selectedZone.value : null))
+
+function handleTemperatureLogCreated(log: TemperatureLog) {
+  logs.value = [log, ...logs.value]
+}
 
 function openEditZoneOverlay(zone: TemperatureZone) {
   selectedZone.value = zone
@@ -117,9 +141,15 @@ function closeCreateZoneOverlay() {
 
     <p v-if="isLoadingZones" class="status-message">Loading temperature zones...</p>
     <p v-else-if="zoneLoadError" class="status-message error">{{ zoneLoadError }}</p>
+    <p v-if="isLoadingLogs" class="status-message">Loading temperature logs...</p>
+    <p v-else-if="logLoadError" class="status-message error">{{ logLoadError }}</p>
 
     <div class="top-row">
-      <CreateTemperatureLog class="create-log" />
+      <CreateTemperatureLog
+        class="create-log"
+        :temperatureZones="zones"
+        @created="handleTemperatureLogCreated"
+      />
       <TemperatureZoneOverview
         class="temperature-zone-overview"
         :zones="zones"
@@ -128,7 +158,7 @@ function closeCreateZoneOverlay() {
       />
     </div>
 
-    <TemperatureLogHistory />
+    <TemperatureLogHistory :temperatureZones="zones" :temperatureLogs="logs" />
 
     <div v-if="overlayZone" class="overlay-backdrop" @click.self="closeEditZoneOverlay">
       <EditTemperatureZone

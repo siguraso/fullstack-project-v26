@@ -1,4 +1,4 @@
-import type { TemperatureZone } from '@/types/temperature-zone'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { getAuthSession } from '@/services/auth'
 import { parseJsonSafely, unwrap } from './util/util'
 import type { ApiEnvelope } from './util/util'

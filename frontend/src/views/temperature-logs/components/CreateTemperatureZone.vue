@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Card from '@/components/ui/Card.vue'
-import type { TemperatureZone } from '@/types/temperature-zone'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { ref } from 'vue'
 
 const emit = defineEmits<{
