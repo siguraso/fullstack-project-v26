@@ -35,6 +35,8 @@ public class ChecklistTemplate {
 
     private String name;
 
+    private boolean active = true;
+
     @Enumerated(EnumType.STRING)
     private ChecklistFrequency frequency;
 
