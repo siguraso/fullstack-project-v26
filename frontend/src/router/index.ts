@@ -69,11 +69,6 @@ const router = createRouter({
           component: InspectionsView,
         },
         {
-          path: '/user',
-          name: 'user',
-          component: UserPage,
-        },
-        {
           path: '/settings',
           name: 'settings',
           component: SettingsView,
@@ -81,7 +76,7 @@ const router = createRouter({
         {
           path: '/checklist-builder',
           component: ChecklistBuilderView,
-        }
+        },
         {
           path: '/temperature-logs',
           name: 'temperature-logs',
