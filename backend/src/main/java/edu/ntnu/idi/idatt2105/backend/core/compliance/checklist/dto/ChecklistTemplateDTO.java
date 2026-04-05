@@ -11,6 +11,7 @@ public class ChecklistTemplateDTO {
     private String name;
     private String module;
     private String frequency;
+    private boolean active;
 
     private List<ChecklistItemTemplateDTO> items;
 }
