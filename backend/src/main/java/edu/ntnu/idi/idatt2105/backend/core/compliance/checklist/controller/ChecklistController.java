@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.controller;
 
 import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CompleteChecklistItemRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CreateChecklistTemplateRequest;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistInstanceMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.service.ChecklistService;
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class ChecklistController {
 
     private final ChecklistService service;
-    private final ChecklistInstanceMapper mapper;
 
     @PostMapping("/templates")
     public ResponseEntity<?> createTemplate(@RequestBody CreateChecklistTemplateRequest request) {
@@ -57,6 +56,18 @@ public class ChecklistController {
     @PatchMapping("/items/{id}")
     public ResponseEntity<?> complete(@PathVariable Long id, @RequestBody CompleteChecklistItemRequest request) {
         service.completeItem(id, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/templates/{id}")
+    public ResponseEntity<?> deleteTemplate(@PathVariable Long id) {
+        service.deleteTemplate(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/templates/{id}/toggle")
+    public ResponseEntity<?> toggle(@PathVariable Long id) {
+        service.toggleTemplate(id);
         return ResponseEntity.ok().build();
     }
 }
