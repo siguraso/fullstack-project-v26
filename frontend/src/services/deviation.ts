@@ -2,7 +2,8 @@ import type { Deviation } from '@/stores/deviation'
 import { unwrap, parseJsonSafely } from './util/util'
 import type { ApiEnvelope } from './util/util'
 
-const API = 'http://localhost:8080/api/deviations'
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+const API = `${API_BASE_URL}/deviations`
 const DEFAULT_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID ?? 1)
 
 type DeviationModule = Deviation['module']

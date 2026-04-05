@@ -2,10 +2,10 @@ package edu.ntnu.idi.idatt2105.backend.core.tenant.service;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantUpdateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +62,20 @@ public class TenantService {
 
 
     @Transactional(readOnly = true)
+    public TenantDTO getCurrentTenant() {
+        Long currentOrgId = TenantContext.getCurrentOrg();
+
+        Tenant tenant = tenantRepository.findById(currentOrgId)
+                .orElseThrow(() -> {
+                    log.warn("Tenant not found with ID: {}", currentOrgId);
+                    return new ResourceNotFoundException("Tenant not found with ID: " + currentOrgId);
+                });
+
+        return tenantMapper.toDTO(tenant);
+    }
+
+
+    @Transactional(readOnly = true)
     public List<TenantDTO> getAllTenants() {
         log.debug("Fetching all tenants");
 
@@ -70,7 +84,7 @@ public class TenantService {
 
         return tenants.stream()
                 .map(tenantMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
@@ -83,7 +97,7 @@ public class TenantService {
 
         return tenants.stream()
                 .map(tenantMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
@@ -111,6 +125,11 @@ public class TenantService {
         log.info("Tenant with ID {} updated successfully", id);
 
         return tenantMapper.toDTO(updatedTenant);
+    }
+
+
+    public TenantDTO updateCurrentTenant(TenantUpdateRequest request) {
+        return updateTenant(TenantContext.getCurrentOrg(), request);
     }
 
     public void deleteTenant(Long id) {

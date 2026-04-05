@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useDeviationStore } from '@/stores/deviation'
+import { computed, watchEffect } from 'vue'
+import { useDeviationStore, type Deviation } from '@/stores/deviation'
 
 const store = useDeviationStore()
+
+const props = defineProps<{
+  lockedCategory?: Deviation['category']
+  lockedModule?: Deviation['module']
+  title?: string
+}>()
 
 const levels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
 
@@ -14,17 +20,31 @@ const categoryLabels: Record<string, string> = {
   OTHER: 'Other',
 }
 
-const selectedLabel = computed(() => categoryLabels[store.form.category] ?? 'General')
+watchEffect(() => {
+  if (props.lockedCategory) {
+    store.form.category = props.lockedCategory
+  }
+
+  if (props.lockedModule) {
+    store.form.module = props.lockedModule
+  }
+})
+
+const selectedLabel = computed(() => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General')
+const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Deviation`)
+const lockedModuleLabel = computed(() =>
+  props.lockedModule === 'IK_ALCOHOL' ? 'IK-ALCOHOL' : 'IK-FOOD',
+)
 </script>
 
 <template>
   <div class="card">
     <div class="card-head">
       <div class="title-wrap">
-        <h3>Report {{ selectedLabel }} Deviation</h3>
+        <h3>{{ heading }}</h3>
       </div>
 
-      <div class="module-toggle" role="group" aria-label="Compliance module">
+      <div v-if="!lockedModule" class="module-toggle" role="group" aria-label="Compliance module">
         <button
             type="button"
             :class="['module-option', { active: store.form.module === 'IK_FOOD' }]"
@@ -40,6 +60,8 @@ const selectedLabel = computed(() => categoryLabels[store.form.category] ?? 'Gen
           IK-ALCOHOL
         </button>
       </div>
+
+      <div v-else class="module-lock">{{ lockedModuleLabel }}</div>
     </div>
 
     <div class="form-grid">
@@ -63,7 +85,7 @@ const selectedLabel = computed(() => categoryLabels[store.form.category] ?? 'Gen
         </div>
       </label>
 
-      <label>
+      <label v-if="!lockedCategory">
         <span>Category</span>
         <select v-model="store.form.category">
           <option value="TEMPERATURE">Temperature</option>
@@ -152,6 +174,20 @@ h3 {
 .module-option.active {
   background: var(--neutral);
   color: var(--bg);
+}
+
+.module-lock {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .form-grid {

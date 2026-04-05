@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { computed, nextTick, onMounted, ref } from 'vue'
@@ -166,7 +165,7 @@ function closeCreateZoneOverlay() {
 <template>
   <div class="temperature-log-content">
     <header>
-      <ViewHeader title="Temperature Logs" />
+      <h1>Temperature Logs</h1>
     </header>
 
     <p v-if="isLoadingZones" class="status-message">Loading temperature zones...</p>

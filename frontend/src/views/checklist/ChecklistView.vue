@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import ViewHeader from '@/components/ui/ViewHeader.vue'
 import ChecklistTaskItem from './components/ChecklistTaskItem.vue'
 import { getTodayChecklist, updateChecklistItem } from '@/services/checklist'
 
@@ -61,7 +60,7 @@ const percentage = computed(() => {
 
 <template>
   <div>
-    <ViewHeader title="Checklists" :options="[]" :routes="[]" />
+    <h1>Checklists</h1>
 
     <!-- HEADER -->
     <section class="top">
