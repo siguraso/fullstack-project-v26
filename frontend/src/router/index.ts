@@ -29,6 +29,7 @@ const router = createRouter({
     },
     {
       path: '/',
+      path: '/',
       component: MainLayout,
       meta: { requiresAuth: true },
       children: [
@@ -41,6 +42,11 @@ const router = createRouter({
           path: '/deviation',
           name: 'deviation',
           component: DeviationView,
+        },
+        {
+          path: '/temperature',
+          name: 'temperature',
+          component: TemperatureView,
         },
         {
           path: '/temperature',
@@ -96,6 +102,7 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && authenticated) {
     return { name: 'dashboard' }
   }
+
 
   return true
 })

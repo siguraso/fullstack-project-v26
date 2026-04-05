@@ -65,6 +65,10 @@ CREATE TABLE IF NOT EXISTS temperature_zones (
     lower_limit_celsius DOUBLE NOT NULL,
     upper_limit_celsius DOUBLE NOT NULL,
     active BOOLEAN DEFAULT TRUE,
+    name VARCHAR(120) NOT NULL,
+    lower_limit_celsius DOUBLE NOT NULL,
+    upper_limit_celsius DOUBLE NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE (tenant_id, name),
@@ -111,5 +115,6 @@ CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
     service_refused BOOLEAN,
     estimated_age INT,
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
+    FOREIGN KEY (recorded_by) REFERENCES users(id)
     FOREIGN KEY (recorded_by) REFERENCES users(id)
 );
