@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import {
+  deleteTemplate,
+  generateChecklist,
+  getTemplates,
+  toggleTemplate,
+} from '@/services/checklist'
+import { useTenant } from '@/services/useTenant'
 import { ref, onMounted } from 'vue'
 
 interface Template {
@@ -9,8 +16,11 @@ interface Template {
   description?: string
 }
 
+const tenantId = useTenant().tenantId
+
 const emit = defineEmits<{
   edit: [template: any]
+  deleted: []
 }>()
 
 const props = defineProps<{
@@ -22,6 +32,23 @@ function getBadgeColor(freq: string) {
   if (freq === 'WEEKLY') return 'gray'
   if (freq === 'MONTHLY') return 'red'
   return 'gray'
+}
+
+async function confirmDelete(id: number) {
+  if (confirm('Are you sure?')) {
+    await deleteTemplate(id)
+    emit('deleted')
+  }
+}
+
+async function useTemplate(id: number) {
+  await generateChecklist(id)
+  alert('Checklist created!')
+}
+
+async function toggle(id: number) {
+  await toggleTemplate(id)
+  emit('deleted')
 }
 </script>
 
@@ -38,7 +65,12 @@ function getBadgeColor(freq: string) {
     </div>
 
     <div class="cards">
-      <div v-for="template in props.templates" :key="template.id" class="card">
+      <div
+        v-for="template in props.templates"
+        :key="template.id"
+        class="card"
+        :class="{ inactive: !template.active }"
+      >
         <!-- icon -->
         <div class="icon" :class="getBadgeColor(template.frequency)" />
 
@@ -58,8 +90,15 @@ function getBadgeColor(freq: string) {
 
         <!-- actions -->
         <div class="actions">
-          <button class="primary">Use Template</button>
+          <button class="primary" @click="useTemplate(template.id)">Use Template</button>
+          <button
+            :class="template.active ? 'active-btn' : 'inactive-btn'"
+            @click="toggle(template.id)"
+          >
+            {{ template.active ? 'Deactivate' : 'Activate' }}
+          </button>
           <button class="secondary" @click="emit('edit', template)">Edit</button>
+          <button class="danger" @click="confirmDelete(template.id)">Delete</button>
         </div>
       </div>
     </div>
@@ -83,6 +122,7 @@ function getBadgeColor(freq: string) {
   background: transparent;
   margin-left: 10px;
   cursor: pointer;
+  color: black;
 }
 
 .filters .active {
@@ -106,6 +146,11 @@ function getBadgeColor(freq: string) {
   border: 1px solid var(--stroke);
   position: relative;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.inactive {
+  opacity: 0.5;
+  filter: grayscale(0.6);
 }
 
 .icon {

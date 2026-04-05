@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import TemplateLibrary from './components/TemplateLibrary.vue'
 import ViewHeader from '@/components/ui/ViewHeader.vue'
 import {
   createLibraryItem,
   createTemplate,
+  deleteLibraryItem,
   getLibraryItems,
   getTemplates,
+  isLibraryItemInUse,
+  updateLibraryItem,
   updateTemplate,
 } from '@/services/checklist'
 import draggable from 'vuedraggable'
+import { useTenant } from '@/services/useTenant'
 
 interface Item {
   id: number
   title: string
   description: string
+  inUse: boolean
 }
 
 const newItem = ref({
@@ -26,27 +31,39 @@ const newItem = ref({
 
 const checklistName = ref('')
 
+const tenantId = useTenant().tenantId
+
 const templates = ref<any[]>([])
 
 const selectedTemplate = ref<any | null>(null)
 
 const showModal = ref(false)
 
+const search = ref('')
+
 const frequency = ref<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY')
 
+const editingItem = ref<Item | null>(null)
+
+const selectedCategory = ref('ALL')
+
+const filteredItems = computed(() => {
+  return libraryItems.value.filter((item) =>
+    item.title.toLowerCase().includes(search.value.toLowerCase()),
+  )
+})
+
 async function reloadTemplates() {
-  const data = await getTemplates(1)
+  const data = await getTemplates(tenantId)
   console.log('TEMPLATES:', data)
   templates.value = data
 }
 
 onMounted(async () => {
-  reloadTemplates()
-
-  const templatesData = await getTemplates(1)
+  const templatesData = await getTemplates(tenantId)
   templates.value = templatesData
 
-  const libraryData = await getLibraryItems(1)
+  const libraryData = await getLibraryItems(tenantId)
   libraryItems.value = libraryData
 })
 
@@ -62,6 +79,19 @@ function removeItem(id: number) {
   activeItems.value = activeItems.value.filter((i) => i.id !== id)
 }
 
+function editItem(item: Item) {
+  editingItem.value = item
+
+  newItem.value = {
+    title: item.title,
+    description: item.description,
+    priority: 'LOW',
+    dueDate: '',
+  }
+
+  showModal.value = true
+}
+
 function loadTemplate(template: any) {
   selectedTemplate.value = template
 
@@ -70,14 +100,14 @@ function loadTemplate(template: any) {
 
   activeItems.value = template.items.map((item: any) => ({
     id: item.id,
-    title: item.description,
+    title: item.title,
     description: item.description,
   }))
 }
 
 async function saveChecklist() {
   const payload = {
-    tenantId: 1, // TODO: Add tenant Id
+    tenantId: tenantId,
     name: checklistName.value,
     module: 'IK_FOOD',
     frequency: frequency.value,
@@ -100,6 +130,19 @@ async function saveChecklist() {
   document.getElementById('builder')?.scrollIntoView({ behavior: 'smooth' })
 }
 
+async function loadLibrary() {
+  const data = await getLibraryItems(tenantId)
+
+  const enriched = await Promise.all(
+    data.map(async (item: any) => ({
+      ...item,
+      inUse: await isLibraryItemInUse(item.id),
+    })),
+  )
+
+  libraryItems.value = enriched
+}
+
 async function createCustomItem() {
   const payload = {
     title: newItem.value.title,
@@ -108,11 +151,23 @@ async function createCustomItem() {
     priority: newItem.value.priority,
   }
 
-  const saved = await createLibraryItem(1, payload) // TODO: Add tenantId
+  if (editingItem.value) {
+    const updated = await updateLibraryItem(editingItem.value.id, payload)
 
-  libraryItems.value.push(saved)
+    const index = libraryItems.value.findIndex((i) => i.id === updated.id)
+    if (index !== -1) {
+      libraryItems.value[index] = updated
+    }
 
-  activeItems.value.push(saved)
+    editingItem.value = null
+  } else {
+    const saved = await createLibraryItem(tenantId, payload)
+
+    libraryItems.value.push(saved)
+    activeItems.value.push(saved)
+
+    loadLibrary()
+  }
 
   showModal.value = false
 }
@@ -135,7 +190,7 @@ async function createCustomItem() {
       <button class="primary-btn">+ Create New Checklist</button>
     </section>
 
-    <TemplateLibrary :templates="templates" @edit="loadTemplate" />
+    <TemplateLibrary :templates="templates" @edit="loadTemplate" @deleted="reloadTemplates" />
 
     <!-- MAIN GRID -->
     <div class="grid">
@@ -189,8 +244,6 @@ async function createCustomItem() {
               </div>
             </template>
           </draggable>
-
-          <button class="add-custom">+ Add Custom Item</button>
         </div>
       </div>
 
@@ -200,16 +253,21 @@ async function createCustomItem() {
         <button class="add-custom" @click="showModal = true">+ Add Custom Item</button>
         <p class="subtext">Quickly add pre-approved compliance items to your checklist.</p>
 
-        <input placeholder="Search standard items..." class="search" />
+        <input v-model="search" placeholder="Search standard items..." class="search" />
 
         <div class="library-list">
-          <div v-for="item in libraryItems" :key="item.id" class="library-row">
+          <div v-for="item in filteredItems" :key="item.id" class="library-row">
             <div class="library-content">
               <h3>{{ item.title }}</h3>
               <p>{{ item.description }}</p>
             </div>
 
-            <button class="add" @click="addItem(item)">+</button>
+            <div class="add-remove">
+              <span v-if="item.inUse" class="tag">In use</span>
+              <button class="edit-item" :disabled="item.inUse" @click="editItem(item)">✏️</button>
+              <button class="remove-item" @click="deleteLibraryItem(item.id)">x</button>
+              <button class="add" @click="addItem(item)">+</button>
+            </div>
           </div>
         </div>
 
@@ -230,7 +288,9 @@ async function createCustomItem() {
       <div class="modal">
         <!-- HEADER -->
         <div class="modal-header">
-          <h2>Add New Checklist Item</h2>
+          <h2>
+            {{ editingItem ? 'Edit Checklist Item' : 'Add New Checklist Item' }}
+          </h2>
           <button class="close-btn" @click="showModal = false">✕</button>
         </div>
 
@@ -470,12 +530,16 @@ async function createCustomItem() {
   color: var(--text-secondary);
 }
 
+.select:focus {
+  outline: none;
+}
+
 .search {
   width: 100%;
   padding: 10px;
   border-radius: 10px;
   margin: 12px 0;
-  border: 1px solid var(--stroke);
+  border-bottom: 2px solid var(--stroke);
 }
 
 .search:focus {
@@ -501,6 +565,19 @@ async function createCustomItem() {
   margin: 4px 0 0;
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.remove-item {
+  color: black;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.remove-item:hover {
+  background-color: #e2e8f0;
 }
 
 .add {
@@ -557,7 +634,6 @@ async function createCustomItem() {
   z-index: 1000;
 }
 
-/* MODAL */
 .modal {
   width: 640px;
   background: #ffffff;

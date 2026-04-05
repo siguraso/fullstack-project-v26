@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import ViewHeader from '@/components/ui/ViewHeader.vue'
 import ChecklistTaskItem from './components/ChecklistTaskItem.vue'
 import { getTodayChecklist, updateChecklistItem } from '@/services/checklist'
+import { useTenant } from '@/services/useTenant'
 
 interface Task {
   id: number
@@ -14,15 +15,13 @@ interface Task {
 }
 
 const tasks = ref<any[]>([]) // DTO fra backend
-const checklistId = ref<number | null>(null)
+
+const tenantId = useTenant().tenantId
 
 onMounted(async () => {
-  const data = await getTodayChecklist(1) // TODO: Get tenant in question
+  const data = await getTodayChecklist(tenantId)
 
-  if (data.length > 0) {
-    checklistId.value = data[0].id
-    tasks.value = data[0].items
-  }
+  tasks.value = data.flatMap((c: { items: any }) => c.items)
 })
 
 async function handleToggle(id: number, completed: boolean) {
@@ -107,19 +106,19 @@ const percentage = computed(() => {
     </section>
 
     <!-- TASK LIST -->
-    <div class="task-list">
+    <transition-group name="list" tag="div" class="task-list">
       <ChecklistTaskItem
         v-for="task in sortedTasks"
         :key="task.id"
         :task="{
           id: task.id,
-          title: task.description,
-          description: task.comment ?? '',
+          title: task.title,
+          description: task.description ?? '',
           completed: task.completed,
         }"
         @toggle="handleToggle"
       />
-    </div>
+    </transition-group>
   </div>
 </template>
 
@@ -268,5 +267,21 @@ const percentage = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.4s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.list-leave-active {
+  position: absolute;
 }
 </style>
