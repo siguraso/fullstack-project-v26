@@ -8,7 +8,8 @@ import CreateTemperatureZone from './components/CreateTemperatureZone.vue'
 import TemperatureZoneOverview from './components/TemperatureZoneOverview.vue'
 import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 import EditTemperatureZone from './components/EditTemperatureZone.vue'
-import { fetchTemperatureLogs } from '@/services/temperatureLog'
+import DeleteTemperatureLogDialog from './components/DeleteTemperatureLogDialog.vue'
+import { deleteTemperatureLog, fetchTemperatureLogs } from '@/services/temperatureLog'
 import {
   deleteTemperatureZone,
   editTemperatureZone,
@@ -59,11 +60,40 @@ onMounted(() => {
 
 const isEditZoneOverlayOpen = ref(false)
 const isCreateZoneOverlayOpen = ref(false)
+const isDeleteLogOverlayOpen = ref(false)
 const selectedZone = ref<TemperatureZone | null>(null)
+const selectedLog = ref<TemperatureLog | null>(null)
 const overlayZone = computed(() => (isEditZoneOverlayOpen.value ? selectedZone.value : null))
+const overlayLog = computed(() => (isDeleteLogOverlayOpen.value ? selectedLog.value : null))
 
 function handleTemperatureLogCreated(log: TemperatureLog) {
   logs.value = [log, ...logs.value]
+}
+
+function requestTemperatureLogDelete(logId: number) {
+  const targetLog = logs.value.find((log) => log.id === logId)
+
+  if (!targetLog) {
+    return
+  }
+
+  selectedLog.value = targetLog
+  isDeleteLogOverlayOpen.value = true
+}
+
+function closeDeleteLogOverlay() {
+  isDeleteLogOverlayOpen.value = false
+  selectedLog.value = null
+}
+
+async function handleTemperatureLogDeleted(logId: number) {
+  try {
+    await deleteTemperatureLog(logId)
+    logs.value = logs.value.filter((log) => log.id !== logId)
+    closeDeleteLogOverlay()
+  } catch (error) {
+    console.error('Failed to delete temperature log', error)
+  }
 }
 
 function openEditZoneOverlay(zone: TemperatureZone) {
@@ -158,7 +188,20 @@ function closeCreateZoneOverlay() {
       />
     </div>
 
-    <TemperatureLogHistory :temperatureZones="zones" :temperatureLogs="logs" />
+    <TemperatureLogHistory
+      :temperatureZones="zones"
+      :temperatureLogs="logs"
+      @delete-log="requestTemperatureLogDelete"
+    />
+
+    <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeDeleteLogOverlay">
+      <DeleteTemperatureLogDialog
+        :log="overlayLog"
+        :zones="zones"
+        @close="closeDeleteLogOverlay"
+        @confirm="handleTemperatureLogDeleted"
+      />
+    </div>
 
     <div v-if="overlayZone" class="overlay-backdrop" @click.self="closeEditZoneOverlay">
       <EditTemperatureZone

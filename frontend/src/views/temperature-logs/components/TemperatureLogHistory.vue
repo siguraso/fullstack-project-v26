@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
+import { getAuthSession } from '@/services/auth'
 import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { History, Check, TriangleAlert, ChevronLeft, Filter } from '@lucide/vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   temperatureLogs: TemperatureLog[]
   temperatureZones: TemperatureZone[]
+}>()
+
+const emit = defineEmits<{
+  (event: 'delete-log', logId: number): void
 }>()
 
 const pageSize = 4
@@ -15,6 +20,14 @@ const pageSize = 4
 const currentPage = ref(1)
 const filteredtemperatureZoneId = ref<number | null>(null)
 const filteredTemperatureZone = ref<string>('')
+const role = ref<string | null>(null)
+
+onMounted(() => {
+  const session = getAuthSession()
+  role.value = session?.role ?? null
+})
+
+const canDeleteLogs = computed(() => role.value === 'ADMIN' || role.value === 'MANAGER')
 
 const filteredTemperatureLogs = computed(() => {
   if (!filteredtemperatureZoneId.value) {
@@ -81,13 +94,17 @@ function formatTimestamp(timestamp: string) {
     return timestamp
   }
 
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat('en-GB', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
   }).format(parsedDate)
+}
+
+function deleteLog(logId: number) {
+  emit('delete-log', logId)
 }
 </script>
 
@@ -118,6 +135,7 @@ function formatTimestamp(timestamp: string) {
           <th>Temperature (°C)</th>
           <th>Status</th>
           <th>Logged By</th>
+          <th v-if="canDeleteLogs"></th>
         </tr>
       </thead>
       <tbody class="log-table-body">
@@ -136,11 +154,16 @@ function formatTimestamp(timestamp: string) {
           </td>
           <td>{{ log.temperatureCelsius }} °C</td>
           <td class="status-column">
-            <Check v-if="!isRowAbnormal(log)" :size="20" />
-            <TriangleAlert v-else :size="20" />
-            <span>{{ isRowAbnormal(log) ? 'Abnormal' : 'Optimal' }}</span>
+            <div class="status-content">
+              <Check v-if="!isRowAbnormal(log)" :size="20" />
+              <TriangleAlert v-else :size="20" />
+              <span>{{ isRowAbnormal(log) ? 'Abnormal' : 'Optimal' }}</span>
+            </div>
           </td>
           <td>{{ log.recordedByName ?? 'Unknown user' }}</td>
+          <td v-if="canDeleteLogs">
+            <button class="delete-btn" @click="deleteLog(log.id)">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -174,7 +197,7 @@ function formatTimestamp(timestamp: string) {
 }
 
 .log-table-header th:nth-child(1) {
-  width: 25%;
+  width: 22%;
 }
 
 .log-table-header th:nth-child(2) {
@@ -182,15 +205,19 @@ function formatTimestamp(timestamp: string) {
 }
 
 .log-table-header th:nth-child(3) {
-  width: 15%;
+  width: 14%;
 }
 
 .log-table-header th:nth-child(4) {
-  width: 15%;
+  width: 14%;
 }
 
 .log-table-header th:nth-child(5) {
-  width: 25%;
+  width: 20%;
+}
+
+.log-table-header th:nth-child(6) {
+  width: 10%;
 }
 
 .paging {
@@ -248,16 +275,6 @@ function formatTimestamp(timestamp: string) {
     border-color 0.15s ease;
 }
 
-/* .abnormal-row td:first-child {
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-}
-
-.abnormal-row td:last-child {
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-} */
-
 .opotimal-row td {
   color: var(--neutral);
   transition:
@@ -276,8 +293,18 @@ function formatTimestamp(timestamp: string) {
 }
 
 .status-column {
+  white-space: nowrap;
+}
+
+.status-content {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.delete-btn {
+  width: 100%;
+  background-color: var(--cta-red-btn);
+  color: white;
 }
 </style>
