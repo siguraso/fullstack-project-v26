@@ -8,6 +8,12 @@ export async function getTodayChecklist(tenantId: number) {
   return res.json()
 }
 
+export async function generateChecklist(templateId: number) {
+  await fetch(`/api/checklists/templates/${templateId}/generate`, {
+    method: 'POST'
+  })
+}
+
 export async function updateChecklistItem(id: number, completed: boolean) {
   const res = await fetch(`${API_URL}/items/${id}`, {
     method: 'PATCH',
@@ -60,4 +66,41 @@ export async function createLibraryItem(tenantId: number, payload: any) {
   })
 
   return res.json()
+}
+
+export async function deleteLibraryItem(id: number) {
+  await fetch(`/api/checklist-library/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+export async function updateLibraryItem(id: number, payload: any) {
+  const res = await fetch(`/api/checklist-library/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) throw new Error('Update failed')
+
+  return res.json()
+}
+
+export async function deleteTemplate(id: number) {
+  const res = await fetch(`/api/checklists/templates/${id}`, {
+    method: "DELETE"
+  })
+
+  if (!res.ok) throw new Error("Delete failed")
+}
+
+export async function isLibraryItemInUse(id: number) {
+  const res = await fetch(`/api/checklist-library/${id}/in-use`)
+  return res.json()
+}
+
+export async function toggleTemplate(id: number) {
+  await fetch(`/api/checklists/templates/${id}/toggle`, {
+    method: 'PATCH'
+  })
 }
