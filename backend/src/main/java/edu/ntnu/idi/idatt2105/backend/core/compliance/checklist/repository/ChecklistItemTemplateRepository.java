@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistItemTemplate;
 
 public interface ChecklistItemTemplateRepository extends JpaRepository<ChecklistItemTemplate, Long> {
-    ChecklistItemTemplate findByChecklistTemplate_Id(Long id);
+    List<ChecklistItemTemplate> findByChecklistTemplate_Id(Long id);
+
+    boolean existsByLibraryItem_Id(Long libraryItemId);
 }
