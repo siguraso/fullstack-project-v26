@@ -57,4 +57,3 @@ public class AlcoholLogController {
         return ResponseEntity.ok(ApiResponse.ok("Alcohol compliance log deleted", null));
     }
 }
-

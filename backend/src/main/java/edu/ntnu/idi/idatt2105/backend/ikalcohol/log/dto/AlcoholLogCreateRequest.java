@@ -21,4 +21,3 @@ public class AlcoholLogCreateRequest extends BaseLogCreateRequest {
     @Size(max = 2000)
     private String note;
 }
-

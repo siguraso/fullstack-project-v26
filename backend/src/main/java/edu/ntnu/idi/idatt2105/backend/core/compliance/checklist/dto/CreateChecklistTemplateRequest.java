@@ -14,5 +14,5 @@ public class CreateChecklistTemplateRequest {
     private ComplianceModule module;
     private ChecklistFrequency frequency;
 
-    private List<String> items; // descriptions
+    private List<Long> itemIds;
 }

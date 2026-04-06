@@ -37,7 +37,11 @@ const complianceGroups: NavGroup[] = [
     key: 'food',
     label: 'IK-food',
     items: [
-      { label: 'Checklists', icon: ClipboardCheck, to: { path: '/checklists', query: { ik: 'food' } } },
+      {
+        label: 'Checklists',
+        icon: ClipboardCheck,
+        to: { path: '/checklists', query: { ik: 'food' } },
+      },
       { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'food' } } },
       { label: 'Temperature Logs', icon: Thermometer, to: '/temperature' },
     ],
@@ -46,7 +50,11 @@ const complianceGroups: NavGroup[] = [
     key: 'alcohol',
     label: 'IK-alcohol',
     items: [
-      { label: 'Checklists', icon: ClipboardCheck, to: { path: '/checklists', query: { ik: 'alcohol' } } },
+      {
+        label: 'Checklists',
+        icon: ClipboardCheck,
+        to: { path: '/checklists', query: { ik: 'alcohol' } },
+      },
       { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'alcohol' } } },
     ],
   },
@@ -87,7 +95,6 @@ async function logout() {
 
 <template>
   <aside class="sidebar">
-
     <nav class="nav-shell" aria-label="Sidebar">
       <div class="nav-main">
         <section class="nav-section">

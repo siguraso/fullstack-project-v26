@@ -20,4 +20,6 @@ public interface ChecklistInstanceRepository extends JpaRepository<ChecklistInst
                 WHERE c.id = :id
             """)
     Optional<ChecklistInstance> findByIdWithItems(Long id);
+
+    void deleteByTemplate_id(Long templateId);
 }

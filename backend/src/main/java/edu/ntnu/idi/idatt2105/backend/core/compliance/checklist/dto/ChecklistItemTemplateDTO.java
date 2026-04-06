@@ -3,11 +3,10 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto;
 import lombok.Data;
 
 @Data
-public class ChecklistItemDTO {
+public class ChecklistItemTemplateDTO {
 
     private Long id;
     private String title;
     private String description;
-    private boolean completed;
-    private String comment;
+    private int sortOrder;
 }
