@@ -113,7 +113,3 @@ public class TemperatureLogService extends BaseComplianceLogService<TemperatureC
         return user;
     }
 }
-
-
-
-

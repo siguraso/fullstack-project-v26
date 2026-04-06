@@ -100,4 +100,3 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
                 || request.getLogType() == AlcoholLogType.INCIDENT;
     }
 }
-

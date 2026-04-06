@@ -14,4 +14,3 @@ public class AlcoholLogDTO extends BaseComplianceLogDTO {
     private Boolean serviceRefused;
     private Integer estimatedAge;
 }
-

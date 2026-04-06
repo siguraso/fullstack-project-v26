@@ -11,6 +11,8 @@ import InspectionsView from '@/views/inspections/InspectionsView.vue'
 import ChecklistView from '@/views/checklist/ChecklistView.vue'
 import MainLayout from '@/views/MainLayout.vue'
 import SettingsView from '@/views/settings/SettingsView.vue'
+import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
+import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,6 +48,11 @@ const router = createRouter({
           component: TemperatureView,
         },
         {
+          path: '/temperature',
+          name: 'temperature',
+          component: TemperatureView,
+        },
+        {
           path: '/checklists',
           name: 'checklist',
           component: ChecklistView,
@@ -70,7 +77,16 @@ const router = createRouter({
           name: 'settings',
           component: SettingsView,
         },
-      ]
+        {
+          path: '/checklist-builder',
+          component: ChecklistBuilderView,
+        },
+        {
+          path: '/temperature-logs',
+          name: 'temperature-logs',
+          component: TemperatureLogView,
+        },
+      ],
     },
   ],
 })
@@ -85,6 +101,7 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && authenticated) {
     return { name: 'dashboard' }
   }
+
 
   return true
 })

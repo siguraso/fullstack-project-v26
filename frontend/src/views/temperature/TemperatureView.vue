@@ -40,7 +40,11 @@ onMounted(() => {
 
     <p v-if="store.error" class="error-banner">{{ store.error }}</p>
 
-    <DeviationForm title="Report Temperature Deviation" locked-category="TEMPERATURE" locked-module="IK_FOOD" />
+    <DeviationForm
+      title="Report Temperature Deviation"
+      locked-category="TEMPERATURE"
+      locked-module="IK_FOOD"
+    />
 
     <DeviationTable title="Temperature Deviation Log" category="TEMPERATURE" />
   </div>

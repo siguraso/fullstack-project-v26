@@ -33,7 +33,8 @@ public class TemperatureLogController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public ResponseEntity<ApiResponse<TemperatureLogDTO>> createLog(@Valid @RequestBody TemperatureLogCreateRequest request) {
+    public ResponseEntity<ApiResponse<TemperatureLogDTO>> createLog(
+            @Valid @RequestBody TemperatureLogCreateRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(service.createLog(request)));
     }
 
@@ -57,5 +58,3 @@ public class TemperatureLogController {
         return ResponseEntity.ok(ApiResponse.ok("Temperature log deleted", null));
     }
 }
-
-

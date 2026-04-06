@@ -35,4 +35,3 @@ public class TemperatureZoneController {
         return ResponseEntity.ok(ApiResponse.ok(temperatureZoneService.getForCurrentTenant()));
     }
 }
-

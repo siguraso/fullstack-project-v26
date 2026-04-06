@@ -22,6 +22,3 @@ public class TemperatureComplianceLog extends BaseComplianceLog {
     @Column(name = "temperature_celsius", nullable = false)
     private Double temperatureCelsius;
 }
-
-
-

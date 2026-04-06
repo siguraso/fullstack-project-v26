@@ -99,7 +99,7 @@ const summaryCards = computed(() => [
   },
   {
     title: 'Active staff',
-    value: String(users.value.filter(user => user.active).length),
+    value: String(users.value.filter((user) => user.active).length),
     description: 'Accounts with current operational access.',
     icon: BadgeCheck,
     iconBackgroundColor: '#e7f5ec',
@@ -107,7 +107,7 @@ const summaryCards = computed(() => [
   },
   {
     title: 'Roles in use',
-    value: String(new Set(users.value.map(user => user.role)).size),
+    value: String(new Set(users.value.map((user) => user.role)).size),
     description: 'Distinct permission levels assigned across the organisation.',
     icon: ShieldCheck,
     iconBackgroundColor: '#ece9fb',
@@ -135,7 +135,10 @@ const roleBreakdown = computed(() =>
 )
 
 const roleOptions = computed(() =>
-  ['ALL', ...new Set([...DEFAULT_ROLE_OPTIONS, ...users.value.map(user => user.role), userForm.role])]
+  [
+    'ALL',
+    ...new Set([...DEFAULT_ROLE_OPTIONS, ...users.value.map((user) => user.role), userForm.role]),
+  ]
     .filter(Boolean)
     .sort((left, right) => {
       if (left === 'ALL') {
@@ -171,11 +174,12 @@ const filteredUsers = computed(() => {
 })
 
 const tenantIsDirty = computed(
-  () => initialTenantPayload.value.length > 0 && initialTenantPayload.value !== serializeTenantForm(),
+  () =>
+    initialTenantPayload.value.length > 0 && initialTenantPayload.value !== serializeTenantForm(),
 )
 
-const selectedUser = computed(() =>
-  users.value.find(user => user.id === selectedUserId.value) ?? null,
+const selectedUser = computed(
+  () => users.value.find((user) => user.id === selectedUserId.value) ?? null,
 )
 
 function toErrorMessage(error: unknown, fallback: string) {
@@ -252,14 +256,14 @@ function applyUserToForm(payload: User) {
 }
 
 function replaceUserInList(nextUser: User) {
-  const index = users.value.findIndex(user => user.id === nextUser.id)
+  const index = users.value.findIndex((user) => user.id === nextUser.id)
 
   if (index === -1) {
     users.value = [nextUser, ...users.value]
     return
   }
 
-  users.value = users.value.map(user => (user.id === nextUser.id ? nextUser : user))
+  users.value = users.value.map((user) => (user.id === nextUser.id ? nextUser : user))
 }
 
 async function loadTenant() {
@@ -472,17 +476,14 @@ onMounted(() => {
         class="main-panel"
       >
         <div class="panel-intro">
-          
           <span
             class="status-pill"
-            :class="tenant ? (tenant.active ? 'status-active' : 'status-inactive') : 'status-neutral'"
+            :class="
+              tenant ? (tenant.active ? 'status-active' : 'status-inactive') : 'status-neutral'
+            "
           >
             {{
-              tenant
-                ? tenant.active
-                  ? 'Active tenant'
-                  : 'Inactive tenant'
-                : 'Tenant unavailable'
+              tenant ? (tenant.active ? 'Active tenant' : 'Inactive tenant') : 'Tenant unavailable'
             }}
           </span>
         </div>
@@ -518,11 +519,7 @@ onMounted(() => {
 
           <label class="field">
             <span>Contact email</span>
-            <input
-              v-model="tenantForm.contactEmail"
-              type="email"
-              placeholder="admin@example.com"
-            />
+            <input v-model="tenantForm.contactEmail" type="email" placeholder="admin@example.com" />
           </label>
 
           <label class="field">
@@ -629,7 +626,10 @@ onMounted(() => {
 
               <div class="table-cell">
                 <span class="mobile-label">Status</span>
-                <span class="status-pill" :class="user.active ? 'status-active' : 'status-inactive'">
+                <span
+                  class="status-pill"
+                  :class="user.active ? 'status-active' : 'status-inactive'"
+                >
                   {{ user.active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
@@ -750,7 +750,11 @@ onMounted(() => {
             <label class="field">
               <span>Role</span>
               <select v-model="userForm.role" :disabled="isUserEditorLoading">
-                <option v-for="role in roleOptions.filter(option => option !== 'ALL')" :key="role" :value="role">
+                <option
+                  v-for="role in roleOptions.filter((option) => option !== 'ALL')"
+                  :key="role"
+                  :value="role"
+                >
                   {{ role }}
                 </option>
               </select>
@@ -983,7 +987,10 @@ onMounted(() => {
 .table-head,
 .table-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(120px, 0.75fr) minmax(0, 1fr) minmax(110px, 0.65fr) minmax(160px, 0.85fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(120px, 0.75fr) minmax(0, 1fr) minmax(
+      110px,
+      0.65fr
+    ) minmax(160px, 0.85fr);
   gap: 14px;
   align-items: center;
 }

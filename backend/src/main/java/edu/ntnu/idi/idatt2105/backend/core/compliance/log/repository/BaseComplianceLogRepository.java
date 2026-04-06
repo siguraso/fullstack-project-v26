@@ -24,4 +24,3 @@ public interface BaseComplianceLogRepository<T extends BaseComplianceLog> extend
 
     long countByTenantIdAndStatus(Long tenantId, LogStatus status);
 }
-
