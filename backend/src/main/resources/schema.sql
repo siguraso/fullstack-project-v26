@@ -58,39 +58,6 @@ CREATE TABLE IF NOT EXISTS temperature_compliance_logs (
     FOREIGN KEY (temperature_zone_id) REFERENCES temperature_zones(id)
 );
 
-CREATE TABLE IF NOT EXISTS temperature_zones (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id BIGINT NOT NULL,
-    name VARCHAR(120) NOT NULL,
-    lower_limit_celsius DOUBLE NOT NULL,
-    upper_limit_celsius DOUBLE NOT NULL,
-    active BOOLEAN DEFAULT TRUE,
-    name VARCHAR(120) NOT NULL,
-    lower_limit_celsius DOUBLE NOT NULL,
-    upper_limit_celsius DOUBLE NOT NULL,
-    active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE (tenant_id, name),
-    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
-);
-
-CREATE TABLE IF NOT EXISTS temperature_compliance_logs (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id BIGINT NOT NULL,
-    recorded_by BIGINT NOT NULL,
-    module VARCHAR(20) NOT NULL DEFAULT 'IK_FOOD' CHECK (module = 'IK_FOOD'),
-    title VARCHAR(255) NOT NULL,
-    description VARCHAR(2000),
-    log_status VARCHAR(20),
-    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    temperature_zone_id BIGINT NOT NULL,
-    temperature_celsius DOUBLE NOT NULL,
-    FOREIGN KEY (tenant_id) REFERENCES tenants(id),
-    FOREIGN KEY (recorded_by) REFERENCES users(id),
-    FOREIGN KEY (temperature_zone_id) REFERENCES temperature_zones(id)
-);
-
 CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
@@ -104,17 +71,6 @@ CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
     id_checked BOOLEAN,
     service_refused BOOLEAN,
     estimated_age INT,
-    recorded_by BIGINT NOT NULL,
-    module VARCHAR(20) NOT NULL DEFAULT 'IK_ALCOHOL' CHECK (module = 'IK_ALCOHOL'),
-    title VARCHAR(255) NOT NULL,
-    description VARCHAR(2000),
-    log_status VARCHAR(20),
-    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    log_type VARCHAR(50) NOT NULL,
-    id_checked BOOLEAN,
-    service_refused BOOLEAN,
-    estimated_age INT,
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
-    FOREIGN KEY (recorded_by) REFERENCES users(id)
     FOREIGN KEY (recorded_by) REFERENCES users(id)
 );
