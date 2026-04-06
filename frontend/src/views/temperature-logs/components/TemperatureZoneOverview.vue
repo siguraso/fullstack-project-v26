@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
-import type { TemperatureZone } from '@/types/temperature-zone'
+import { getAuthSession } from '@/services/auth'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { Box, ChevronLeft } from '@lucide/vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   zones: TemperatureZone[]
@@ -15,6 +16,13 @@ const emit = defineEmits<{
 
 const pageSize = 4
 const currentPage = ref(1)
+
+const role = ref<string | null>(null)
+
+onMounted(() => {
+  const session = getAuthSession()
+  role.value = session?.role ?? null
+})
 
 const zonesSplit = computed(() =>
   Array.from({ length: Math.ceil(props.zones.length / pageSize) }, (_, index) =>
@@ -55,7 +63,7 @@ function openCreateOverlay() {
     :addToHeader="true"
   >
     <template #extra-header-content>
-      <button class="add-button" @click="openCreateOverlay">+</button>
+      <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">+</button>
     </template>
     <table class="log-table">
       <thead class="log-table-header">
@@ -63,15 +71,15 @@ function openCreateOverlay() {
           <th>Zone Name</th>
           <th>Lower limit</th>
           <th>Upper limit</th>
-          <th></th>
+          <th v-if="role == 'ADMIN'"></th>
         </tr>
       </thead>
       <tbody class="log-table-body">
         <tr v-for="zone in currentPageZones" :key="zone.id">
           <td>{{ zone.name }}</td>
-          <td>{{ zone.lowerLimitCelcius }}°C</td>
-          <td>{{ zone.upperLimitCelcius }}°C</td>
-          <td>
+          <td>{{ zone.lowerLimitCelsius }}°C</td>
+          <td>{{ zone.upperLimitCelsius }}°C</td>
+          <td v-if="role == 'ADMIN'">
             <button class="edit-btn" @click="openEditOverlay(zone)">Edit</button>
           </td>
         </tr>

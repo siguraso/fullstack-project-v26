@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS temperature_zones (
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE (tenant_id, name),
+    UNIQUE (tenant_id, name, active),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
