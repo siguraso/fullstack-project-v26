@@ -1,4 +1,5 @@
 import type { Deviation } from '@/stores/deviation'
+import { apiFetch } from './apiHelper'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API = `${API_BASE_URL}/deviations`
@@ -65,7 +66,7 @@ async function parseJsonSafely(response: Response): Promise<unknown> {
 }
 
 export async function getDeviations(tenantId = DEFAULT_TENANT_ID): Promise<Deviation[]> {
-  const res = await fetch(`${API}?tenantId=${tenantId}`)
+  const res = await apiFetch(`${API}?tenantId=${tenantId}`)
   const payload = await parseJsonSafely(res)
   const unwrapped = payload ? unwrap<unknown>(payload as ApiEnvelope<unknown>) : null
 
@@ -82,7 +83,7 @@ export async function createDeviation(
   data: Deviation,
   tenantId = DEFAULT_TENANT_ID,
 ): Promise<Deviation | null> {
-  const res = await fetch(API, {
+  const res = await apiFetch(API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...data, tenantId }),
@@ -95,4 +96,30 @@ export async function createDeviation(
   }
 
   return normalizeDeviation(unwrapped, data.module)
+}
+
+export async function updateDeviation(
+  id: number,
+  data: { status?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' },
+): Promise<Deviation | null> {
+  const res = await apiFetch(`${API}/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+  const payload = await parseJsonSafely(res)
+  const unwrapped = payload ? unwrap<unknown>(payload as ApiEnvelope<unknown>) : null
+
+  if (!res.ok) {
+    return null
+  }
+
+  return normalizeDeviation(unwrapped)
+}
+
+export async function resolveDeviation(id: number) {
+  return updateDeviation(id, { status: 'RESOLVED' })
 }
