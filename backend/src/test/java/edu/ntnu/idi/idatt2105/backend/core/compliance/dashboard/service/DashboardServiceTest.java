@@ -12,12 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -51,7 +52,6 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZ
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DashboardServiceTest {
 
-    @Mock
     private ChecklistInstanceRepository checklistInstanceRepository;
     @Mock
     private ChecklistInstanceMapper checklistInstanceMapper;
@@ -64,12 +64,30 @@ class DashboardServiceTest {
     @Mock
     private AlcoholLogRepository alcoholLogRepository;
 
-    @InjectMocks
     private DashboardService dashboardService;
+        private List<ChecklistInstance> checklistQueryResult;
 
     @BeforeEach
     void setUpTenant() {
         TenantContext.setCurrentOrg(99L);
+                checklistQueryResult = List.of();
+                checklistInstanceRepository = mock(ChecklistInstanceRepository.class, invocation -> {
+                        Object[] args = invocation.getArguments();
+                        if (List.class.equals(invocation.getMethod().getReturnType())
+                                        && args.length == 2
+                                        && args[0] instanceof Long
+                                        && args[1] instanceof LocalDate) {
+                                return checklistQueryResult;
+                        }
+                        return Answers.RETURNS_DEFAULTS.answer(invocation);
+                });
+                dashboardService = new DashboardService(
+                                checklistInstanceRepository,
+                                checklistInstanceMapper,
+                                deviationRepository,
+                                deviationMapper,
+                                temperatureLogRepository,
+                                alcoholLogRepository);
     }
 
     @AfterEach
@@ -82,11 +100,11 @@ class DashboardServiceTest {
         ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
         ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
         List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
+        checklistQueryResult = todayChecklists;
 
         ChecklistInstanceDTO pendingDto = new ChecklistInstanceDTO();
         pendingDto.setId(42L);
         when(checklistInstanceMapper.toDto(eq(pendingChecklist))).thenReturn(pendingDto);
-        when(checklistInstanceRepository.findByTenantIdAndDate(anyLong(), any(LocalDate.class))).thenReturn(todayChecklists);
 
         Deviation activeDeviation = deviation(1L, "Open deviation", LocalDateTime.of(2026, 4, 7, 11, 0));
         Deviation criticalDeviation = deviation(2L, "Critical deviation", LocalDateTime.of(2026, 4, 7, 8, 30));
@@ -158,7 +176,7 @@ class DashboardServiceTest {
 
     @Test
     void testSortActivityByTimeAndLimitTo20Items() {
-        when(checklistInstanceRepository.findByTenantIdAndDate(anyLong(), any(LocalDate.class))).thenReturn(List.of());
+                checklistQueryResult = List.of();
         when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(anyLong(), anyList()))
                 .thenReturn(List.of());
         when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
