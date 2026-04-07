@@ -22,8 +22,8 @@ export interface AuthSession {
   email: string
   remember: boolean
   token: string | null
+  refreshToken: string | null
   role: UserRole | null
-  raw: LoginResponseData | null
 }
 
 interface LoginResponseData {
@@ -40,12 +40,18 @@ function getStorage(remember: boolean): Storage {
 }
 
 function parseSession(value: string | null): AuthSession | null {
-  if (!value) {
-    return null
-  }
+  if (!value) return null
 
   try {
-    return JSON.parse(value) as AuthSession
+    const parsed = JSON.parse(value) as Partial<AuthSession>
+
+    return {
+      email: parsed.email ?? '',
+      remember: parsed.remember ?? false,
+      token: parsed.token ?? null,
+      refreshToken: parsed.refreshToken ?? null,
+      role: parsed.role ?? null,
+    }
   } catch {
     return null
   }
@@ -136,12 +142,14 @@ function persistSession(session: AuthSession) {
 }
 
 function createSession(email: string, remember: boolean, responseBody: unknown): AuthSession {
+  const data = unwrapApiResponse(responseBody) as any
+
   return {
     email,
     remember,
-    token: readToken(responseBody),
+    token: data?.accessToken ?? null,
+    refreshToken: data?.refreshToken ?? null,
     role: readRole(responseBody),
-    raw: readLoginResponseData(responseBody),
   }
 }
 
@@ -207,4 +215,24 @@ export async function register(payload: RegisterPayload, remember: boolean): Pro
   persistSession(session)
 
   return session
+}
+
+export async function refreshToken() {
+  const session = getAuthSession()
+  const refreshToken = session?.refreshToken
+
+  if (!refreshToken) return null
+
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refreshToken }),
+  })
+
+  if (!res.ok) return null
+
+  const json = await res.json()
+  return json.data.accessToken
 }

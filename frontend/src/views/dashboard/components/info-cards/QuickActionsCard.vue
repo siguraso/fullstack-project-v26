@@ -8,26 +8,29 @@ import {
   Activity,
 } from '@lucide/vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const quickActions = [
   {
     label: 'New Temperature Log',
-    action: () => console.log('New Temperature Log'),
+    route: { name: 'temperature-logs' },
     icon: Thermometer,
   },
   {
     label: 'New Incident Report',
-    action: () => console.log('New Incident Report'),
+    route: { name: 'deviation' },
     icon: TriangleAlert,
   },
   {
     label: 'Compliance Checklists',
-    action: () => console.log('Compliance Checklists'),
+    route: { name: 'checklist' },
     icon: ClipboardCheck,
   },
   {
     label: 'Log ID Verification',
-    action: () => console.log('Log ID Verification'),
+    route: { name: 'logs' },
     icon: BadgeCheck,
   },
 ]
@@ -45,7 +48,7 @@ const quickActions = [
         v-for="action in quickActions"
         :key="action.label"
         class="action-button"
-        @click="action.action"
+        @click="router.push(action.route)"
       >
         <span class="button-label">
           <component :is="action.icon" :size="20" aria-hidden="true" />

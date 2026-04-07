@@ -43,7 +43,7 @@ const complianceGroups: NavGroup[] = [
         to: { path: '/checklists', query: { ik: 'food' } },
       },
       { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'food' } } },
-      { label: 'Temperature Logs', icon: Thermometer, to: '/temperature' },
+      { label: 'Temperature Logs', icon: Thermometer, to: '/temperature-logs' },
     ],
   },
   {
