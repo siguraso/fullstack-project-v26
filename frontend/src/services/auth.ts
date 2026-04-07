@@ -18,7 +18,7 @@ export interface AuthSession {
   email: string
   remember: boolean
   token: string | null
-  raw: unknown
+  refreshToken: string | null
 }
 
 function getStorage(remember: boolean): Storage {
@@ -95,11 +95,13 @@ function persistSession(session: AuthSession) {
 }
 
 function createSession(email: string, remember: boolean, responseBody: unknown): AuthSession {
+  const data = unwrapApiResponse(responseBody) as any
+
   return {
     email,
     remember,
-    token: readToken(responseBody),
-    raw: responseBody,
+    token: data?.accessToken ?? null,
+    refreshToken: data?.refreshToken ?? null,
   }
 }
 
@@ -163,4 +165,24 @@ export async function register(payload: RegisterPayload, remember: boolean): Pro
   persistSession(session)
 
   return session
+}
+
+export async function refreshToken() {
+  const session = getAuthSession()
+  const refreshToken = session?.refreshToken
+
+  if (!refreshToken) return null
+
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refreshToken }),
+  })
+
+  if (!res.ok) return null
+
+  const json = await res.json()
+  return json.data.accessToken
 }
