@@ -78,6 +78,9 @@ class DashboardServiceTest {
 
     @Test
     void testBuildSummaryPendingAndActivity() {
+                Long tenantId = 99L;
+                LocalDate today = LocalDate.now();
+
         ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
         ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
         List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
@@ -85,18 +88,18 @@ class DashboardServiceTest {
         ChecklistInstanceDTO pendingDto = new ChecklistInstanceDTO();
         pendingDto.setId(42L);
         when(checklistInstanceMapper.toDto(eq(pendingChecklist))).thenReturn(pendingDto);
-        when(checklistInstanceRepository.findByTenantIdAndDate(any(Long.class), any(LocalDate.class))).thenReturn(todayChecklists);
+        when(checklistInstanceRepository.findByTenantIdAndDate(eq(tenantId), eq(today))).thenReturn(todayChecklists);
 
         Deviation activeDeviation = deviation(1L, "Open deviation", LocalDateTime.of(2026, 4, 7, 11, 0));
         Deviation criticalDeviation = deviation(2L, "Critical deviation", LocalDateTime.of(2026, 4, 7, 8, 30));
-        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(any(Long.class), anyList()))
+        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(eq(tenantId), anyList()))
                 .thenReturn(List.of(activeDeviation));
         when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                any(Long.class),
+                eq(tenantId),
                 anyList(),
                 eq(DeviationSeverity.CRITICAL)))
                 .thenReturn(List.of(criticalDeviation));
-        when(deviationRepository.findByTenantId(any(Long.class), any(Pageable.class)))
+        when(deviationRepository.findByTenantId(eq(tenantId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(activeDeviation)));
 
         when(deviationMapper.toDTO(any(Deviation.class))).thenAnswer(invocation -> {
@@ -121,9 +124,9 @@ class DashboardServiceTest {
                 LocalDateTime.of(2026, 4, 7, 10, 0),
                 null);
 
-        when(temperatureLogRepository.findAllByTenantId(any(Long.class), any(Pageable.class)))
+        when(temperatureLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(temperatureLog)));
-        when(alcoholLogRepository.findAllByTenantId(any(Long.class), any(Pageable.class)))
+        when(alcoholLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(alcoholLog)));
 
         DashboardOverviewDTO overview = dashboardService.getOverview();
@@ -154,11 +157,14 @@ class DashboardServiceTest {
 
     @Test
     void testSortActivityByTimeAndLimitTo20Items() {
-        when(checklistInstanceRepository.findByTenantIdAndDate(any(Long.class), any(LocalDate.class))).thenReturn(List.of());
-        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(any(Long.class), anyList()))
+        Long tenantId = 99L;
+        LocalDate today = LocalDate.now();
+
+        when(checklistInstanceRepository.findByTenantIdAndDate(eq(tenantId), eq(today))).thenReturn(List.of());
+        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(eq(tenantId), anyList()))
                 .thenReturn(List.of());
         when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                any(Long.class),
+                eq(tenantId),
                 anyList(),
                 eq(DeviationSeverity.CRITICAL)))
                 .thenReturn(List.of());
@@ -185,11 +191,11 @@ class DashboardServiceTest {
             deviations.add(deviation(300L + i, "Deviation " + i, base.plusMinutes(60 + i)));
         }
 
-        when(temperatureLogRepository.findAllByTenantId(any(Long.class), any(Pageable.class)))
+        when(temperatureLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(temperatureLogs));
-        when(alcoholLogRepository.findAllByTenantId(any(Long.class), any(Pageable.class)))
+        when(alcoholLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(alcoholLogs));
-        when(deviationRepository.findByTenantId(any(Long.class), any(Pageable.class)))
+        when(deviationRepository.findByTenantId(eq(tenantId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(deviations));
 
         DashboardOverviewDTO overview = dashboardService.getOverview();
