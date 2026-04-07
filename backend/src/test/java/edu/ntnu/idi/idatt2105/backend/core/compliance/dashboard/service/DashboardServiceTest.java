@@ -17,6 +17,8 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -79,95 +81,102 @@ class DashboardServiceTest {
     @Test
     void testBuildSummaryPendingAndActivity() {
                 Long tenantId = 99L;
-                LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.of(2026, 4, 7);
 
-        ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
-        ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
-        List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
+        try (MockedStatic<LocalDate> localDate = mockStatic(LocalDate.class, org.mockito.Answers.CALLS_REAL_METHODS)) {
+            localDate.when(LocalDate::now).thenReturn(today);
 
-        ChecklistInstanceDTO pendingDto = new ChecklistInstanceDTO();
-        pendingDto.setId(42L);
-        when(checklistInstanceMapper.toDto(eq(pendingChecklist))).thenReturn(pendingDto);
-        when(checklistInstanceRepository.findByTenantIdAndDate(eq(tenantId), eq(today))).thenReturn(todayChecklists);
+            ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
+            ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
+            List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
 
-        Deviation activeDeviation = deviation(1L, "Open deviation", LocalDateTime.of(2026, 4, 7, 11, 0));
-        Deviation criticalDeviation = deviation(2L, "Critical deviation", LocalDateTime.of(2026, 4, 7, 8, 30));
-        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(eq(tenantId), anyList()))
-                .thenReturn(List.of(activeDeviation));
-        when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                eq(tenantId),
-                anyList(),
-                eq(DeviationSeverity.CRITICAL)))
-                .thenReturn(List.of(criticalDeviation));
-        when(deviationRepository.findByTenantId(eq(tenantId), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(activeDeviation)));
+            ChecklistInstanceDTO pendingDto = new ChecklistInstanceDTO();
+            pendingDto.setId(42L);
+            when(checklistInstanceMapper.toDto(eq(pendingChecklist))).thenReturn(pendingDto);
+            when(checklistInstanceRepository.findByTenantIdAndDate(eq(tenantId), eq(today))).thenReturn(todayChecklists);
 
-        when(deviationMapper.toDTO(any(Deviation.class))).thenAnswer(invocation -> {
-            Deviation d = invocation.getArgument(0);
-            DeviationDTO dto = new DeviationDTO();
-            dto.setId(d.getId());
-            dto.setTitle(d.getTitle());
-            return dto;
-        });
+            Deviation activeDeviation = deviation(1L, "Open deviation", LocalDateTime.of(2026, 4, 7, 11, 0));
+            Deviation criticalDeviation = deviation(2L, "Critical deviation", LocalDateTime.of(2026, 4, 7, 8, 30));
+            when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(eq(tenantId), anyList()))
+                    .thenReturn(List.of(activeDeviation));
+            when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
+                    eq(tenantId),
+                    anyList(),
+                    eq(DeviationSeverity.CRITICAL)))
+                    .thenReturn(List.of(criticalDeviation));
+            when(deviationRepository.findByTenantId(eq(tenantId), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of(activeDeviation)));
 
-        TemperatureComplianceLog temperatureLog = temperatureLog(
-                10L,
-                "Fridge check",
-                4.2,
-                "Cold Room",
-                LocalDateTime.of(2026, 4, 7, 9, 0),
-                user("", "", "chefuser", "chef@example.com"));
-        AlcoholComplianceLog alcoholLog = alcoholLog(
-                11L,
-                "ID control",
-                "ID was checked",
-                LocalDateTime.of(2026, 4, 7, 10, 0),
-                null);
+            when(deviationMapper.toDTO(any(Deviation.class))).thenAnswer(invocation -> {
+                Deviation d = invocation.getArgument(0);
+                DeviationDTO dto = new DeviationDTO();
+                dto.setId(d.getId());
+                dto.setTitle(d.getTitle());
+                return dto;
+            });
 
-        when(temperatureLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(temperatureLog)));
-        when(alcoholLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(alcoholLog)));
+            TemperatureComplianceLog temperatureLog = temperatureLog(
+                    10L,
+                    "Fridge check",
+                    4.2,
+                    "Cold Room",
+                    LocalDateTime.of(2026, 4, 7, 9, 0),
+                    user("", "", "chefuser", "chef@example.com"));
+            AlcoholComplianceLog alcoholLog = alcoholLog(
+                    11L,
+                    "ID control",
+                    "ID was checked",
+                    LocalDateTime.of(2026, 4, 7, 10, 0),
+                    null);
 
-        DashboardOverviewDTO overview = dashboardService.getOverview();
+            when(temperatureLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of(temperatureLog)));
+            when(alcoholLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of(alcoholLog)));
 
-        ChecklistTodaySummaryDTO summary = overview.getChecklistsToday();
-        assertNotNull(summary);
-        assertEquals(2, summary.getTotalChecklists());
-        assertEquals(1, summary.getCompletedChecklists());
-        assertEquals(3, summary.getTotalItems());
-        assertEquals(2, summary.getCompletedItems());
+            DashboardOverviewDTO overview = dashboardService.getOverview();
 
-        assertEquals(1, overview.getPendingChecklists().size());
-        assertEquals(42L, overview.getPendingChecklists().getFirst().getId());
-        assertEquals(1, overview.getActiveDeviations().size());
-        assertEquals(1, overview.getCriticalAlerts().size());
+            ChecklistTodaySummaryDTO summary = overview.getChecklistsToday();
+            assertNotNull(summary);
+            assertEquals(2, summary.getTotalChecklists());
+            assertEquals(1, summary.getCompletedChecklists());
+            assertEquals(3, summary.getTotalItems());
+            assertEquals(2, summary.getCompletedItems());
 
-        assertEquals(3, overview.getTeamActivity().size());
-        assertEquals("DEVIATION_CREATED", overview.getTeamActivity().get(0).getType());
-        assertEquals("ALCOHOL_LOG", overview.getTeamActivity().get(1).getType());
-        assertEquals("TEMPERATURE_LOG", overview.getTeamActivity().get(2).getType());
-        assertEquals("Ada Lovelace", overview.getTeamActivity().get(0).getActor());
-        assertEquals("System", overview.getTeamActivity().get(1).getActor());
-        assertEquals("chefuser", overview.getTeamActivity().get(2).getActor());
-        assertEquals(
-                "Logged 4.2 C for zone Cold Room",
-                overview.getTeamActivity().get(2).getDescription());
+            assertEquals(1, overview.getPendingChecklists().size());
+            assertEquals(42L, overview.getPendingChecklists().getFirst().getId());
+            assertEquals(1, overview.getActiveDeviations().size());
+            assertEquals(1, overview.getCriticalAlerts().size());
+
+            assertEquals(3, overview.getTeamActivity().size());
+            assertEquals("DEVIATION_CREATED", overview.getTeamActivity().get(0).getType());
+            assertEquals("ALCOHOL_LOG", overview.getTeamActivity().get(1).getType());
+            assertEquals("TEMPERATURE_LOG", overview.getTeamActivity().get(2).getType());
+            assertEquals("Ada Lovelace", overview.getTeamActivity().get(0).getActor());
+            assertEquals("System", overview.getTeamActivity().get(1).getActor());
+            assertEquals("chefuser", overview.getTeamActivity().get(2).getActor());
+            assertEquals(
+                    "Logged 4.2 C for zone Cold Room",
+                    overview.getTeamActivity().get(2).getDescription());
+        }
     }
 
     @Test
     void testSortActivityByTimeAndLimitTo20Items() {
         Long tenantId = 99L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.of(2026, 4, 7);
 
-        when(checklistInstanceRepository.findByTenantIdAndDate(eq(tenantId), eq(today))).thenReturn(List.of());
-        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(eq(tenantId), anyList()))
-                .thenReturn(List.of());
-        when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                eq(tenantId),
-                anyList(),
-                eq(DeviationSeverity.CRITICAL)))
-                .thenReturn(List.of());
+        try (MockedStatic<LocalDate> localDate = mockStatic(LocalDate.class, org.mockito.Answers.CALLS_REAL_METHODS)) {
+            localDate.when(LocalDate::now).thenReturn(today);
+
+            when(checklistInstanceRepository.findByTenantIdAndDate(eq(tenantId), eq(today))).thenReturn(List.of());
+            when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(eq(tenantId), anyList()))
+                    .thenReturn(List.of());
+            when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
+                    eq(tenantId),
+                    anyList(),
+                    eq(DeviationSeverity.CRITICAL)))
+                    .thenReturn(List.of());
 
         List<TemperatureComplianceLog> temperatureLogs = new ArrayList<>();
         List<AlcoholComplianceLog> alcoholLogs = new ArrayList<>();
@@ -191,24 +200,25 @@ class DashboardServiceTest {
             deviations.add(deviation(300L + i, "Deviation " + i, base.plusMinutes(60 + i)));
         }
 
-        when(temperatureLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(temperatureLogs));
-        when(alcoholLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(alcoholLogs));
-        when(deviationRepository.findByTenantId(eq(tenantId), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(deviations));
+            when(temperatureLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(temperatureLogs));
+            when(alcoholLogRepository.findAllByTenantId(eq(tenantId), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(alcoholLogs));
+            when(deviationRepository.findByTenantId(eq(tenantId), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(deviations));
 
-        DashboardOverviewDTO overview = dashboardService.getOverview();
+            DashboardOverviewDTO overview = dashboardService.getOverview();
 
-        assertEquals(20, overview.getTeamActivity().size());
+            assertEquals(20, overview.getTeamActivity().size());
 
-        List<String> occurredAt = overview.getTeamActivity().stream()
-                .map(activity -> activity.getOccurredAt())
-                .toList();
-        for (int i = 0; i < occurredAt.size() - 1; i++) {
-            LocalDateTime current = LocalDateTime.parse(occurredAt.get(i));
-            LocalDateTime next = LocalDateTime.parse(occurredAt.get(i + 1));
-            assertTrue(!current.isBefore(next));
+            List<String> occurredAt = overview.getTeamActivity().stream()
+                    .map(activity -> activity.getOccurredAt())
+                    .toList();
+            for (int i = 0; i < occurredAt.size() - 1; i++) {
+                LocalDateTime current = LocalDateTime.parse(occurredAt.get(i));
+                LocalDateTime next = LocalDateTime.parse(occurredAt.get(i + 1));
+                assertTrue(!current.isBefore(next));
+            }
         }
     }
 
