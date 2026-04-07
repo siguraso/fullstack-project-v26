@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CompleteChecklistItemRequest;
@@ -44,13 +43,13 @@ public class ChecklistController {
     }
 
     @GetMapping("/templates")
-    public ResponseEntity<?> getTemplates(@RequestParam Long tenantId) {
-        return ResponseEntity.ok(service.getTemplates(tenantId));
+    public ResponseEntity<?> getTemplates() {
+        return ResponseEntity.ok(service.getTemplates());
     }
 
     @GetMapping("/today")
-    public ResponseEntity<?> today(@RequestParam Long tenantId) {
-        return ResponseEntity.ok(service.getTodayChecklist(tenantId));
+    public ResponseEntity<?> today() {
+        return ResponseEntity.ok(service.getTodayChecklist());
     }
 
     @PatchMapping("/items/{id}")

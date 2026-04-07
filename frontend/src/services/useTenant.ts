@@ -1,5 +1,11 @@
+import { computed } from 'vue'
+import { useTenantStore } from '@/stores/tenant'
+
 export function useTenant() {
+    const tenantStore = useTenantStore()
+
     return {
-        tenantId: 1
+        ...tenantStore,
+        tenantId: computed(() => tenantStore.tenant?.id ?? null),
     }
 }

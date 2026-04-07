@@ -1,7 +1,11 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -23,6 +27,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.Check
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemLibraryRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemTemplateRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistTemplateRepository;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import jakarta.transaction.Transactional;
@@ -42,9 +47,10 @@ public class ChecklistService {
     private final ChecklistTemplateMapper templateMapper;
     private final ChecklistItemLibraryRepository libraryRepo;
 
-    public ChecklistTemplate createTemplate(CreateChecklistTemplateRequest request) {
+    public ChecklistTemplateDTO createTemplate(CreateChecklistTemplateRequest request) {
 
-        Tenant tenant = tenantRepo.findById(request.getTenantId())
+        Long tenantId = TenantContext.getCurrentOrg();
+        Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
         ChecklistTemplate template = new ChecklistTemplate();
@@ -73,10 +79,10 @@ public class ChecklistService {
 
         generateInstance(savedTemplate.getId());
 
-        return savedTemplate;
+        return templateMapper.toDto(savedTemplate);
     }
 
-    public ChecklistInstance generateInstance(Long templateId) {
+    public ChecklistInstanceDTO generateInstance(Long templateId) {
 
         ChecklistTemplate template = templateRepo.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
@@ -98,11 +104,12 @@ public class ChecklistService {
             itemInstanceRepo.save(item);
         }
 
-        return savedInstance;
+        return instanceMapper.toDto(savedInstance);
     }
 
-    public List<ChecklistInstanceDTO> getTodayChecklist(Long tenantId) {
+    public List<ChecklistInstanceDTO> getTodayChecklist() {
 
+        Long tenantId = TenantContext.getCurrentOrg();
         List<ChecklistInstance> instances = instanceRepo.findByTenantIdAndDate(tenantId, LocalDate.now());
 
         return instances.stream().map(instanceMapper::toDto).toList();
@@ -126,8 +133,9 @@ public class ChecklistService {
         updateCheckListStatus(item.getChecklist().getId());
     }
 
-    public List<ChecklistTemplateDTO> getTemplates(Long tenantId) {
+    public List<ChecklistTemplateDTO> getTemplates() {
 
+        Long tenantId = TenantContext.getCurrentOrg();
         List<ChecklistTemplate> templates = templateRepo.findByTenant_Id(tenantId);
 
         return templates.stream().map(templateMapper::toDto).toList();
@@ -142,22 +150,43 @@ public class ChecklistService {
         template.setFrequency(request.getFrequency());
         template.setModule(request.getModule());
 
-        template.getItems().clear();
+        List<Long> requestedItemIds = request.getItemIds() != null ? request.getItemIds() : List.of();
+        Set<Long> requestedItemIdSet = new HashSet<>(requestedItemIds);
+
+        Map<Long, ChecklistItemTemplate> existingByLibraryId = new HashMap<>();
+        for (ChecklistItemTemplate existing : template.getItems()) {
+            if (existing.getLibraryItem() != null && existing.getLibraryItem().getId() != null) {
+                existingByLibraryId.put(existing.getLibraryItem().getId(), existing);
+            }
+        }
+
+        template.getItems().removeIf(existing -> {
+            Long libraryItemId = existing.getLibraryItem() != null ? existing.getLibraryItem().getId() : null;
+
+            if (libraryItemId == null || requestedItemIdSet.contains(libraryItemId)) {
+                return false;
+            }
+
+            return !itemInstanceRepo.existsByTemplateItem_Id(existing.getId());
+        });
 
         int order = 0;
 
-        for (Long itemId : request.getItemIds()) {
-
+        for (Long itemId : requestedItemIds) {
             ChecklistItemLibrary libItem = libraryRepo.findById(itemId)
                     .orElseThrow(() -> new ResourceNotFoundException("Library item not found"));
 
-            ChecklistItemTemplate newItem = new ChecklistItemTemplate();
-            newItem.setChecklistTemplate(template);
-            newItem.setDescription(libItem.getDescription());
-            newItem.setLibraryItem(libItem);
-            newItem.setSortOrder(order++);
+            ChecklistItemTemplate item = existingByLibraryId.get(itemId);
+            if (item == null) {
+                item = new ChecklistItemTemplate();
+                item.setChecklistTemplate(template);
+                item.setLibraryItem(libItem);
+                template.getItems().add(item);
+            }
 
-            template.getItems().add(newItem);
+            item.setTitle(libItem.getTitle());
+            item.setDescription(libItem.getDescription());
+            item.setSortOrder(order++);
         }
 
         return templateMapper.toDto(templateRepo.save(template));

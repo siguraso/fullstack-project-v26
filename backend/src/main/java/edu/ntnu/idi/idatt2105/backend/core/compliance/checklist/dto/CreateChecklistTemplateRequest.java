@@ -9,7 +9,6 @@ import lombok.Data;
 @Data
 public class CreateChecklistTemplateRequest {
 
-    private Long tenantId;
     private String name;
     private ComplianceModule module;
     private ChecklistFrequency frequency;

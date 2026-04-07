@@ -69,10 +69,6 @@ public class UserService {
   public UserResponse createUser(UserCreateRequest dto) {
     Long currentTenantId = TenantContext.getCurrentOrg();
 
-    if (!currentTenantId.equals(dto.getTenantId())) {
-      throw new UnauthorizedException("You do not have access to this tenant");
-    }
-
     if (userRepository.existsByEmail(dto.getEmail())) {
       throw new ValidationException("Email already exists: " + dto.getEmail());
     }

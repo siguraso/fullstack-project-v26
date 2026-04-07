@@ -1,5 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,13 +57,7 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
-        User recordedBy = userRepository.findById(request.getRecordedById())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        if (!recordedBy.getTenant().getId().equals(tenantId)) {
-            throw new UnauthorizedException("User does not belong to current organization");
-        }
-
+        User recordedBy = resolveAuthenticatedUser(tenantId);
         LogStatus status = resolveStatus(request);
         AlcoholComplianceLog log = mapper.toEntity(request, tenant, recordedBy, status);
         AlcoholComplianceLog savedLog = repository.save(log);
@@ -76,6 +72,24 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
     public AlcoholLogDTO recordRefusal(AlcoholLogCreateRequest request) {
         request.setServiceRefused(true);
         return createLog(request);
+    }
+
+    private User resolveAuthenticatedUser(Long tenantId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new UnauthorizedException("Authenticated user is required");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String email = principal instanceof String string ? string : principal.toString();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("Authenticated user was not found"));
+
+        if (!user.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("Authenticated user does not belong to current organization");
+        }
+
+        return user;
     }
 
     private LogStatus resolveStatus(AlcoholLogCreateRequest request) {

@@ -11,6 +11,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistItemLibraryMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemLibraryRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemTemplateRepository;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,8 @@ public class ChecklistItemLibraryService {
     private final ChecklistItemLibraryMapper mapper;
     private final ChecklistItemTemplateRepository itemTemplateRepo;
 
-    public ChecklistItemLibraryDTO create(Long tenantId, ChecklistItemLibraryDTO request) {
+    public ChecklistItemLibraryDTO create(ChecklistItemLibraryDTO request) {
+        Long tenantId = TenantContext.getCurrentOrg();
         Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
@@ -38,7 +40,8 @@ public class ChecklistItemLibraryService {
         return mapper.toDto(repo.save(item));
     }
 
-    public List<ChecklistItemLibraryDTO> getAll(Long tenantId) {
+    public List<ChecklistItemLibraryDTO> getAll() {
+        Long tenantId = TenantContext.getCurrentOrg();
         return repo.findByTenantId(tenantId)
                 .stream()
                 .map(mapper::toDto)

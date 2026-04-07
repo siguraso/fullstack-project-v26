@@ -8,4 +8,6 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.
 
 public interface ChecklistItemInstanceRepository extends JpaRepository<ChecklistItemInstance, Long> {
     List<ChecklistItemInstance> findByChecklistId(Long checklistId);
+
+    boolean existsByTemplateItem_Id(Long templateItemId);
 }

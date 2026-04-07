@@ -2,13 +2,9 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.log.dto;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.LogStatus;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class BaseLogCreateRequest {
-
-    @NotNull
-    private Long recordedById;
 
     @NotBlank
     @Size(max = 255)
@@ -18,14 +14,6 @@ public class BaseLogCreateRequest {
     private String description;
 
     private LogStatus status;
-
-    public Long getRecordedById() {
-        return recordedById;
-    }
-
-    public void setRecordedById(Long recordedById) {
-        this.recordedById = recordedById;
-    }
 
     public String getTitle() {
         return title;
@@ -51,4 +39,3 @@ public class BaseLogCreateRequest {
         this.status = status;
     }
 }
-

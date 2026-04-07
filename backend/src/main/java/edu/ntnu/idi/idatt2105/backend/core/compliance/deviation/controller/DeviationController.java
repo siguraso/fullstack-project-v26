@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
@@ -34,10 +33,9 @@ public class DeviationController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DeviationDTO>>> getByTenant(
-            @RequestParam Long tenantId) {
+    public ResponseEntity<ApiResponse<List<DeviationDTO>>> getForCurrentTenant() {
 
-        return ResponseEntity.ok(ApiResponse.ok(service.getByTenant(tenantId)));
+        return ResponseEntity.ok(ApiResponse.ok(service.getForCurrentTenant()));
     }
 
     @PatchMapping("/{id}")
