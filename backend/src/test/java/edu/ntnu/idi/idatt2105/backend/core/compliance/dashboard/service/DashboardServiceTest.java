@@ -12,12 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -79,6 +81,7 @@ class DashboardServiceTest {
 
     @Test
     void testBuildSummaryPendingAndActivity() {
+                Long expectedTenantId = 99L;
         ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
         ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
         List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
@@ -128,6 +131,13 @@ class DashboardServiceTest {
                 .thenReturn(new PageImpl<>(List.of(alcoholLog)));
 
         DashboardOverviewDTO overview = dashboardService.getOverview();
+
+        ArgumentCaptor<Long> tenantCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<LocalDate> dateCaptor = ArgumentCaptor.forClass(LocalDate.class);
+        verify(checklistInstanceRepository).findByTenantIdAndDate(tenantCaptor.capture(), dateCaptor.capture());
+        assertNotNull(tenantCaptor.getValue(), "Tenant ID passed to checklist query should not be null");
+        assertEquals(expectedTenantId, tenantCaptor.getValue(), "Unexpected tenant ID used in checklist query");
+        assertNotNull(dateCaptor.getValue(), "Date passed to checklist query should not be null");
 
         ChecklistTodaySummaryDTO summary = overview.getChecklistsToday();
         assertNotNull(summary);
