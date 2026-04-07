@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +37,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.mapper.Deviation
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository.DeviationRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
@@ -57,6 +60,16 @@ class DeviationServiceTest {
 
 	@InjectMocks
 	private DeviationService deviationService;
+
+	@BeforeEach
+	void setUpTenantContext() {
+		TenantContext.setCurrentOrg(1L);
+	}
+
+	@AfterEach
+	void clearTenantContext() {
+		TenantContext.clear();
+	}
 
 	@Test
 	void testCreateSuccess() {
