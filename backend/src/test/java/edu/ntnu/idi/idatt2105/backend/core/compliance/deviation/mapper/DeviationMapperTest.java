@@ -52,7 +52,7 @@ class DeviationMapperTest {
     assertEquals(dto.getChecklistItemId(), 10L);
     assertEquals(dto.getLogId(), 20L);
     assertEquals(dto.getCreatedAt(), LocalDateTime.of(2024, 1, 1, 12, 0).toString());
-    assertEquals(dto.getResolvedAt(), LocalDateTime.of(2024, 1, 1, 12, 0).toString());
+    assertEquals(dto.getResolvedAt(), LocalDateTime.of(2024, 1, 2, 12, 0).toString());
   }
 
   @Test
