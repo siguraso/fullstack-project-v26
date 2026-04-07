@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from 'vue'
 import ChecklistTaskItem from './components/ChecklistTaskItem.vue'
 import { getTodayChecklist, updateChecklistItem } from '@/services/checklist'
-import { useTenant } from '@/services/useTenant'
 
 interface Task {
   id: number
@@ -15,10 +14,8 @@ interface Task {
 
 const tasks = ref<any[]>([]) // DTO fra backend
 
-const tenantId = useTenant().tenantId
-
 onMounted(async () => {
-  const data = await getTodayChecklist(tenantId)
+  const data = await getTodayChecklist()
 
   tasks.value = data.flatMap((c: { items: any }) => c.items)
 })

@@ -2,11 +2,8 @@
 import {
   deleteTemplate,
   generateChecklist,
-  getTemplates,
   toggleTemplate,
 } from '@/services/checklist'
-import { useTenant } from '@/services/useTenant'
-import { ref, onMounted } from 'vue'
 
 interface Template {
   id: number
@@ -15,8 +12,6 @@ interface Template {
   itemsCount: number
   description?: string
 }
-
-const tenantId = useTenant().tenantId
 
 const emit = defineEmits<{
   edit: [template: any]
@@ -35,6 +30,10 @@ function getBadgeColor(freq: string) {
 }
 
 async function confirmDelete(id: number) {
+  if (!Number.isFinite(id)) {
+    return
+  }
+
   if (confirm('Are you sure?')) {
     await deleteTemplate(id)
     emit('deleted')
@@ -42,11 +41,19 @@ async function confirmDelete(id: number) {
 }
 
 async function useTemplate(id: number) {
+  if (!Number.isFinite(id)) {
+    return
+  }
+
   await generateChecklist(id)
   alert('Checklist created!')
 }
 
 async function toggle(id: number) {
+  if (!Number.isFinite(id)) {
+    return
+  }
+
   await toggleTemplate(id)
   emit('deleted')
 }

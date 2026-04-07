@@ -6,7 +6,6 @@ import type { ApiEnvelope } from './util/util'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API = `${API_BASE_URL}/deviations`
-const DEFAULT_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID ?? 1)
 
 type DeviationModule = Deviation['module']
 
@@ -40,8 +39,8 @@ function normalizeDeviation(raw: unknown, fallbackModule?: DeviationModule): Dev
   }
 }
 
-export async function getDeviations(tenantId = DEFAULT_TENANT_ID): Promise<Deviation[]> {
-  const res = await apiFetch(`${API}?tenantId=${tenantId}`)
+export async function getDeviations(): Promise<Deviation[]> {
+  const res = await apiFetch(API)
   const payload = await parseJsonSafely(res)
   const unwrapped = payload ? unwrap<unknown>(payload as ApiEnvelope<unknown>) : null
 
@@ -54,14 +53,11 @@ export async function getDeviations(tenantId = DEFAULT_TENANT_ID): Promise<Devia
     .filter((item): item is Deviation => item !== null)
 }
 
-export async function createDeviation(
-  data: Deviation,
-  tenantId = DEFAULT_TENANT_ID,
-): Promise<Deviation | null> {
+export async function createDeviation(data: Deviation): Promise<Deviation | null> {
   const res = await apiFetch(API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...data, tenantId }),
+    body: JSON.stringify(data),
   })
   const payload = await parseJsonSafely(res)
   const unwrapped = payload ? unwrap<unknown>(payload as ApiEnvelope<unknown>) : null

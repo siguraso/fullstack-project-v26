@@ -12,7 +12,6 @@ import {
   updateTemplate,
 } from '@/services/checklist'
 import draggable from 'vuedraggable'
-import { useTenant } from '@/services/useTenant'
 
 interface Item {
   id: number
@@ -29,8 +28,6 @@ const newItem = ref({
 })
 
 const checklistName = ref('')
-
-const tenantId = useTenant().tenantId
 
 const templates = ref<any[]>([])
 
@@ -53,17 +50,22 @@ const filteredItems = computed(() => {
 })
 
 async function reloadTemplates() {
-  const data = await getTemplates(tenantId)
-  console.log('TEMPLATES:', data)
-  templates.value = data
+  const data = await getTemplates()
+  templates.value = Array.isArray(data) ? data : []
 }
 
 onMounted(async () => {
-  const templatesData = await getTemplates(tenantId)
-  templates.value = templatesData
+  try {
+    const templatesData = await getTemplates()
+    templates.value = Array.isArray(templatesData) ? templatesData : []
 
-  const libraryData = await getLibraryItems(tenantId)
-  libraryItems.value = libraryData
+    const libraryData = await getLibraryItems()
+    libraryItems.value = Array.isArray(libraryData) ? libraryData : []
+  } catch (error) {
+    console.error('Failed to load checklist builder data', error)
+    templates.value = []
+    libraryItems.value = []
+  }
 })
 
 const activeItems = ref<Item[]>([])
@@ -92,21 +94,27 @@ function editItem(item: Item) {
 }
 
 function loadTemplate(template: any) {
+  if (!template || typeof template.id !== 'number') {
+    return
+  }
+
   selectedTemplate.value = template
 
   checklistName.value = template.name
   frequency.value = template.frequency
 
-  activeItems.value = template.items.map((item: any) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-  }))
+  const rawItems = Array.isArray(template.items) ? template.items : []
+  activeItems.value = rawItems
+    .filter((item: any) => item && typeof item.id === 'number')
+    .map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+    }))
 }
 
 async function saveChecklist() {
   const payload = {
-    tenantId: tenantId,
     name: checklistName.value,
     module: 'IK_FOOD',
     frequency: frequency.value,
@@ -114,6 +122,10 @@ async function saveChecklist() {
   }
 
   if (selectedTemplate.value) {
+    if (typeof selectedTemplate.value.id !== 'number') {
+      throw new Error('Cannot update template: missing template id')
+    }
+
     await updateTemplate(selectedTemplate.value.id, payload)
   } else {
     await createTemplate(payload)
@@ -130,10 +142,11 @@ async function saveChecklist() {
 }
 
 async function loadLibrary() {
-  const data = await getLibraryItems(tenantId)
+  const data = await getLibraryItems()
+  const safeData = Array.isArray(data) ? data : []
 
   const enriched = await Promise.all(
-    data.map(async (item: any) => ({
+    safeData.map(async (item: any) => ({
       ...item,
       inUse: await isLibraryItemInUse(item.id),
     })),
@@ -160,7 +173,7 @@ async function createCustomItem() {
 
     editingItem.value = null
   } else {
-    const saved = await createLibraryItem(tenantId, payload)
+    const saved = await createLibraryItem(payload)
 
     libraryItems.value.push(saved)
     activeItems.value.push(saved)
