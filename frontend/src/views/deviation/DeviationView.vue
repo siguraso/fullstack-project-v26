@@ -1,25 +1,12 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import QuickActionBar from './components/QuickActionBar.vue'
 import DeviationForm from './components/DeviationForm.vue'
+import DeviationGuide from './components/DeviationGuide.vue'
 import DeviationTable from './components/DeviationTable.vue'
-import { useDeviationStore, type Deviation } from '@/stores/deviation'
+import { useDeviationStore } from '@/stores/deviation'
 
 const store = useDeviationStore()
-
-function onCategorySelect(category: Deviation['category']) {
-  store.form.category = category
-
-  if (category === 'TEMPERATURE') {
-    store.form.severity = 'CRITICAL'
-    return
-  }
-
-  if (category === 'HYGIENE') {
-    store.form.severity = 'HIGH'
-  }
-}
 
 onMounted(() => {
   store.fetchDeviations()
@@ -30,14 +17,14 @@ onMounted(() => {
   <div class="page">
     <header class="page-header">
       <h1>Deviations</h1>
-      <p>Reporting and management</p>
     </header>
 
     <p v-if="store.error" class="error-banner">{{ store.error }}</p>
 
-    <QuickActionBar :active="store.form.category" @select="onCategorySelect" />
-
-    <DeviationForm />
+    <div class="top-row">
+      <DeviationForm class="form-panel" title="Report Deviation" />
+      <DeviationGuide class="guide-panel" />
+    </div>
 
     <DeviationTable />
   </div>
@@ -45,19 +32,18 @@ onMounted(() => {
 
 <style scoped>
 .page {
-  padding: 30px;
   background: var(--bg);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .page-header h1 {
-  margin: 0;
-  font-size: 36px;
-  line-height: 1.1;
   color: var(--text);
 }
 
@@ -78,5 +64,27 @@ onMounted(() => {
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.form-panel {
+  width: 100%;
+}
+
+.guide-panel {
+  height: 100%;
+}
+
+
+@media (max-width: 1250px) {
+  .top-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
