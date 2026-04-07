@@ -18,6 +18,7 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.mapper.Deviation
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository.DeviationRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceLog;
+import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
@@ -33,7 +34,8 @@ public class DeviationService {
     private final DeviationMapper mapper;
 
     public DeviationDTO create(CreateDeviationRequest request) {
-        Tenant tenant = tenantRepo.findById(request.getTenantId())
+        Long tenantId = TenantContext.getCurrentOrg();
+        Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
         Deviation deviation = new Deviation();
@@ -56,8 +58,9 @@ public class DeviationService {
         return mapper.toDTO(deviationRepo.save(deviation));
     }
 
-    public List<DeviationDTO> getByTenant(Long tenantId) {
-        return deviationRepo.findByTenantId((tenantId)).stream().map(mapper::toDTO).toList();
+    public List<DeviationDTO> getForCurrentTenant() {
+        Long tenantId = TenantContext.getCurrentOrg();
+        return deviationRepo.findByTenantId(tenantId).stream().map(mapper::toDTO).toList();
     }
 
     public DeviationDTO update(Long id, UpdateDeviationRequest request) {

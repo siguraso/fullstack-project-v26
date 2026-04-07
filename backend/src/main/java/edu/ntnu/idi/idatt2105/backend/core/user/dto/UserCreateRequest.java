@@ -9,9 +9,6 @@ import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 @Data
 public class UserCreateRequest {
 
-  @NotNull
-  private Long tenantId;
-
   @NotBlank
   private String username;
 

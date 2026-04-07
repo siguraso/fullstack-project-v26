@@ -12,9 +12,6 @@ import lombok.Data;
 public class CreateDeviationRequest {
 
     @NotNull
-    private Long tenantId;
-
-    @NotNull
     private ComplianceModule module;
 
     @NotBlank
