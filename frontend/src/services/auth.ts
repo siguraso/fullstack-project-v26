@@ -23,6 +23,7 @@ export interface AuthSession {
   remember: boolean
   token: string | null
   refreshToken: string | null
+  role: UserRole | null
 }
 
 interface LoginResponseData {
@@ -39,12 +40,18 @@ function getStorage(remember: boolean): Storage {
 }
 
 function parseSession(value: string | null): AuthSession | null {
-  if (!value) {
-    return null
-  }
+  if (!value) return null
 
   try {
-    return JSON.parse(value) as AuthSession
+    const parsed = JSON.parse(value) as Partial<AuthSession>
+
+    return {
+      email: parsed.email ?? '',
+      remember: parsed.remember ?? false,
+      token: parsed.token ?? null,
+      refreshToken: parsed.refreshToken ?? null,
+      role: parsed.role ?? null,
+    }
   } catch {
     return null
   }
@@ -142,6 +149,7 @@ function createSession(email: string, remember: boolean, responseBody: unknown):
     remember,
     token: data?.accessToken ?? null,
     refreshToken: data?.refreshToken ?? null,
+    role: readRole(responseBody),
   }
 }
 
