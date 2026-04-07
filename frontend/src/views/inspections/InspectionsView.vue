@@ -1,121 +1,88 @@
 <script setup lang="ts">
-import { CalendarClock, ClipboardCheck, ScanSearch, Shield } from '@lucide/vue'
+import { ref, onMounted } from 'vue'
+import { getInspectionLogs, type InspectionLog } from '@/services/inspection'
+import { Download } from '@lucide/vue'
 
-type InspectionStatus = 'Ready' | 'Scheduled' | 'Follow-up'
+const logs = ref<InspectionLog[]>([])
+const loading = ref(true)
 
-interface InspectionItem {
-  id: number
-  title: string
-  area: string
-  owner: string
-  date: string
-  status: InspectionStatus
+async function loadLogs() {
+  try {
+    logs.value = await getInspectionLogs()
+  } finally {
+    loading.value = false
+  }
 }
 
-const inspections: InspectionItem[] = [
-  {
-    id: 1,
-    title: 'Weekly hygiene walkthrough',
-    area: 'Kitchen',
-    owner: 'Store lead',
-    date: 'Tomorrow 09:00',
-    status: 'Ready',
-  },
-  {
-    id: 2,
-    title: 'Supplier traceability review',
-    area: 'Storage',
-    owner: 'Operations',
-    date: 'Friday 11:30',
-    status: 'Scheduled',
-  },
-  {
-    id: 3,
-    title: 'Fire safety follow-up',
-    area: 'Back office',
-    owner: 'Facility team',
-    date: 'Next week',
-    status: 'Follow-up',
-  },
-]
+onMounted(loadLogs)
 
-function statusClass(status: InspectionStatus) {
-  return `inspection-pill inspection-${status.toLowerCase().replace('-', '')}`
+// 🔄 senere kan du legge polling her
+// setInterval(loadLogs, 10000)
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleString()
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify(logs.value, null, 2)], {
+    type: 'application/json',
+  })
+
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'inspection-logs.json'
+  a.click()
+  URL.revokeObjectURL(url)
 }
 </script>
 
 <template>
   <div class="inspections-view">
-    <h1>Inspections</h1>
+    <div class="header-row">
+      <h1>Inspection Logs</h1>
 
-    <section class="hero-grid">
-      <article class="lead-card">
-        <p class="section-label">Inspection Hub</p>
-        <h2>Prepare upcoming checks before this turns into a larger workflow.</h2>
-        <p>
-          The layout is built so you can later plug in scheduled inspections, owners, documents, and
-          readiness states without redesigning the whole page.
-        </p>
-      </article>
+      <button class="export-btn" @click="exportJson">
+        <Download :size="16" />
+        Export
+      </button>
+    </div>
 
-      <article class="focus-card">
-        <CalendarClock :size="18" aria-hidden="true" />
-        <strong>Tomorrow 09:00</strong>
-        <span>Next planned inspection</span>
-      </article>
-    </section>
+    <div class="table">
+      <div class="table-head">
+        <span>Type</span>
+        <span>Title</span>
+        <span>Status</span>
+        <span>Actor</span>
+        <span>Date</span>
+      </div>
 
-    <section class="main-grid">
-      <article class="schedule-panel">
-        <div class="panel-heading">
+      <TransitionGroup name="row" tag="div" class="table-body">
+        <div
+          v-for="log in logs"
+          :key="log.type + log.referenceId"
+          class="table-row"
+          :class="log.status?.toLowerCase()"
+        >
+          <span class="type">{{ log.type }}</span>
+
           <div>
-            <p class="section-label">Schedule</p>
-            <h3>Upcoming inspections</h3>
+            <strong>{{ log.title }}</strong>
+            <p v-if="log.description">{{ log.description }}</p>
           </div>
-          <span class="subtle">{{ inspections.length }} planned items</span>
-        </div>
 
-        <div class="inspection-table">
-          <div v-for="inspection in inspections" :key="inspection.id" class="inspection-row">
-            <div>
-              <strong>{{ inspection.title }}</strong>
-              <p>{{ inspection.area }} • {{ inspection.owner }}</p>
-            </div>
+          <span class="status" :class="log.status?.toLowerCase()">
+            {{ log.status || '-' }}
+          </span>
 
-            <div class="inspection-meta">
-              <span>{{ inspection.date }}</span>
-              <span :class="statusClass(inspection.status)">{{ inspection.status }}</span>
-            </div>
-          </div>
-        </div>
-      </article>
+          <span>{{ log.actor || 'System' }}</span>
 
-      <article class="prep-panel">
-        <div class="prep-card">
-          <ClipboardCheck :size="18" aria-hidden="true" />
-          <div>
-            <strong>Readiness checklist</strong>
-            <p>Add document links, assigned staff, and pre-check tasks here.</p>
-          </div>
+          <span>{{ formatDate(log.timestamp) }}</span>
         </div>
+      </TransitionGroup>
 
-        <div class="prep-card">
-          <ScanSearch :size="18" aria-hidden="true" />
-          <div>
-            <strong>Evidence and notes</strong>
-            <p>This column is a good place for uploads, comments, or recent findings.</p>
-          </div>
-        </div>
-
-        <div class="prep-card">
-          <Shield :size="18" aria-hidden="true" />
-          <div>
-            <strong>Compliance status</strong>
-            <p>Use this card for pass rate, open issues, or follow-up ownership later on.</p>
-          </div>
-        </div>
-      </article>
-    </section>
+      <div v-if="!loading && logs.length === 0" class="empty">No inspection logs yet</div>
+    </div>
   </div>
 </template>
 
@@ -123,161 +90,100 @@ function statusClass(status: InspectionStatus) {
 .inspections-view {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
-.hero-grid,
-.main-grid {
-  display: grid;
-  gap: 16px;
-}
-
-.hero-grid {
-  grid-template-columns: 2fr 1fr;
-}
-
-.main-grid {
-  grid-template-columns: 2fr 1fr;
-}
-
-.lead-card,
-.focus-card,
-.schedule-panel,
-.prep-panel {
-  border-radius: 24px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-.lead-card,
-.schedule-panel,
-.prep-panel {
-  padding: 24px;
-}
-
-.lead-card {
-  background: linear-gradient(135deg, #f1f0fb 0%, #e2e7f5 100%);
-}
-
-.focus-card {
-  padding: 24px;
-  background: #f7f7f6;
+/* HEADER */
+.header-row {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.focus-card strong {
-  font-size: 28px;
+.export-btn {
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
 }
 
-.section-label {
-  margin: 0 0 8px;
+/* TABLE */
+.table {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--stroke);
+}
+
+.table-head,
+.table-row {
+  display: grid;
+  grid-template-columns: 120px 2fr 120px 150px 180px;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.table-head {
   font-size: 12px;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
+  background: var(--bg-secondary);
 }
 
-.lead-card h2,
-.schedule-panel h3 {
-  margin: 0 0 10px;
+.table-row.open {
+  background: #fff5f5;
 }
 
-.lead-card p:last-child,
-.subtle,
-.inspection-row p,
-.prep-card p,
-.focus-card span {
-  margin: 0;
+.table-row.resolved {
+  background: #f0fff4;
+}
+
+.table-row strong {
+  display: block;
+}
+
+.table-row p {
+  margin: 2px 0 0;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
-.panel-heading,
-.inspection-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+/* STATUS */
+.status {
+  font-weight: 600;
 }
 
-.inspection-table {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.status.open {
+  color: #c92a2a;
 }
 
-.inspection-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: #f7f7f6;
+.status.resolved {
+  color: #2b8a3e;
 }
 
-.inspection-row strong {
-  display: block;
-  margin-bottom: 4px;
+/* EMPTY */
+.empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
 }
 
-.inspection-meta {
-  align-items: center;
-  flex-wrap: wrap;
+/* ANIMATION */
+.row-enter-active,
+.row-leave-active {
+  transition: all 0.25s ease;
 }
 
-.prep-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: #fbfbfa;
+.row-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
-.prep-card {
-  display: flex;
-  gap: 14px;
-  padding: 16px;
-  border-radius: 18px;
-  background: #ffffff;
-}
-
-.prep-card strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.inspection-pill {
-  padding: 7px 11px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.inspection-ready {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.inspection-scheduled {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-
-.inspection-followup {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-@media (max-width: 960px) {
-  .hero-grid,
-  .main-grid,
-  .inspection-row {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
-
-  .inspection-meta {
-    justify-content: start;
-  }
+.row-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>
