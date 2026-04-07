@@ -6,7 +6,6 @@ const store = useDeviationStore()
 
 const props = defineProps<{
   lockedCategory?: Deviation['category']
-  lockedModule?: Deviation['module']
   title?: string
 }>()
 
@@ -24,17 +23,10 @@ watchEffect(() => {
   if (props.lockedCategory) {
     store.form.category = props.lockedCategory
   }
-
-  if (props.lockedModule) {
-    store.form.module = props.lockedModule
-  }
 })
 
 const selectedLabel = computed(() => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General')
 const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Deviation`)
-const lockedModuleLabel = computed(() =>
-  props.lockedModule === 'IK_ALCOHOL' ? 'IK-ALCOHOL' : 'IK-FOOD',
-)
 </script>
 
 <template>
@@ -43,25 +35,6 @@ const lockedModuleLabel = computed(() =>
       <div class="title-wrap">
         <h3>{{ heading }}</h3>
       </div>
-
-      <div v-if="!lockedModule" class="module-toggle" role="group" aria-label="Compliance module">
-        <button
-            type="button"
-            :class="['module-option', { active: store.form.module === 'IK_FOOD' }]"
-            @click="store.form.module = 'IK_FOOD'"
-        >
-          IK-FOOD
-        </button>
-        <button
-            type="button"
-            :class="['module-option', { active: store.form.module === 'IK_ALCOHOL' }]"
-            @click="store.form.module = 'IK_ALCOHOL'"
-        >
-          IK-ALCOHOL
-        </button>
-      </div>
-
-      <div v-else class="module-lock">{{ lockedModuleLabel }}</div>
     </div>
 
     <div class="form-grid">
@@ -133,7 +106,7 @@ const lockedModuleLabel = computed(() =>
 
 .card-head {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   gap: 16px;
   margin-bottom: 18px;
@@ -149,45 +122,6 @@ h3 {
   margin: 0;
   color: var(--text);
   font-size: 30px;
-}
-
-.module-toggle {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-muted);
-  overflow: hidden;
-}
-
-.module-option {
-  border: 0;
-  min-height: 36px;
-  min-width: 118px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  border-radius: 0;
-  text-transform: uppercase;
-  background: transparent;
-}
-
-.module-option.active {
-  background: var(--neutral);
-  color: var(--bg);
-}
-
-.module-lock {
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface-muted);
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 .form-grid {
@@ -320,8 +254,5 @@ small {
     grid-row: auto;
   }
 
-  .module-option {
-    min-width: 100px;
-  }
 }
 </style>

@@ -31,14 +31,6 @@ function formatStatus(value: Deviation['status']) {
   return value.replace('_', ' ')
 }
 
-function formatModule(value?: Deviation['module']) {
-  if (!value) {
-    return '-'
-  }
-
-  return value === 'IK_ALCOHOL' ? 'IK-Alcohol' : 'IK-Food'
-}
-
 function formatDate(value?: string) {
   if (!value) {
     return '-'
@@ -88,7 +80,6 @@ function statusClass(value: Deviation['status']) {
           <th>Title</th>
           <th>Category</th>
           <th>Severity</th>
-          <th>Module</th>
           <th>Status</th>
           <th>Created date</th>
           <th>Actions</th>
@@ -102,7 +93,6 @@ function statusClass(value: Deviation['status']) {
           <td>
             <span class="badge" :class="severityClass(d.severity)">{{ d.severity }}</span>
           </td>
-          <td>{{ formatModule(d.module) }}</td>
           <td>
             <span class="badge" :class="statusClass(d.status)">{{ formatStatus(d.status) }}</span>
           </td>
@@ -110,7 +100,7 @@ function statusClass(value: Deviation['status']) {
           <td><button class="view" type="button">View</button></td>
         </tr>
         <tr v-if="rows.length === 0">
-          <td colspan="7" class="empty">{{ emptyMessage }}</td>
+          <td colspan="6" class="empty">{{ emptyMessage }}</td>
         </tr>
         </tbody>
       </table>
