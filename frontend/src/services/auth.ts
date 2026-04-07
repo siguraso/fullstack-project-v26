@@ -23,7 +23,15 @@ export interface AuthSession {
   remember: boolean
   token: string | null
   refreshToken: string | null
+}
 
+interface LoginResponseData {
+  accessToken?: string
+  refreshToken?: string
+  email?: string
+  fullName?: string
+  organizationId?: number
+  role?: UserRole
 }
 
 function getStorage(remember: boolean): Storage {
