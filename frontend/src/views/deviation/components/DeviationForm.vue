@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
 import { useDeviationStore, type Deviation } from '@/stores/deviation'
 
@@ -33,7 +34,10 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
   <div class="card">
     <div class="card-head">
       <div class="title-wrap">
-        <h3>{{ heading }}</h3>
+        <div class="title-icon">
+          <Edit2 :size="20" aria-hidden="true" />
+        </div>
+        <h3 class="title-text">{{ heading }}</h3>
       </div>
     </div>
 
@@ -41,21 +45,6 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
       <label>
         <span>Deviation title *</span>
         <input v-model="store.form.title" placeholder="e.g., Cold Storage Sensor Failure" />
-      </label>
-
-      <label>
-        <span>Severity level</span>
-        <div class="severity">
-          <button
-              v-for="s in levels"
-              :key="s"
-              type="button"
-              :class="['severity-btn', s.toLowerCase(), { active: store.form.severity === s }]"
-              @click="store.form.severity = s"
-          >
-            {{ s }}
-          </button>
-        </div>
       </label>
 
       <label v-if="!lockedCategory">
@@ -78,7 +67,22 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
         </select>
       </label>
 
-      <label class="description">
+      <label class="field-wide">
+        <span>Severity level</span>
+        <div class="severity">
+          <button
+            v-for="s in levels"
+            :key="s"
+            type="button"
+            :class="['severity-btn', s.toLowerCase(), { active: store.form.severity === s }]"
+            @click="store.form.severity = s"
+          >
+            {{ s }}
+          </button>
+        </div>
+      </label>
+
+      <label class="description field-wide">
         <span>Detailed description</span>
         <textarea
             v-model="store.form.description"
@@ -118,16 +122,32 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
   gap: 10px;
 }
 
-h3 {
+.title-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--neutral);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+}
+
+.title-text {
   margin: 0;
   color: var(--text);
-  font-size: 30px;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 800;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
+}
+
+.field-wide {
+  grid-column: auto;
 }
 
 label {
@@ -170,13 +190,14 @@ select {
 }
 
 .severity-btn {
-  min-height: 40px;
+  min-height: 34px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--surface);
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .severity-btn.low.active {
@@ -204,13 +225,12 @@ select {
 }
 
 .description {
-  grid-column: 2;
-  grid-row: 2 / span 2;
+  grid-row: auto;
 }
 
 textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 110px;
   resize: vertical;
   padding: 12px;
 }
