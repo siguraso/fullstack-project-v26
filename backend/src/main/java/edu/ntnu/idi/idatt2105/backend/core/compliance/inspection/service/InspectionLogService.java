@@ -32,7 +32,6 @@ public class InspectionLogService {
 
         List<InspectionLogDTO> logs = new ArrayList<>();
 
-        // 🔴 Deviations
         for (Deviation d : deviationRepository.findByTenantId(tenantId)) {
             InspectionLogDTO dto = new InspectionLogDTO();
             dto.setType("DEVIATION");
@@ -48,7 +47,6 @@ public class InspectionLogService {
             logs.add(dto);
         }
 
-        // 🌡️ Temperature logs
         for (TemperatureComplianceLog log : temperatureLogRepository.findAllByTenantId(tenantId)) {
             InspectionLogDTO dto = new InspectionLogDTO();
             dto.setType("TEMPERATURE");
@@ -63,7 +61,6 @@ public class InspectionLogService {
             logs.add(dto);
         }
 
-        // 🍺 Alcohol logs
         for (AlcoholComplianceLog log : alcoholLogRepository.findAllByTenantId(tenantId)) {
             InspectionLogDTO dto = new InspectionLogDTO();
             dto.setType("ALCOHOL");
@@ -78,7 +75,6 @@ public class InspectionLogService {
             logs.add(dto);
         }
 
-        // 🔥 Sorter nyeste først
         return logs.stream()
                 .sorted(Comparator.comparing(InspectionLogDTO::getTimestamp).reversed())
                 .toList();
