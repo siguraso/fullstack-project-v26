@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  BadgeCheck,
   Building2,
-  Clock3,
-  KeyRound,
-  MapPin,
-  RefreshCw,
-  ShieldCheck,
+  Pencil,
   UserRound,
 } from '@lucide/vue'
 import Card from '@/components/ui/Card.vue'
@@ -15,6 +10,7 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import {
   deactivateUser,
   getCurrentTenant,
+  sendStaffInvite,
   getUser,
   getUsers,
   updateCurrentTenant,
@@ -44,7 +40,7 @@ type UserForm = {
   role: string
 }
 
-const DEFAULT_ROLE_OPTIONS = ['ADMIN', 'MANAGER', 'EMPLOYEE']
+const DEFAULT_ROLE_OPTIONS = ['ADMIN', 'MANAGER', 'STAFF']
 const tenantStore = useTenantStore()
 
 const tenant = ref<Tenant | null>(null)
@@ -58,6 +54,7 @@ const tenantError = ref('')
 const usersError = ref('')
 const tenantSuccess = ref('')
 const staffSuccess = ref('')
+const inviteError = ref('')
 
 const searchQuery = ref('')
 const roleFilter = ref('ALL')
@@ -67,6 +64,9 @@ const isUserEditorOpen = ref(false)
 const isUserEditorLoading = ref(false)
 const userEditorError = ref('')
 const deactivatingUserId = ref<number | null>(null)
+const inviteEmail = ref('')
+const isSendingInvite = ref(false)
+const isInvitePopupOpen = ref(false)
 
 const tenantForm = reactive<TenantForm>({
   name: '',
@@ -83,56 +83,11 @@ const userForm = reactive<UserForm>({
   lastName: '',
   email: '',
   phone: '',
-  role: 'EMPLOYEE',
+  role: 'STAFF',
 })
 
 const initialTenantPayload = ref('')
 
-const summaryCards = computed(() => [
-  {
-    title: 'Workspace',
-    value: tenant.value?.active ? 'Active' : tenant.value ? 'Inactive' : 'Not loaded',
-    description: tenant.value?.name ?? 'Tenant profile has not loaded yet.',
-    icon: Building2,
-    iconBackgroundColor: '#e7efe3',
-    iconColor: '#305431',
-  },
-  {
-    title: 'Active staff',
-    value: String(users.value.filter((user) => user.active).length),
-    description: 'Accounts with current operational access.',
-    icon: BadgeCheck,
-    iconBackgroundColor: '#e7f5ec',
-    iconColor: '#146c43',
-  },
-  {
-    title: 'Roles in use',
-    value: String(new Set(users.value.map((user) => user.role)).size),
-    description: 'Distinct permission levels assigned across the organisation.',
-    icon: ShieldCheck,
-    iconBackgroundColor: '#ece9fb',
-    iconColor: '#4c3da5',
-  },
-  {
-    title: 'Last update',
-    value: tenant.value ? formatDate(tenant.value.updated_at, false) : 'Not available',
-    description: 'Most recent tenant profile update received from the API.',
-    icon: Clock3,
-    iconBackgroundColor: '#f5eadc',
-    iconColor: '#8a5313',
-  },
-])
-
-const roleBreakdown = computed(() =>
-  Array.from(
-    users.value.reduce((counts, user) => {
-      counts.set(user.role, (counts.get(user.role) ?? 0) + 1)
-      return counts
-    }, new Map<string, number>()),
-  )
-    .map(([role, count]) => ({ role, count }))
-    .sort((left, right) => right.count - left.count),
-)
 
 const roleOptions = computed(() =>
   [
@@ -182,21 +137,12 @@ const selectedUser = computed(
   () => users.value.find((user) => user.id === selectedUserId.value) ?? null,
 )
 
+const isSelectedUserBeingDeactivated = computed(
+  () => selectedUser.value !== null && deactivatingUserId.value === selectedUser.value.id,
+)
+
 function toErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error && error.message.trim().length > 0 ? error.message : fallback
-}
-
-function formatDate(value: string, includeTime = true) {
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    ...(includeTime ? { timeStyle: 'short' } : {}),
-  }).format(date)
 }
 
 function initialsForUser(user: Pick<User, 'firstName' | 'lastName'>) {
@@ -252,7 +198,7 @@ function applyUserToForm(payload: User) {
   userForm.lastName = payload.lastName ?? ''
   userForm.email = payload.email ?? ''
   userForm.phone = payload.phone ?? ''
-  userForm.role = payload.role ?? 'EMPLOYEE'
+  userForm.role = payload.role ?? 'STAFF'
 }
 
 function replaceUserInList(nextUser: User) {
@@ -307,9 +253,36 @@ async function bootstrapPage() {
   isBootstrapping.value = false
 }
 
-async function refreshUsers() {
+async function sendInviteForTesting() {
+  const email = inviteEmail.value.trim()
+  if (!email) {
+    inviteError.value = 'Enter an email address before sending an invitation.'
+    return
+  }
+
+  isSendingInvite.value = true
+  inviteError.value = ''
   staffSuccess.value = ''
-  await loadUsersSection(true)
+
+  try {
+    await sendStaffInvite(email)
+    staffSuccess.value = `Invitation sent to ${email}.`
+    inviteEmail.value = ''
+    isInvitePopupOpen.value = false
+  } catch (error) {
+    inviteError.value = toErrorMessage(error, 'Unable to send invitation email.')
+  } finally {
+    isSendingInvite.value = false
+  }
+}
+
+function toggleInvitePopup() {
+  isInvitePopupOpen.value = !isInvitePopupOpen.value
+
+  if (!isInvitePopupOpen.value) {
+    inviteError.value = ''
+    inviteEmail.value = ''
+  }
 }
 
 function resetTenantForm() {
@@ -402,6 +375,7 @@ async function deactivateSelectedUser(user: User) {
 
   deactivatingUserId.value = user.id
   usersError.value = ''
+  userEditorError.value = ''
   staffSuccess.value = ''
 
   try {
@@ -413,7 +387,13 @@ async function deactivateSelectedUser(user: User) {
       closeUserEditor()
     }
   } catch (error) {
-    usersError.value = toErrorMessage(error, 'Unable to deactivate staff member.')
+    const message = toErrorMessage(error, 'Unable to deactivate staff member.')
+
+    if (selectedUserId.value === user.id && isUserEditorOpen.value) {
+      userEditorError.value = message
+    } else {
+      usersError.value = message
+    }
   } finally {
     deactivatingUserId.value = null
   }
@@ -435,36 +415,6 @@ onMounted(() => {
           without leaving the main workspace.
         </p>
       </div>
-
-      <div class="hero-actions">
-        <button
-          type="button"
-          class="hero-icon hero-refresh-button"
-          :disabled="isBootstrapping || isRefreshingUsers || isSavingTenant"
-          @click="bootstrapPage"
-          aria-label="Refresh data"
-          title="Refresh data"
-        >
-          <RefreshCw :size="28" aria-hidden="true" />
-        </button>
-      </div>
-    </section>
-
-    <section class="summary-grid">
-      <InfoCard
-        v-for="card in summaryCards"
-        :key="card.title"
-        :title="card.title"
-        :icon="card.icon"
-        :icon-background-color="card.iconBackgroundColor"
-        :icon-color="card.iconColor"
-        class="metric-card"
-      >
-        <div class="metric-content">
-          <strong>{{ card.value }}</strong>
-          <p>{{ card.description }}</p>
-        </div>
-      </InfoCard>
     </section>
 
     <section class="content-grid">
@@ -475,19 +425,6 @@ onMounted(() => {
         icon-color="#305431"
         class="main-panel"
       >
-        <div class="panel-intro">
-          <span
-            class="status-pill"
-            :class="
-              tenant ? (tenant.active ? 'status-active' : 'status-inactive') : 'status-neutral'
-            "
-          >
-            {{
-              tenant ? (tenant.active ? 'Active tenant' : 'Inactive tenant') : 'Tenant unavailable'
-            }}
-          </span>
-        </div>
-
         <p v-if="tenantError" class="message-banner error-banner">{{ tenantError }}</p>
         <p v-if="tenantSuccess" class="message-banner success-banner">{{ tenantSuccess }}</p>
 
@@ -527,7 +464,7 @@ onMounted(() => {
             <input v-model="tenantForm.contactPhone" type="text" placeholder="+47 00 00 00 00" />
           </label>
 
-          <div class="form-actions field-wide">
+          <div class="form-actions tenant-form-actions field-wide">
             <button type="submit" :disabled="!tenantIsDirty || isSavingTenant || !tenant">
               {{ isSavingTenant ? 'Saving...' : 'Save workspace' }}
             </button>
@@ -550,6 +487,7 @@ onMounted(() => {
         icon-color="#4c3da5"
         class="main-panel"
       >
+        <p v-if="inviteError" class="message-banner error-banner">{{ inviteError }}</p>
         <div class="staff-toolbar">
           <label class="field toolbar-search">
             <span>Search staff</span>
@@ -578,18 +516,39 @@ onMounted(() => {
             </select>
           </label>
 
-          <div class="toolbar-actions">
+          <div class="toolbar-invite">
             <button
               type="button"
-              class="secondary-button"
-              :disabled="isRefreshingUsers"
-              @click="refreshUsers"
+              class="secondary-button invite-toolbar-button"
+              @click="toggleInvitePopup"
             >
-              {{ isRefreshingUsers ? 'Refreshing...' : 'Refresh staff' }}
+              {{ isInvitePopupOpen ? 'Close' : 'Invite Staff' }}
             </button>
+
+            <transition name="invite-popup">
+              <div v-if="isInvitePopupOpen" class="invite-popup">
+                <label class="field invite-popup-field">
+                  <span>Email address</span>
+                  <input
+                    v-model="inviteEmail"
+                    type="email"
+                    placeholder="new.staff@example.com"
+                    @keyup.enter="sendInviteForTesting"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  class="primary-button"
+                  :disabled="isSendingInvite || inviteEmail.trim().length === 0"
+                  @click="sendInviteForTesting"
+                >
+                  {{ isSendingInvite ? 'Sending...' : 'Send' }}
+                </button>
+              </div>
+            </transition>
           </div>
         </div>
-
         <p v-if="usersError" class="message-banner error-banner">{{ usersError }}</p>
         <p v-if="staffSuccess" class="message-banner success-banner">{{ staffSuccess }}</p>
 
@@ -636,22 +595,14 @@ onMounted(() => {
 
               <div class="table-cell actions-cell">
                 <span class="mobile-label">Actions</span>
-                <button type="button" class="secondary-button" @click="openUserEditor(user)">
-                  Edit
-                </button>
                 <button
                   type="button"
-                  class="danger-button"
-                  :disabled="deactivatingUserId === user.id || !user.active"
-                  @click="deactivateSelectedUser(user)"
+                  class="secondary-button table-icon-button"
+                  aria-label="Edit staff member"
+                  title="Edit staff member"
+                  @click="openUserEditor(user)"
                 >
-                  {{
-                    deactivatingUserId === user.id
-                      ? 'Deactivating...'
-                      : user.active
-                        ? 'Deactivate'
-                        : 'Inactive'
-                  }}
+                  <Pencil :size="16" aria-hidden="true" />
                 </button>
               </div>
             </article>
@@ -660,55 +611,6 @@ onMounted(() => {
           <div v-else class="empty-state">
             <p>No staff members match the current filters.</p>
           </div>
-        </div>
-      </InfoCard>
-    </section>
-
-    <section class="support-grid">
-      <InfoCard
-        title="Role coverage"
-        :icon="KeyRound"
-        icon-background-color="#f5eadc"
-        icon-color="#8a5313"
-      >
-        <div v-if="roleBreakdown.length > 0" class="stack-list">
-          <article v-for="entry in roleBreakdown" :key="entry.role" class="stack-item">
-            <div>
-              <strong>{{ entry.role }}</strong>
-              <p>Users assigned to this role</p>
-            </div>
-            <span class="count-pill">{{ entry.count }}</span>
-          </article>
-        </div>
-
-        <div v-else class="empty-state compact-empty-state">
-          <p>No role data available yet.</p>
-        </div>
-      </InfoCard>
-
-      <InfoCard
-        title="Workspace reference"
-        :icon="MapPin"
-        icon-background-color="#e8eef8"
-        icon-color="#1b4d8c"
-      >
-        <div class="reference-list">
-          <article class="reference-item">
-            <span>Created</span>
-            <strong>{{ tenant ? formatDate(tenant.created_at) : 'Not available' }}</strong>
-          </article>
-          <article class="reference-item">
-            <span>Last updated</span>
-            <strong>{{ tenant ? formatDate(tenant.updated_at) : 'Not available' }}</strong>
-          </article>
-          <article class="reference-item">
-            <span>Primary contact</span>
-            <strong>{{ tenant?.contact_email || 'Not available' }}</strong>
-          </article>
-          <article class="reference-item">
-            <span>Phone</span>
-            <strong>{{ tenant?.contact_phone || 'Not available' }}</strong>
-          </article>
         </div>
       </InfoCard>
     </section>
@@ -761,11 +663,31 @@ onMounted(() => {
             </label>
 
             <div class="form-actions field-wide">
-              <button type="submit" :disabled="isSavingUser || isUserEditorLoading">
+              <button
+                type="submit"
+                :disabled="isSavingUser || isUserEditorLoading || isSelectedUserBeingDeactivated"
+              >
                 {{ isSavingUser ? 'Saving...' : 'Save user' }}
               </button>
               <button type="button" class="secondary-button" @click="closeUserEditor">
                 Cancel
+              </button>
+              <button
+                v-if="selectedUser"
+                type="button"
+                class="danger-button"
+                :disabled="
+                  isSavingUser || isUserEditorLoading || isSelectedUserBeingDeactivated || !selectedUser.active
+                "
+                @click="deactivateSelectedUser(selectedUser)"
+              >
+                {{
+                  isSelectedUserBeingDeactivated
+                    ? 'Deactivating...'
+                    : selectedUser.active
+                      ? 'Deactivate user'
+                      : 'Inactive'
+                }}
               </button>
             </div>
           </form>
@@ -788,10 +710,7 @@ onMounted(() => {
   border-radius: 24px;
   padding: 28px;
   background: linear-gradient(135deg, #eef0e7 0%, #dde5d5 100%);
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  align-items: flex-start;
+  display: block;
 }
 
 .hero-copy h1 {
@@ -810,7 +729,6 @@ onMounted(() => {
 .section-label,
 .field span,
 .mobile-label,
-.reference-item span,
 .table-head span {
   margin: 0 0 8px;
   font-size: 12px;
@@ -820,82 +738,23 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.hero-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  display: grid;
-  place-items: center;
-}
-
-.hero-refresh-button {
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  color: var(--text);
-  transition:
-    background-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.hero-refresh-button:hover {
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.hero-refresh-button:active {
-  transform: scale(0.98);
-}
-
-.summary-grid,
-.support-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
   gap: 16px;
 }
 
-:deep(.metric-card .card-content) {
-  display: block;
-}
-
-.metric-content strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 1.6rem;
-  line-height: 1.1;
-}
-
-.metric-content p,
 .panel-intro p,
 .table-cell p,
-.stack-item p,
 .empty-state p {
   margin: 0;
   color: var(--text-secondary);
 }
 
-.main-panel :deep(.card-content) {
+.main-panel {
   display: flex;
   flex-direction: column;
   gap: 18px;
-}
-
-.panel-intro {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
 }
 
 .form-grid {
@@ -918,6 +777,16 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   justify-content: flex-start;
+}
+
+.tenant-form-actions {
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.tenant-form-actions button {
+  min-width: 140px;
+  padding: 10px 16px;
 }
 
 .secondary-button,
@@ -967,30 +836,79 @@ onMounted(() => {
 
 .staff-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(140px, 0.65fr) minmax(140px, 0.65fr) auto;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
   gap: 12px;
   align-items: end;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
-.toolbar-actions {
-  display: flex;
-  justify-content: flex-end;
+.toolbar-invite {
+  position: relative;
+}
+
+.toolbar-search {
+  min-width: 180px;
+}
+
+.invite-toolbar-button {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border-color: rgba(76, 61, 165, 0.25);
+  background: linear-gradient(180deg, #ffffff, #f6f4ff);
+  font-weight: 600;
+}
+
+.invite-toolbar-button:hover {
+  background: linear-gradient(180deg, #ffffff, #f0ecff);
+  border-color: rgba(76, 61, 165, 0.36);
+}
+
+.invite-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, 78vw);
+  padding: 14px;
+  border: 1px solid rgba(76, 61, 165, 0.16);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+  display: grid;
+  gap: 10px;
+  z-index: 15;
+}
+
+.invite-popup-field {
+  gap: 6px;
+}
+
+:deep(.invite-popup-enter-active),
+:deep(.invite-popup-leave-active) {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+:deep(.invite-popup-enter-from),
+:deep(.invite-popup-leave-to) {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
 }
 
 .staff-table {
   border: 1px solid var(--border);
   border-radius: 18px;
-  overflow: hidden;
+  overflow-x: auto;
   background: #ffffff;
+  margin-top: 10px;
 }
 
 .table-head,
 .table-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(120px, 0.75fr) minmax(0, 1fr) minmax(
-      110px,
+  grid-template-columns: minmax(220px, 1.5fr) minmax(100px, 0.75fr) minmax(180px, 1fr) minmax(
+      92px,
       0.65fr
-    ) minmax(160px, 0.85fr);
+    ) minmax(150px, 0.85fr);
   gap: 14px;
   align-items: center;
 }
@@ -1022,6 +940,11 @@ onMounted(() => {
 .table-cell strong {
   display: block;
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.table-cell p {
+  overflow-wrap: anywhere;
 }
 
 .staff-cell {
@@ -1043,8 +966,7 @@ onMounted(() => {
 }
 
 .role-chip,
-.status-pill,
-.count-pill {
+.status-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1070,48 +992,25 @@ onMounted(() => {
   color: #9f2d25;
 }
 
-.status-neutral {
-  background: #f3f4f6;
-  color: var(--text-secondary);
-}
-
 .actions-cell {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
-.stack-list,
-.reference-list {
-  display: grid;
-  gap: 12px;
-}
-
-.stack-item,
-.reference-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: #f7f7f8;
-  border: 1px solid var(--border);
-}
-
-.count-pill {
-  background: #ffffff;
-  color: var(--text);
-  border: 1px solid var(--border);
+.table-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 10px;
 }
 
 .empty-state {
   padding: 24px 18px;
   text-align: center;
-}
-
-.compact-empty-state {
-  padding: 0;
 }
 
 .modal-backdrop {
@@ -1156,37 +1055,49 @@ button:disabled {
   opacity: 0.7;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1600px) {
   .content-grid {
     grid-template-columns: 1fr;
   }
 
   .staff-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(180px, 0.7fr) auto auto auto;
   }
 
-  .toolbar-actions {
-    justify-content: flex-start;
+  .table-head,
+  .table-row {
+    grid-template-columns: minmax(180px, 1.3fr) minmax(88px, 0.7fr) minmax(160px, 1fr) minmax(
+        84px,
+        0.6fr
+      ) minmax(128px, 0.8fr);
+    gap: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
   }
 }
 
 @media (max-width: 860px) {
   .hero-card,
-  .panel-intro,
   .user-editor-header {
     flex-direction: column;
   }
 
-  .hero-actions {
-    width: 100%;
-    justify-content: space-between;
+  .form-grid,
+  .staff-toolbar {
+    grid-template-columns: 1fr;
   }
 
-  .form-grid,
-  .staff-toolbar,
-  .summary-grid,
-  .support-grid {
-    grid-template-columns: 1fr;
+  .toolbar-invite {
+    justify-self: stretch;
+  }
+
+  .tenant-form-actions {
+    justify-content: flex-start;
+  }
+
+  .invite-popup {
+    position: static;
+    width: 100%;
   }
 
   .table-head {

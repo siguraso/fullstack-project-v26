@@ -4,14 +4,17 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class JwtService {
   @Value("${security.jwt.secret}")
@@ -23,17 +26,71 @@ public class JwtService {
   @Value("${jwt.refresh-expiration:604800000}")
   private long refreshExpiration;
 
+  @Value("${security.jwt.invite-expiration-ms:86400000}")
+  private long inviteExpiration;
+
+  @PostConstruct
+  void logConfiguredExpirations() {
+    logExpiration("security.jwt.expiration-ms", jwtExpiration);
+    logExpiration("jwt.refresh-expiration", refreshExpiration);
+    logExpiration("security.jwt.invite-expiration-ms", inviteExpiration);
+  }
+
+  private void logExpiration(String propertyName, long configuredValue) {
+    long resolvedValue = resolveExpirationMillis(propertyName, configuredValue);
+    log.info("{} configured={}, resolved={} ms (~{} minutes)", propertyName, configuredValue,
+        resolvedValue, resolvedValue / 60_000);
+  }
+
   private Key getSigningKey() {
     byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
     return Keys.hmacShaKeyFor(keyBytes);
   }
 
   public String generateToken(String email, Map<String, Object> extraClaims) {
-    return buildToken(extraClaims, email, jwtExpiration);
+    return buildToken(extraClaims, email, resolveExpirationMillis("security.jwt.expiration-ms", jwtExpiration));
   }
 
   public String generateRefreshToken(String email) {
-    return buildToken(Map.of(), email, refreshExpiration);
+    return buildToken(Map.of(), email, resolveExpirationMillis("jwt.refresh-expiration", refreshExpiration));
+  }
+
+  public String generateInviteToken(String email, Long organizationId) {
+    return buildToken(
+        Map.of("invite", true, "organizationId", organizationId),
+        email,
+        resolveExpirationMillis("security.jwt.invite-expiration-ms", inviteExpiration));
+  }
+
+  private long resolveExpirationMillis(String propertyName, long configuredValue) {
+    if (configuredValue <= 0) {
+      throw new IllegalStateException(propertyName + " must be greater than 0");
+    }
+
+    // Common misconfiguration: setting seconds (e.g. 3600) instead of milliseconds.
+    if (configuredValue >= 60 && configuredValue <= 86_400 && configuredValue % 1_000 != 0) {
+      long normalized = configuredValue * 1_000;
+      log.warn("{}={} appears to be in seconds; treating it as {} ms", propertyName, configuredValue,
+          normalized);
+      return normalized;
+    }
+
+    return configuredValue;
+  }
+
+  public boolean isInviteToken(String token) {
+    if (!isTokenValid(token)) {
+      return false;
+    }
+    Boolean inviteClaim = extractClaim(token, claims -> claims.get("invite", Boolean.class));
+    return Boolean.TRUE.equals(inviteClaim);
+  }
+
+  public boolean isInviteTokenValid(String token, String email) {
+    if (!isTokenValid(token) || !isInviteToken(token)) {
+      return false;
+    }
+    return isTokenValid(token, email);
   }
 
   private String buildToken(Map<String, Object> extraClaims, String email, long expiration) {

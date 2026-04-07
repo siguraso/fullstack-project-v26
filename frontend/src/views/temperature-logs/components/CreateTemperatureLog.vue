@@ -1,13 +1,76 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
+import type { TemperatureLog, TemperatureLogInput } from '@/interfaces/TemperatureLog.interface'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
+import { createTemperatureLog } from '@/services/temperatureLog'
+import { ref } from 'vue'
 import { Edit2 } from '@lucide/vue'
 
-// TODO: Replace with actual storage units from API
-const storageUnits = [
-  { id: 1, name: 'Unit A' },
-  { id: 2, name: 'Unit B' },
-  { id: 3, name: 'Unit C' },
-]
+const props = defineProps<{
+  temperatureZones: TemperatureZone[]
+}>()
+
+const emit = defineEmits<{
+  (event: 'created', log: TemperatureLog): void
+}>()
+
+const notes = ref<string>('')
+const temperatureZoneSelected = ref<number | null>(null)
+const selectedZoneId = ref<number | null>(null)
+const temperature = ref<number | null>(null)
+const isSubmitting = ref(false)
+const statusMessage = ref('')
+const statusMessageType = ref<'success' | 'error' | ''>('')
+
+async function createLog() {
+  if (!selectedZoneId.value || temperature.value === null) {
+    statusMessageType.value = 'error'
+    statusMessage.value = 'Please select a storage unit and enter a temperature.'
+    return
+  }
+
+  statusMessage.value = ''
+  statusMessageType.value = ''
+
+  const payload: TemperatureLogInput = {
+    temperatureZoneId: selectedZoneId.value,
+    temperatureCelsius: temperature.value,
+    note: notes.value.trim().length > 0 ? notes.value.trim() : null,
+  }
+
+  isSubmitting.value = true
+
+  try {
+    const createdLog = await createTemperatureLog(payload)
+    emit('created', createdLog)
+
+    temperatureZoneSelected.value = null
+    selectedZoneId.value = null
+    temperature.value = null
+    notes.value = ''
+    statusMessageType.value = 'success'
+    statusMessage.value = 'Temperature log created successfully.'
+  } catch (error) {
+    statusMessageType.value = 'error'
+    statusMessage.value =
+      error instanceof Error ? error.message : 'Failed to create temperature log.'
+    console.error('Failed to create temperature log', error)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+function setSelectedZone() {
+  const selectedZone = props.temperatureZones.find(
+    (zone) => zone.id === temperatureZoneSelected.value,
+  )
+
+  if (selectedZone) {
+    selectedZoneId.value = selectedZone.id
+  } else {
+    selectedZoneId.value = null
+  }
+}
 </script>
 
 <template>
@@ -20,25 +83,41 @@ const storageUnits = [
   >
     <div class="input-field">
       <p class="subtext">Storage Unit</p>
-      <select class="deviation-filter" aria-label="Filter deviations">
-        <option value="" selected disabled>Select Storage Unit</option>
-        <option v-for="unit in storageUnits" :key="unit.id" :value="unit.id">
-          {{ unit.name }}
+      <select
+        class="deviation-filter"
+        aria-label="Filter deviations"
+        v-model.number="temperatureZoneSelected"
+        @change="setSelectedZone"
+      >
+        <option :value="null" selected disabled>Select Storage Unit</option>
+        <option v-for="zone in temperatureZones" :key="zone.id" :value="zone.id">
+          {{ zone.name }}
         </option>
       </select>
     </div>
 
     <div class="input-field">
       <p class="subtext">Temperature (°C)</p>
-      <input class="temperature-input" type="number" placeholder="Enter temperature" />
+      <input
+        v-model.number="temperature"
+        class="temperature-input"
+        type="number"
+        placeholder="Enter temperature"
+      />
     </div>
 
     <div class="input-field">
       <p class="subtext">Notes (Optional)</p>
-      <input type="text" placeholder="Additional notes" />
+      <input v-model="notes" type="text" placeholder="Additional notes" />
     </div>
 
-    <button class="create-btn">Create Log</button>
+    <button class="create-btn" :disabled="isSubmitting" @click="createLog">
+      {{ isSubmitting ? 'Creating...' : 'Create Log' }}
+    </button>
+
+    <p v-if="statusMessage" class="status-message" :class="statusMessageType">
+      {{ statusMessage }}
+    </p>
   </InfoCard>
 </template>
 
@@ -68,5 +147,18 @@ const storageUnits = [
   margin-top: 10px;
   width: 100%;
   cursor: pointer;
+}
+
+.status-message {
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.status-message.success {
+  color: #00a45f;
+}
+
+.status-message.error {
+  color: var(--cta-red);
 }
 </style>

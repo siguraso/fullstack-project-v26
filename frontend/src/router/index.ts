@@ -3,6 +3,7 @@ import { isAuthenticated } from '../services/auth'
 import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import InviteAcceptView from '../views/InviteAcceptView.vue'
 import DeviationView from '../views/deviation/DeviationView.vue'
 import TemperatureView from '../views/temperature/TemperatureView.vue'
 import TasksView from '@/views/tasks/TasksView.vue'
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: RegisterView,
+    },
+    {
+      path: '/invite/accept',
+      name: 'invite-accept',
+      component: InviteAcceptView,
     },
     {
       path: '/',

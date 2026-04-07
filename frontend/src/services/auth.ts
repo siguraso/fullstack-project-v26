@@ -1,6 +1,8 @@
 const AUTH_SESSION_KEY = 'regula.auth.session'
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
+type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF'
+
 export interface LoginPayload {
   email: string
   password: string
@@ -11,7 +13,9 @@ export interface RegisterPayload {
   password: string
   firstName: string
   lastName: string
-  orgNumber: string
+  orgNumber?: string
+  phone?: string
+  inviteToken?: string
 }
 
 export interface AuthSession {
@@ -19,6 +23,7 @@ export interface AuthSession {
   remember: boolean
   token: string | null
   refreshToken: string | null
+
 }
 
 function getStorage(remember: boolean): Storage {
@@ -74,6 +79,33 @@ function readToken(payload: unknown): string | null {
     record.token ?? record.accessToken ?? record.access_token ?? record.jwt ?? record.idToken
 
   return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null
+}
+
+function readRole(payload: unknown): UserRole | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  const record = unwrappedPayload as Record<string, unknown>
+  const candidate = record.role
+
+  if (candidate === 'ADMIN' || candidate === 'MANAGER' || candidate === 'STAFF') {
+    return candidate
+  }
+
+  return null
+}
+
+function readLoginResponseData(payload: unknown): LoginResponseData | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  return unwrappedPayload as LoginResponseData
 }
 
 async function parseResponseBody(response: Response): Promise<unknown> {
@@ -134,7 +166,9 @@ export async function login(payload: LoginPayload, remember: boolean): Promise<A
   const responseBody = await parseResponseBody(response)
 
   if (!response.ok) {
-    throw new Error(readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.')
+    throw new Error(
+      readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.',
+    )
   }
 
   const session = createSession(payload.email, remember, responseBody)

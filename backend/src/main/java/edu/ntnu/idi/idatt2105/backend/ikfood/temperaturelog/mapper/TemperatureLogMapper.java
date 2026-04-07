@@ -3,6 +3,7 @@ package edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.mapper;
 import org.springframework.stereotype.Component;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.LogStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.mapper.BaseComplianceLogMapper;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
@@ -10,7 +11,6 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogCr
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogDTO;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.entity.TemperatureComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZone;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.LogStatus;
 
 @Component
 public class TemperatureLogMapper extends BaseComplianceLogMapper<TemperatureComplianceLog, TemperatureLogDTO> {
@@ -22,6 +22,11 @@ public class TemperatureLogMapper extends BaseComplianceLogMapper<TemperatureCom
 
         TemperatureLogDTO dto = new TemperatureLogDTO();
         toBaseDTO(entity, dto);
+        if (entity.getRecordedBy() != null) {
+            dto.setRecordedByName(entity.getRecordedBy().getFirstName() + " " + entity.getRecordedBy().getLastName());
+            dto.setRecordedByEmail(entity.getRecordedBy().getEmail());
+            dto.setRecordedByRole(entity.getRecordedBy().getRole().name());
+        }
         dto.setTemperatureZoneId(entity.getTemperatureZone().getId());
         dto.setTemperatureZoneName(entity.getTemperatureZone().getName());
         dto.setLowerLimitCelsius(entity.getTemperatureZone().getLowerLimitCelsius());

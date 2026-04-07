@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Card from '@/components/ui/Card.vue'
-import type { TemperatureZone } from '@/types/temperature-zone'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -21,8 +21,9 @@ function saveChanges() {
   const updatedZone: TemperatureZone = {
     id: props.zone.id,
     name: name.value,
-    lowerLimitCelcius: lowerLimit.value,
-    upperLimitCelcius: upperLimit.value,
+    lowerLimitCelsius: lowerLimit.value,
+    upperLimitCelsius: upperLimit.value,
+    active: props.zone.active,
   }
   emit('save', updatedZone)
 }
@@ -32,8 +33,8 @@ function deleteZone() {
 }
 
 const name = ref(props.zone.name)
-const lowerLimit = ref(props.zone.lowerLimitCelcius)
-const upperLimit = ref(props.zone.upperLimitCelcius)
+const lowerLimit = ref(props.zone.lowerLimitCelsius)
+const upperLimit = ref(props.zone.upperLimitCelsius)
 </script>
 
 <template>

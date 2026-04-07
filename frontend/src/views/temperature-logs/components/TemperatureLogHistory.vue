@@ -1,83 +1,42 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
+import { getAuthSession } from '@/services/auth'
+import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { History, Check, TriangleAlert, ChevronLeft, Filter } from '@lucide/vue'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
-// TODO: Replace with real data from backend
-const temperatureLogs = [
-  {
-    id: 1,
-    temperatureZone: 'Fridge1',
-    temperature: 4,
-    // 10 minutes ago
-    timestamp: new Date(Date.now() - 10 * 60 * 1000),
-    status: 'Optimal',
-    loggedBy: 'John Doe',
-  },
-  {
-    id: 2,
-    temperatureZone: 'Freezer room',
-    temperature: -18,
-    // 30 minutes ago
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    status: 'Abnormal',
-    loggedBy: 'Sigurd Andris',
-  },
-  {
-    id: 3,
-    temperatureZone: 'Fridge2',
-    temperature: 3,
-    // 1 hour ago
-    timestamp: new Date(Date.now() - 60 * 60 * 1000),
-    status: 'Optimal',
-    loggedBy: 'Freddy Five Bears',
-  },
-  {
-    id: 4,
-    temperatureZone: 'Fridge1',
-    temperature: 5,
-    // 2 hours ago
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    status: 'Optimal',
-    loggedBy: 'John Doe',
-  },
-  {
-    id: 5,
-    temperatureZone: 'Freezer room',
-    temperature: -20,
-    // 3 hours ago
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    status: 'Optimal',
-    loggedBy: 'Sigurd Andris',
-  },
-  {
-    id: 6,
-    temperatureZone: 'Fridge2',
-    temperature: 6,
-    // 4 hours ago
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    status: 'Abnormal',
-    loggedBy: 'Freddy Five Bears',
-  },
-]
+const props = defineProps<{
+  temperatureLogs: TemperatureLog[]
+  temperatureZones: TemperatureZone[]
+}>()
+
+const emit = defineEmits<{
+  (event: 'delete-log', logId: number): void
+}>()
 
 const pageSize = 4
 
-const temperatureZones = [
-  { id: 1, name: 'Fridge1' },
-  { id: 2, name: 'Freezer room' },
-  { id: 3, name: 'Fridge2' },
-]
-
 const currentPage = ref(1)
-const filteredtemperatureZone = ref('')
+const filteredtemperatureZoneId = ref<number | null>(null)
+const filteredTemperatureZone = ref<string>('')
+const role = ref<string | null>(null)
+
+onMounted(() => {
+  const session = getAuthSession()
+  role.value = session?.role ?? null
+})
+
+const canDeleteLogs = computed(() => role.value === 'ADMIN' || role.value === 'MANAGER')
 
 const filteredTemperatureLogs = computed(() => {
-  if (!filteredtemperatureZone.value) {
-    return temperatureLogs
+  if (!filteredtemperatureZoneId.value) {
+    return props.temperatureLogs
   }
 
-  return temperatureLogs.filter((log) => log.temperatureZone === filteredtemperatureZone.value)
+  return props.temperatureLogs.filter(
+    (log) => log.temperatureZoneId === filteredtemperatureZoneId.value,
+  )
 })
 
 const temperatureLogsSplit = computed(() =>
@@ -88,12 +47,32 @@ const temperatureLogsSplit = computed(() =>
 
 const currentPageLogs = computed(() => temperatureLogsSplit.value[currentPage.value - 1] ?? [])
 
-watch(filteredtemperatureZone, () => {
-  currentPage.value = 1
-})
+function setFilteredTemperatureZone() {
+  const selectedZone = props.temperatureZones.find(
+    (zone) => zone.name === filteredTemperatureZone.value,
+  )
 
-function isRowAbnormal(log: { status: string }) {
-  return log.status === 'Abnormal'
+  filteredtemperatureZoneId.value = selectedZone ? selectedZone.id : null
+
+  currentPage.value = 1
+}
+
+function isRowAbnormal(log: TemperatureLog) {
+  const zone = props.temperatureZones.find(
+    (temperatureZone) => temperatureZone.id === log.temperatureZoneId,
+  )
+
+  if (!zone) {
+    return false
+  }
+
+  if (log.temperatureCelsius >= zone.upperLimitCelsius) {
+    return true
+  } else if (log.temperatureCelsius <= zone.lowerLimitCelsius) {
+    return true
+  }
+
+  return false
 }
 
 function pageLeft() {
@@ -106,6 +85,26 @@ function pageRight() {
   if (currentPage.value < temperatureLogsSplit.value.length) {
     currentPage.value += 1
   }
+}
+
+function formatTimestamp(timestamp: string) {
+  const parsedDate = new Date(timestamp)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return timestamp
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(parsedDate)
+}
+
+function deleteLog(logId: number) {
+  emit('delete-log', logId)
 }
 </script>
 
@@ -120,7 +119,7 @@ function pageRight() {
     <template #extra-header-content>
       <div class="zone-filter-wrap">
         <Filter class="zone-filter-icon" :size="16" aria-hidden="true" />
-        <select v-model="filteredtemperatureZone">
+        <select v-model="filteredTemperatureZone" @change="setFilteredTemperatureZone">
           <option value="">All Temperature Zones</option>
           <option v-for="zone in temperatureZones" :key="zone.id" :value="zone.name">
             {{ zone.name }}
@@ -136,6 +135,7 @@ function pageRight() {
           <th>Temperature (°C)</th>
           <th>Status</th>
           <th>Logged By</th>
+          <th v-if="canDeleteLogs"></th>
         </tr>
       </thead>
       <tbody class="log-table-body">
@@ -144,15 +144,26 @@ function pageRight() {
           :key="log.id"
           v-bind:class="isRowAbnormal(log) ? 'abnormal-row' : ''"
         >
-          <td>{{ log.timestamp.toLocaleString() }}</td>
-          <td>{{ log.temperatureZone }}</td>
-          <td>{{ log.temperature }} °C</td>
-          <td class="status-column">
-            <Check v-if="log.status === 'Optimal'" :size="20" />
-            <TriangleAlert v-else-if="log.status === 'Abnormal'" :size="20" />
-            <span>{{ log.status }}</span>
+          <td>{{ formatTimestamp(log.timestamp) }}</td>
+          <td>
+            {{
+              log.temperatureZoneName ??
+              props.temperatureZones.find((zone) => zone.id === log.temperatureZoneId)?.name ??
+              'Unknown zone'
+            }}
           </td>
-          <td>{{ log.loggedBy }}</td>
+          <td>{{ log.temperatureCelsius }} °C</td>
+          <td class="status-column">
+            <div class="status-content">
+              <Check v-if="!isRowAbnormal(log)" :size="20" />
+              <TriangleAlert v-else :size="20" />
+              <span>{{ isRowAbnormal(log) ? 'Abnormal' : 'Optimal' }}</span>
+            </div>
+          </td>
+          <td>{{ log.recordedByName ?? 'Unknown user' }}</td>
+          <td v-if="canDeleteLogs">
+            <button class="delete-btn" @click="deleteLog(log.id)">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -186,7 +197,7 @@ function pageRight() {
 }
 
 .log-table-header th:nth-child(1) {
-  width: 25%;
+  width: 22%;
 }
 
 .log-table-header th:nth-child(2) {
@@ -194,15 +205,19 @@ function pageRight() {
 }
 
 .log-table-header th:nth-child(3) {
-  width: 15%;
+  width: 14%;
 }
 
 .log-table-header th:nth-child(4) {
-  width: 15%;
+  width: 14%;
 }
 
 .log-table-header th:nth-child(5) {
-  width: 25%;
+  width: 20%;
+}
+
+.log-table-header th:nth-child(6) {
+  width: 10%;
 }
 
 .paging {
@@ -260,16 +275,6 @@ function pageRight() {
     border-color 0.15s ease;
 }
 
-/* .abnormal-row td:first-child {
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-}
-
-.abnormal-row td:last-child {
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-} */
-
 .opotimal-row td {
   color: var(--neutral);
   transition:
@@ -288,8 +293,18 @@ function pageRight() {
 }
 
 .status-column {
+  white-space: nowrap;
+}
+
+.status-content {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.delete-btn {
+  width: 100%;
+  background-color: var(--cta-red-btn);
+  color: white;
 }
 </style>

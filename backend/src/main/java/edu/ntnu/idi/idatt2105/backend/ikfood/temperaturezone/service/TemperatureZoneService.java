@@ -1,5 +1,10 @@
 package edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
@@ -8,12 +13,9 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.dto.CreateTemperatureZoneRequest;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.dto.TemperatureZoneDTO;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZone;
-import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.repository.TemperatureZoneRepository;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.mapper.TemperatureZoneMapper;
-import java.util.List;
+import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.repository.TemperatureZoneRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class TemperatureZoneService {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
-        if (temperatureZoneRepository.existsByTenantIdAndNameIgnoreCase(tenantId, request.getName().trim())) {
+        if (temperatureZoneRepository.existsByTenantIdAndNameIgnoreCaseAndActiveTrue(tenantId, request.getName().trim())) {
             throw new ValidationException("Temperature zone already exists: " + request.getName());
         }
 
@@ -53,6 +55,36 @@ public class TemperatureZoneService {
                 .toList();
     }
 
+    public TemperatureZoneDTO update(Long id, CreateTemperatureZoneRequest request) {
+        validateLimits(request.getLowerLimitCelsius(), request.getUpperLimitCelsius());
+
+        Long tenantId = TenantContext.getCurrentOrg();
+        TemperatureZone zone = temperatureZoneRepository.findByIdAndTenantIdAndActiveTrue(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Temperature zone not found"));
+
+        if (temperatureZoneRepository.existsByTenantIdAndNameIgnoreCaseAndActiveTrueAndIdNot(
+            tenantId,
+            request.getName().trim(),
+            id)) {
+            throw new ValidationException("Temperature zone already exists: " + request.getName());
+        }
+
+        zone.setName(request.getName().trim());
+        zone.setLowerLimitCelsius(request.getLowerLimitCelsius());
+        zone.setUpperLimitCelsius(request.getUpperLimitCelsius());
+
+        return temperatureZoneMapper.toDTO(temperatureZoneRepository.save(zone));
+    }
+
+    public void delete(Long id) {
+        Long tenantId = TenantContext.getCurrentOrg();
+
+        TemperatureZone zone = temperatureZoneRepository.findByIdAndTenantIdAndActiveTrue(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Temperature zone not found"));
+        zone.setActive(false);
+        temperatureZoneRepository.save(zone);
+    }
+
     private void validateLimits(Double lowerLimit, Double upperLimit) {
         if (lowerLimit >= upperLimit) {
             throw new ValidationException("Lower temperature limit must be less than upper limit");
@@ -60,4 +92,3 @@ public class TemperatureZoneService {
     }
 
 }
-

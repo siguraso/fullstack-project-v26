@@ -1,25 +1,99 @@
 <script setup lang="ts">
-import type { TemperatureZone } from '@/types/temperature-zone'
-import { computed, nextTick, ref } from 'vue'
+import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
 import CreateTemperatureZone from './components/CreateTemperatureZone.vue'
 import TemperatureZoneOverview from './components/TemperatureZoneOverview.vue'
 import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 import EditTemperatureZone from './components/EditTemperatureZone.vue'
+import DeleteTemperatureLogDialog from './components/DeleteTemperatureLogDialog.vue'
+import { deleteTemperatureLog, fetchTemperatureLogs } from '@/services/temperatureLog'
+import {
+  deleteTemperatureZone,
+  editTemperatureZone,
+  getTemperatureZones,
+} from '@/services/temperatureZone'
+import { addTemperatureZone } from '@/services/temperatureZone'
 
-const zones = ref<TemperatureZone[]>(
-  Array.from({ length: 10 }, (_, index) => ({
-    id: index + 1,
-    name: `Zone ${index + 1}`,
-    lowerLimitCelcius: Math.floor(Math.random() * 10) - 5,
-    upperLimitCelcius: Math.floor(Math.random() * 10) + 5,
-  })),
-)
+const zones = ref<TemperatureZone[]>([])
+const logs = ref<TemperatureLog[]>([])
+const isLoadingZones = ref(false)
+const isLoadingLogs = ref(false)
+const zoneLoadError = ref('')
+const logLoadError = ref('')
+
+async function loadZones() {
+  isLoadingZones.value = true
+  zoneLoadError.value = ''
+
+  try {
+    zones.value = await getTemperatureZones()
+  } catch (error) {
+    zoneLoadError.value =
+      error instanceof Error ? error.message : 'Failed to fetch temperature zones'
+    console.error('Failed to fetch temperature zones', error)
+  } finally {
+    isLoadingZones.value = false
+  }
+}
+
+async function loadLogs() {
+  isLoadingLogs.value = true
+  logLoadError.value = ''
+
+  try {
+    logs.value = await fetchTemperatureLogs()
+  } catch (error) {
+    logLoadError.value = error instanceof Error ? error.message : 'Failed to fetch temperature logs'
+    console.error('Failed to fetch temperature logs', error)
+  } finally {
+    isLoadingLogs.value = false
+  }
+}
+
+onMounted(() => {
+  void loadZones()
+  void loadLogs()
+})
 
 const isEditZoneOverlayOpen = ref(false)
 const isCreateZoneOverlayOpen = ref(false)
+const isDeleteLogOverlayOpen = ref(false)
 const selectedZone = ref<TemperatureZone | null>(null)
+const selectedLog = ref<TemperatureLog | null>(null)
 const overlayZone = computed(() => (isEditZoneOverlayOpen.value ? selectedZone.value : null))
+const overlayLog = computed(() => (isDeleteLogOverlayOpen.value ? selectedLog.value : null))
+
+function handleTemperatureLogCreated(log: TemperatureLog) {
+  logs.value = [log, ...logs.value]
+}
+
+function requestTemperatureLogDelete(logId: number) {
+  const targetLog = logs.value.find((log) => log.id === logId)
+
+  if (!targetLog) {
+    return
+  }
+
+  selectedLog.value = targetLog
+  isDeleteLogOverlayOpen.value = true
+}
+
+function closeDeleteLogOverlay() {
+  isDeleteLogOverlayOpen.value = false
+  selectedLog.value = null
+}
+
+async function handleTemperatureLogDeleted(logId: number) {
+  try {
+    await deleteTemperatureLog(logId)
+    logs.value = logs.value.filter((log) => log.id !== logId)
+    closeDeleteLogOverlay()
+  } catch (error) {
+    console.error('Failed to delete temperature log', error)
+  }
+}
 
 function openEditZoneOverlay(zone: TemperatureZone) {
   selectedZone.value = zone
@@ -33,19 +107,50 @@ async function closeEditZoneOverlay() {
 }
 
 async function saveZoneChanges(updatedZone: TemperatureZone) {
-  const zoneIndex = zones.value.findIndex((zone) => zone.id === updatedZone.id)
-  if (zoneIndex === -1) {
-    return
-  }
+  editTemperatureZone(updatedZone.id, updatedZone)
+    .then((responseZone) => {
+      const zoneIndex = zones.value.findIndex((zone) => zone.id === updatedZone.id)
+      if (zoneIndex === -1) {
+        return
+      }
 
-  zones.value[zoneIndex] = updatedZone
-  selectedZone.value = updatedZone
-  await closeEditZoneOverlay()
+      zones.value[zoneIndex] = responseZone
+      selectedZone.value = responseZone
+    })
+    .catch((error) => {
+      console.error('Failed to update temperature zone', error)
+    })
+    .finally(() => {
+      closeEditZoneOverlay()
+    })
 }
 
 async function deleteZone(zoneId: number) {
-  zones.value = zones.value.filter((zone) => zone.id !== zoneId)
+  deleteTemperatureZone(zoneId)
+    .then(() => {
+      zones.value = zones.value.filter((zone) => zone.id !== zoneId)
+    })
+    .catch((error) => {
+      console.error('Failed to delete temperature zone', error)
+    })
+    .finally(() => {
+      closeEditZoneOverlay()
+    })
+
   await closeEditZoneOverlay()
+}
+
+async function createZone(newZone: Omit<TemperatureZone, 'id'>) {
+  addTemperatureZone(newZone)
+    .then((createdZone) => {
+      zones.value.push(createdZone)
+    })
+    .catch((error) => {
+      console.error('Failed to create temperature zone', error)
+    })
+    .finally(() => {
+      closeCreateZoneOverlay()
+    })
 }
 
 function openCreateZoneOverlay() {
@@ -55,12 +160,6 @@ function openCreateZoneOverlay() {
 function closeCreateZoneOverlay() {
   isCreateZoneOverlayOpen.value = false
 }
-
-function createZone(newZone: Omit<TemperatureZone, 'id'>) {
-  const nextId = zones.value.length ? Math.max(...zones.value.map((zone) => zone.id)) + 1 : 1
-  zones.value = [...zones.value, { id: nextId, ...newZone }]
-  closeCreateZoneOverlay()
-}
 </script>
 
 <template>
@@ -69,8 +168,17 @@ function createZone(newZone: Omit<TemperatureZone, 'id'>) {
       <h1>Temperature Logs</h1>
     </header>
 
+    <p v-if="isLoadingZones" class="status-message">Loading temperature zones...</p>
+    <p v-else-if="zoneLoadError" class="status-message error">{{ zoneLoadError }}</p>
+    <p v-if="isLoadingLogs" class="status-message">Loading temperature logs...</p>
+    <p v-else-if="logLoadError" class="status-message error">{{ logLoadError }}</p>
+
     <div class="top-row">
-      <CreateTemperatureLog class="create-log" />
+      <CreateTemperatureLog
+        class="create-log"
+        :temperatureZones="zones"
+        @created="handleTemperatureLogCreated"
+      />
       <TemperatureZoneOverview
         class="temperature-zone-overview"
         :zones="zones"
@@ -79,7 +187,20 @@ function createZone(newZone: Omit<TemperatureZone, 'id'>) {
       />
     </div>
 
-    <TemperatureLogHistory />
+    <TemperatureLogHistory
+      :temperatureZones="zones"
+      :temperatureLogs="logs"
+      @delete-log="requestTemperatureLogDelete"
+    />
+
+    <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeDeleteLogOverlay">
+      <DeleteTemperatureLogDialog
+        :log="overlayLog"
+        :zones="zones"
+        @close="closeDeleteLogOverlay"
+        @confirm="handleTemperatureLogDeleted"
+      />
+    </div>
 
     <div v-if="overlayZone" class="overlay-backdrop" @click.self="closeEditZoneOverlay">
       <EditTemperatureZone
@@ -103,6 +224,14 @@ function createZone(newZone: Omit<TemperatureZone, 'id'>) {
 <style scoped>
 .temperature-log-content {
   position: relative;
+}
+
+.status-message {
+  margin: 0.75rem 0 1rem;
+}
+
+.status-message.error {
+  color: #b42222;
 }
 
 .top-row {

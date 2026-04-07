@@ -8,6 +8,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class TemperatureLogDTO extends BaseComplianceLogDTO {
 
+    private Long id;
+    private String recordedByName;
+    private String recordedByEmail;
+    private String recordedByRole;
     private Long temperatureZoneId;
     private String temperatureZoneName;
     private Double lowerLimitCelsius;

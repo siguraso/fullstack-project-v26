@@ -29,6 +29,17 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
+CREATE TABLE IF NOT EXISTS invitations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    token VARCHAR(1024) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    accepted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+);
+
 CREATE TABLE IF NOT EXISTS temperature_zones (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
@@ -38,7 +49,7 @@ CREATE TABLE IF NOT EXISTS temperature_zones (
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE (tenant_id, name),
+    UNIQUE (tenant_id, name, active),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
