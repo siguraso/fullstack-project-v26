@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
 import { useDeviationStore, type Deviation } from '@/stores/deviation'
 
@@ -6,7 +7,6 @@ const store = useDeviationStore()
 
 const props = defineProps<{
   lockedCategory?: Deviation['category']
-  lockedModule?: Deviation['module']
   title?: string
 }>()
 
@@ -24,65 +24,27 @@ watchEffect(() => {
   if (props.lockedCategory) {
     store.form.category = props.lockedCategory
   }
-
-  if (props.lockedModule) {
-    store.form.module = props.lockedModule
-  }
 })
 
 const selectedLabel = computed(() => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General')
 const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Deviation`)
-const lockedModuleLabel = computed(() =>
-  props.lockedModule === 'IK_ALCOHOL' ? 'IK-ALCOHOL' : 'IK-FOOD',
-)
 </script>
 
 <template>
   <div class="card">
     <div class="card-head">
       <div class="title-wrap">
-        <h3>{{ heading }}</h3>
+        <div class="title-icon">
+          <Edit2 :size="20" aria-hidden="true" />
+        </div>
+        <h3 class="title-text">{{ heading }}</h3>
       </div>
-
-      <div v-if="!lockedModule" class="module-toggle" role="group" aria-label="Compliance module">
-        <button
-            type="button"
-            :class="['module-option', { active: store.form.module === 'IK_FOOD' }]"
-            @click="store.form.module = 'IK_FOOD'"
-        >
-          IK-FOOD
-        </button>
-        <button
-            type="button"
-            :class="['module-option', { active: store.form.module === 'IK_ALCOHOL' }]"
-            @click="store.form.module = 'IK_ALCOHOL'"
-        >
-          IK-ALCOHOL
-        </button>
-      </div>
-
-      <div v-else class="module-lock">{{ lockedModuleLabel }}</div>
     </div>
 
     <div class="form-grid">
       <label>
         <span>Deviation title *</span>
         <input v-model="store.form.title" placeholder="e.g., Cold Storage Sensor Failure" />
-      </label>
-
-      <label>
-        <span>Severity level</span>
-        <div class="severity">
-          <button
-              v-for="s in levels"
-              :key="s"
-              type="button"
-              :class="['severity-btn', s.toLowerCase(), { active: store.form.severity === s }]"
-              @click="store.form.severity = s"
-          >
-            {{ s }}
-          </button>
-        </div>
       </label>
 
       <label v-if="!lockedCategory">
@@ -105,7 +67,22 @@ const lockedModuleLabel = computed(() =>
         </select>
       </label>
 
-      <label class="description">
+      <label class="field-wide">
+        <span>Severity level</span>
+        <div class="severity">
+          <button
+            v-for="s in levels"
+            :key="s"
+            type="button"
+            :class="['severity-btn', s.toLowerCase(), { active: store.form.severity === s }]"
+            @click="store.form.severity = s"
+          >
+            {{ s }}
+          </button>
+        </div>
+      </label>
+
+      <label class="description field-wide">
         <span>Detailed description</span>
         <textarea
             v-model="store.form.description"
@@ -133,7 +110,7 @@ const lockedModuleLabel = computed(() =>
 
 .card-head {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   gap: 16px;
   margin-bottom: 18px;
@@ -145,55 +122,32 @@ const lockedModuleLabel = computed(() =>
   gap: 10px;
 }
 
-h3 {
+.title-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--neutral);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+}
+
+.title-text {
   margin: 0;
   color: var(--text);
-  font-size: 30px;
-}
-
-.module-toggle {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-muted);
-  overflow: hidden;
-}
-
-.module-option {
-  border: 0;
-  min-height: 36px;
-  min-width: 118px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  border-radius: 0;
-  text-transform: uppercase;
-  background: transparent;
-}
-
-.module-option.active {
-  background: var(--neutral);
-  color: var(--bg);
-}
-
-.module-lock {
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface-muted);
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 800;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
+}
+
+.field-wide {
+  grid-column: auto;
 }
 
 label {
@@ -236,13 +190,14 @@ select {
 }
 
 .severity-btn {
-  min-height: 40px;
+  min-height: 34px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--surface);
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .severity-btn.low.active {
@@ -270,13 +225,12 @@ select {
 }
 
 .description {
-  grid-column: 2;
-  grid-row: 2 / span 2;
+  grid-row: auto;
 }
 
 textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 110px;
   resize: vertical;
   padding: 12px;
 }
@@ -320,8 +274,5 @@ small {
     grid-row: auto;
   }
 
-  .module-option {
-    min-width: 100px;
-  }
 }
 </style>

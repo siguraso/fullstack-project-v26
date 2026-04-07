@@ -8,7 +8,6 @@ const store = useDeviationStore()
 
 function applyTemperatureDefaults() {
   store.form.category = 'TEMPERATURE'
-  store.form.module = 'IK_FOOD'
   store.form.severity = 'CRITICAL'
   store.filters.status = 'ALL'
   store.filters.severity = 'ALL'
@@ -43,7 +42,6 @@ onMounted(() => {
     <DeviationForm
       title="Report Temperature Deviation"
       locked-category="TEMPERATURE"
-      locked-module="IK_FOOD"
     />
 
     <DeviationTable title="Temperature Deviation Log" category="TEMPERATURE" />
