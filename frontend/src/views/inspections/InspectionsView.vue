@@ -107,7 +107,7 @@ function exportJson() {
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--stroke);
   cursor: pointer;
 }
 
@@ -127,18 +127,14 @@ function exportJson() {
 }
 
 .table-head {
+  background-color: #f4f3f3;
   font-size: 12px;
   text-transform: uppercase;
   color: var(--text-secondary);
-  background: var(--bg-secondary);
 }
 
-.table-row.open {
-  background: #fff5f5;
-}
-
-.table-row.resolved {
-  background: #f0fff4;
+.table-row {
+  background-color: var(--bg-secondary);
 }
 
 .table-row strong {
