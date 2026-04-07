@@ -48,11 +48,6 @@ const router = createRouter({
           component: TemperatureView,
         },
         {
-          path: '/temperature',
-          name: 'temperature',
-          component: TemperatureView,
-        },
-        {
           path: '/checklists',
           name: 'checklist',
           component: ChecklistView,
