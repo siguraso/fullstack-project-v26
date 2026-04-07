@@ -192,3 +192,16 @@ export async function deactivateUser(id: number): Promise<void> {
     'Unable to deactivate staff member.',
   )
 }
+
+export async function sendStaffInvite(email: string): Promise<void> {
+  await request<null>(
+    '/users/invite',
+    {
+      method: 'POST',
+      headers: buildHeaders(true),
+      body: JSON.stringify({ email }),
+    },
+    'Unable to send staff invite.',
+  )
+}
+

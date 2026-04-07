@@ -13,7 +13,9 @@ export interface RegisterPayload {
   password: string
   firstName: string
   lastName: string
-  orgNumber: string
+  orgNumber?: string
+  phone?: string
+  inviteToken?: string
 }
 
 export interface AuthSession {

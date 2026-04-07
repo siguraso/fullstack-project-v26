@@ -15,6 +15,7 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import {
   deactivateUser,
   getCurrentTenant,
+  sendStaffInvite,
   getUser,
   getUsers,
   updateCurrentTenant,
@@ -58,6 +59,7 @@ const tenantError = ref('')
 const usersError = ref('')
 const tenantSuccess = ref('')
 const staffSuccess = ref('')
+const inviteError = ref('')
 
 const searchQuery = ref('')
 const roleFilter = ref('ALL')
@@ -67,6 +69,8 @@ const isUserEditorOpen = ref(false)
 const isUserEditorLoading = ref(false)
 const userEditorError = ref('')
 const deactivatingUserId = ref<number | null>(null)
+const inviteEmail = ref('')
+const isSendingInvite = ref(false)
 
 const tenantForm = reactive<TenantForm>({
   name: '',
@@ -309,7 +313,30 @@ async function bootstrapPage() {
 
 async function refreshUsers() {
   staffSuccess.value = ''
+  inviteError.value = ''
   await loadUsersSection(true)
+}
+
+async function sendInviteForTesting() {
+  const email = inviteEmail.value.trim()
+  if (!email) {
+    inviteError.value = 'Enter an email address before sending an invitation.'
+    return
+  }
+
+  isSendingInvite.value = true
+  inviteError.value = ''
+  staffSuccess.value = ''
+
+  try {
+    await sendStaffInvite(email)
+    staffSuccess.value = `Invitation sent to ${email}.`
+    inviteEmail.value = ''
+  } catch (error) {
+    inviteError.value = toErrorMessage(error, 'Unable to send invitation email.')
+  } finally {
+    isSendingInvite.value = false
+  }
 }
 
 function resetTenantForm() {
@@ -550,6 +577,39 @@ onMounted(() => {
         icon-color="#4c3da5"
         class="main-panel"
       >
+        <div class="invite-panel">
+          <div class="invite-copy">
+            <p class="section-label">Staff invitation</p>
+            <h3>Invite a new staff member</h3>
+            <p>
+              Send a secure invitation link by email. The invited person will complete their
+              account from that link.
+            </p>
+          </div>
+
+          <div class="invite-actions">
+            <label class="field invite-field">
+              <span>Email address</span>
+              <input
+                  v-model="inviteEmail"
+                  type="email"
+                  placeholder="new.staff@example.com"
+                  @keyup.enter="sendInviteForTesting"
+              />
+            </label>
+
+            <button
+                type="button"
+                class="primary-button invite-button"
+                :disabled="isSendingInvite || inviteEmail.trim().length === 0"
+                @click="sendInviteForTesting"
+            >
+              {{ isSendingInvite ? 'Sending invite...' : 'Send invitation' }}
+            </button>
+          </div>
+        </div>
+
+        <p v-if="inviteError" class="message-banner error-banner">{{ inviteError }}</p>
         <div class="staff-toolbar">
           <label class="field toolbar-search">
             <span>Search staff</span>
@@ -589,7 +649,6 @@ onMounted(() => {
             </button>
           </div>
         </div>
-
         <p v-if="usersError" class="message-banner error-banner">{{ usersError }}</p>
         <p v-if="staffSuccess" class="message-banner success-banner">{{ staffSuccess }}</p>
 
@@ -972,9 +1031,62 @@ onMounted(() => {
   align-items: end;
 }
 
+.invite-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.95fr);
+  gap: 16px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(76, 61, 165, 0.12);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(236, 233, 251, 0.52), rgba(255, 255, 255, 0.86));
+}
+
 .toolbar-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.invite-copy h3 {
+  margin: 0 0 8px;
+  font-size: 1.08rem;
+}
+
+.invite-copy p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.invite-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.invite-field {
+  min-width: 0;
+}
+
+.invite-button {
+  white-space: nowrap;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, #2f4fa8, #1f75d8);
+  color: #ffffff;
+  border: 1px solid #21427f;
+  box-shadow: 0 10px 22px rgba(33, 66, 127, 0.22);
+}
+
+.primary-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #263f88, #165daa);
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .staff-table {
@@ -1165,8 +1277,16 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .invite-panel {
+    grid-template-columns: 1fr;
+  }
+
   .toolbar-actions {
     justify-content: flex-start;
+  }
+
+  .invite-actions {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1186,6 +1306,14 @@ button:disabled {
   .staff-toolbar,
   .summary-grid,
   .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .invite-panel {
+    padding: 16px;
+  }
+
+  .invite-actions {
     grid-template-columns: 1fr;
   }
 
