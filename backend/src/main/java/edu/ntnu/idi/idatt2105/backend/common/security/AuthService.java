@@ -81,12 +81,31 @@ public class AuthService {
       throw new UnauthorizedException("Email already registered");
     }
 
-    // Find tenant
-    Tenant tenant = tenantRepository.findByOrgNumber(request.orgNumber());
-    if (tenant == null) {
-      log.warn("Tenant with org: {} does not exist.", request.orgNumber());
-      throw new UnauthorizedException("Tenant does not exist");
+    Tenant tenant;
+    String inviteToken = request.inviteToken();
+    if (inviteToken != null && !inviteToken.isBlank()) {
+      if (!jwtService.isInviteTokenValid(inviteToken, request.email())) {
+        log.warn("Invalid invite token used for email: {}", request.email());
+        throw new UnauthorizedException("Invalid or expired invite token");
+      }
 
+      Long tenantId = jwtService.extractOrganizationId(inviteToken);
+      if (tenantId == null) {
+        throw new UnauthorizedException("Invite token is missing organization context");
+      }
+
+      tenant = tenantRepository.findById(tenantId)
+          .orElseThrow(() -> new UnauthorizedException("Tenant does not exist"));
+    } else {
+      if (request.orgNumber() == null || request.orgNumber().isBlank()) {
+        throw new UnauthorizedException("Organisation number is required");
+      }
+
+      tenant = tenantRepository.findByOrgNumber(request.orgNumber());
+      if (tenant == null) {
+        log.warn("Tenant with org: {} does not exist.", request.orgNumber());
+        throw new UnauthorizedException("Tenant does not exist");
+      }
     }
 
     // Create new user
@@ -95,6 +114,7 @@ public class AuthService {
     user.setPassword(passwordEncoder.encode(request.password()));
     user.setFirstName(request.firstName());
     user.setLastName(request.lastName());
+    user.setPhone(request.phone());
     user.setUsername(request.email()); // Use email as username
     user.setTenant(tenant);
     user.setActive(true);
