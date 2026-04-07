@@ -1,10 +1,16 @@
 <script setup lang="ts">
 interface TaskListItemProps {
+  id: number
   taskTitle: string
   taskType: string
   dueDate: Date
   icon: any
+  completed: boolean
 }
+
+const emit = defineEmits<{
+  (e: 'toggle', id: number, completed: boolean): void
+}>()
 
 const props = defineProps<TaskListItemProps>()
 </script>
@@ -18,10 +24,11 @@ const props = defineProps<TaskListItemProps>()
       <div class="task-header">
         <h3 class="task-title">{{ props.taskTitle }}</h3>
         <p class="task-subtext">Type: {{ props.taskType }}</p>
-        <p class="task-subtext">Due: {{ props.dueDate.toDateString() }}</p>
       </div>
     </div>
-    <button class="finish-btn" type="button">Mark As Finished</button>
+    <button class="finish-btn" type="button" @click="emit('toggle', props.id, !props.completed)">
+      {{ props.completed ? 'Completed' : 'Mark As Finished' }}
+    </button>
   </div>
 </template>
 
