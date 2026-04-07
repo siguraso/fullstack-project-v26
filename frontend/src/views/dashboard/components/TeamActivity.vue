@@ -9,37 +9,11 @@ interface Activity {
   dateFinished: Date
 }
 
-// TODO: db intergration as always, fetch images users and tasks
-const activity1: Activity = {
-  username: 'Doug',
-  task: 'Clean washroom 1',
-  dateFinished: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-}
+const props = defineProps<{
+  activities: any[]
+}>()
 
-const activity2: Activity = {
-  username: 'Sigurd',
-  task: 'Created Temperature Log for Freezer 1',
-  dateFinished: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-}
-
-const activity3: Activity = {
-  username: 'Emily',
-  task: 'Completed weekly food safety checklist',
-  dateFinished: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-}
-
-const activity4: Activity = {
-  username: 'Michael',
-  task: 'Updated incident report for spill in kitchen',
-  dateFinished: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-}
-
-const activity = ref(new Array())
-
-activity.value.push(activity1)
-activity.value.push(activity2)
-activity.value.push(activity3)
-activity.value.push(activity4)
+const activity = computed(() => props.activities || [])
 
 const showAll = ref(false)
 
@@ -71,10 +45,10 @@ const formatTimeAgo = (date: Date): string => {
       </div>
       <div class="activity-content">
         <div class="activity-header">
-          <p class="username">{{ item.username }}</p>
-          <span class="timestamp">{{ formatTimeAgo(item.dateFinished) }}</span>
+          <p class="username">{{ item.actor }}</p>
+          <span class="timestamp">{{ formatTimeAgo(new Date(item.occurredAt)) }}</span>
         </div>
-        <p class="activity-task">{{ item.task }}</p>
+        <p class="activity-task">{{ item.title }}</p>
       </div>
     </div>
     <button v-if="activity.length > 3" @click="showAll = !showAll" class="show-more-btn">

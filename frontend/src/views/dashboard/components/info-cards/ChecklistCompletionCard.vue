@@ -3,9 +3,10 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import { ClipboardCheck } from '@lucide/vue'
 import { computed } from 'vue'
 
-// TODO add data fetching
-const checklistCompleted = 75
-const checklistTotal = 100
+const props = defineProps<{
+  completed: number
+  total: number
+}>()
 
 function calculateCompletionRate(completed: number, total: number): number {
   if (total === 0) return 100
@@ -13,7 +14,7 @@ function calculateCompletionRate(completed: number, total: number): number {
 }
 
 const completionRate = computed(() =>
-  Math.min(100, Math.max(0, calculateCompletionRate(checklistCompleted, checklistTotal))),
+  Math.min(100, Math.max(0, calculateCompletionRate(props.completed, props.total))),
 )
 
 const completionRateLabel = computed(() => `${Math.round(completionRate.value)}% complete`)
@@ -22,7 +23,7 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
 <template>
   <InfoCard title="Checklist Completion" :icon="ClipboardCheck" iconBackgroundColor="#d2e4fb">
     <div class="checklist-label">
-      <h3>{{ checklistCompleted }} / {{ checklistTotal }}</h3>
+      <h3>{{ props.completed }} / {{ props.total }}</h3>
       <p>Tasks Completed</p>
     </div>
 

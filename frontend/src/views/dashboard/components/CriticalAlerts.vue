@@ -1,23 +1,22 @@
 <script setup lang="ts">
 import Card from '@/components/ui/Card.vue'
+import { resolveDeviation } from '@/services/deviation'
 import { Thermometer, TimerReset, TriangleAlert } from '@lucide/vue'
 
-const alerts = [
-  {
-    id: 1,
-    title: 'Walk-in Freezer A-1 Temperature Breach',
-    details: 'Last reading: -12°C (Target: -18°C) • 14 mins ago',
-    action: 'LOG ACTION',
-    icon: Thermometer,
-  },
-  {
-    id: 2,
-    title: 'Cleaning List: Bar Area',
-    details: 'Overdue by 2 hours • Staff: Maria K.',
-    action: 'MARK COMPLETE',
-    icon: TimerReset,
-  },
-]
+const props = defineProps<{
+  alerts: any[]
+}>()
+
+const emit = defineEmits(['resolved'])
+
+async function handleResolve(id: number) {
+  try {
+    await resolveDeviation(id)
+    emit('resolved')
+  } catch (e) {
+    console.error('Failed to resolve alert', e)
+  }
+}
 </script>
 
 <template>
@@ -32,20 +31,20 @@ const alerts = [
     </template>
 
     <template #card-content>
-      <ul class="alerts-list">
+      <TransitionGroup name="alert" tag="ul" class="alerts-list">
         <li v-for="alert in alerts" :key="alert.id" class="alert-item">
-          <span class="alert-icon-wrapper" aria-hidden="true">
-            <component :is="alert.icon" :size="24" class="alert-icon" />
+          <span class="alert-icon-wrapper">
+            <TriangleAlert :size="24" class="alert-icon" />
           </span>
 
           <div class="alert-copy">
             <p class="alert-title">{{ alert.title }}</p>
-            <p class="alert-details">{{ alert.details }}</p>
+            <p class="alert-details">{{ alert.description }}</p>
           </div>
 
-          <button type="button" class="alert-action">Resolve</button>
+          <button class="alert-action" @click="handleResolve(alert.id)">Resolve</button>
         </li>
-      </ul>
+      </TransitionGroup>
     </template>
   </Card>
 </template>
@@ -169,5 +168,19 @@ const alerts = [
   .alert-action {
     margin-left: 66px;
   }
+}
+
+/* ANIMATION */
+.alert-leave-active {
+  transition: all 0.25s ease;
+}
+
+.alert-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.alert-move {
+  transition: transform 0.25s ease;
 }
 </style>

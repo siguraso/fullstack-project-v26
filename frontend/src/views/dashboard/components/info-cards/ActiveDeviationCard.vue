@@ -3,9 +3,11 @@ import { ref } from 'vue'
 import { AlertTriangle } from '@lucide/vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
 
-const numberOfActiveDeviations = ref(3) // TODO replace with actual data fetching
-const numberOfWeeklyDeviations = ref(15) // TODO replace with actual data fetching
-const numberOfClosedDeviations = ref(12) // TODO replace with actual data fetching
+const props = defineProps<{
+  active: number
+  weekly: number
+  closed: number
+}>()
 </script>
 
 <template>
@@ -15,11 +17,9 @@ const numberOfClosedDeviations = ref(12) // TODO replace with actual data fetchi
     :icon="AlertTriangle"
     iconBackgroundColor="#feddb5"
   >
-    <h3>{{ numberOfActiveDeviations }}</h3>
+    <h3>{{ props.active }}</h3>
     <p>Active Deviations</p>
-    <p class="deviation-subtext">
-      {{ numberOfWeeklyDeviations }} this week, {{ numberOfClosedDeviations }} closed
-    </p>
+    <p class="deviation-subtext">{{ props.weekly }} this week, {{ props.closed }} closed</p>
   </InfoCard>
 </template>
 
