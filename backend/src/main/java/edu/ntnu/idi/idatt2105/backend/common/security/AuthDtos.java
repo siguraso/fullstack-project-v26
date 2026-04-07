@@ -39,8 +39,11 @@ public class AuthDtos {
       @NotBlank(message = "Last name is required")
       String lastName,
 
-      @NotBlank(message = "Organisation number is required")
-      String orgNumber
+      String orgNumber,
+
+      String phone,
+
+      String inviteToken
   ) {}
 
   public record RefreshRequest(
