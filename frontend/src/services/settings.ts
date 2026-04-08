@@ -1,4 +1,6 @@
 import { getAuthSession } from '@/services/auth'
+import type { Tenant, TenantUpdatePayload } from '@/interfaces/Tenant.interface'
+import type { User, UserUpdatePayload } from '@/interfaces/User.interface'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
@@ -8,50 +10,6 @@ type ApiEnvelope<T> = {
   error?: string | null
   detail?: string | null
   data?: T
-}
-
-export interface Tenant {
-  id: number
-  name: string
-  org_number: string
-  address: string
-  city: string
-  country: string
-  contact_email: string
-  contact_phone: string
-  active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface TenantUpdatePayload {
-  name: string
-  orgNumber: string
-  address: string
-  city: string
-  country: string
-  contactEmail: string
-  contactPhone: string
-}
-
-export interface User {
-  id: number
-  tenantId: number
-  firstName: string
-  lastName: string
-  username: string
-  email: string
-  phone: string
-  role: string
-  active: boolean
-}
-
-export interface UserUpdatePayload {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  role: string
 }
 
 function buildHeaders(contentType = false): HeadersInit {
@@ -119,9 +77,13 @@ async function request<T>(path: string, init?: RequestInit, fallbackError?: stri
 }
 
 export async function getCurrentTenant(): Promise<Tenant> {
-  return request<Tenant>('/tenants/current', {
-    headers: buildHeaders(),
-  }, 'Unable to load workspace details.')
+  return request<Tenant>(
+    '/tenants/current',
+    {
+      headers: buildHeaders(),
+    },
+    'Unable to load workspace details.',
+  )
 }
 
 export async function updateCurrentTenant(payload: TenantUpdatePayload): Promise<Tenant> {
@@ -204,4 +166,3 @@ export async function sendStaffInvite(email: string): Promise<void> {
     'Unable to send staff invite.',
   )
 }
-

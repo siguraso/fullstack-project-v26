@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
-import { useDeviationStore, type Deviation } from '@/stores/deviation'
+import { useDeviationStore } from '@/stores/deviation'
 import { ArrowDown, ArrowUp, ChevronLeft, Filter, History, Minus } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
+import type { Deviation } from '@/interfaces/Deviation.interface'
 
 type SortField = 'category' | 'severity' | 'status' | 'createdAt'
 type SortDirection = 'asc' | 'desc' | null

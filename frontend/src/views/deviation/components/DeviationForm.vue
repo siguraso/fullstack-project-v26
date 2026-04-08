@@ -2,7 +2,8 @@
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
-import { useDeviationStore, type Deviation } from '@/stores/deviation'
+import { useDeviationStore } from '@/stores/deviation'
+import type { Deviation } from '@/interfaces/Deviation.interface'
 
 const store = useDeviationStore()
 

@@ -1,38 +1,26 @@
+import type {
+  AuthSession,
+  LoginPayload,
+  RegisterPayload,
+  UserRole,
+} from '@/interfaces/Auth.interface'
+
+export type { AuthSession, LoginPayload, RegisterPayload, UserRole }
+
 const AUTH_SESSION_KEY = 'regula.auth.session'
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
-type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF'
-
-export interface LoginPayload {
-  email: string
-  password: string
-}
-
-export interface RegisterPayload {
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  orgNumber?: string
-  phone?: string
-  inviteToken?: string
-}
-
-export interface AuthSession {
-  email: string
-  remember: boolean
-  token: string | null
-  refreshToken: string | null
-  role: UserRole | null
-}
-
-interface LoginResponseData {
+interface AuthLoginResponseData {
   accessToken?: string
   refreshToken?: string
   email?: string
   fullName?: string
   organizationId?: number
   role?: UserRole
+}
+
+interface RefreshTokenResponseData {
+  accessToken?: string
 }
 
 function getStorage(remember: boolean): Storage {
@@ -113,14 +101,24 @@ function readRole(payload: unknown): UserRole | null {
   return null
 }
 
-function readLoginResponseData(payload: unknown): LoginResponseData | null {
+function readLoginResponseData(payload: unknown): AuthLoginResponseData | null {
   const unwrappedPayload = unwrapApiResponse(payload)
 
   if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
     return null
   }
 
-  return unwrappedPayload as LoginResponseData
+  return unwrappedPayload as AuthLoginResponseData
+}
+
+function readRefreshTokenResponseData(payload: unknown): RefreshTokenResponseData | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  return unwrappedPayload as RefreshTokenResponseData
 }
 
 async function parseResponseBody(response: Response): Promise<unknown> {
@@ -142,12 +140,12 @@ function persistSession(session: AuthSession) {
 }
 
 function createSession(email: string, remember: boolean, responseBody: unknown): AuthSession {
-  const data = unwrapApiResponse(responseBody) as any
+  const data = readLoginResponseData(responseBody)
 
   return {
     email,
     remember,
-    token: data?.accessToken ?? null,
+    token: data?.accessToken ?? readToken(responseBody),
     refreshToken: data?.refreshToken ?? null,
     role: readRole(responseBody),
   }
@@ -233,6 +231,8 @@ export async function refreshToken() {
 
   if (!res.ok) return null
 
-  const json = await res.json()
-  return json.data.accessToken
+  const responseBody = await parseResponseBody(res)
+  const data = readRefreshTokenResponseData(responseBody)
+
+  return data?.accessToken ?? null
 }

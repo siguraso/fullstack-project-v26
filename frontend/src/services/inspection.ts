@@ -1,16 +1,6 @@
 import { apiFetch } from './apiHelper'
 
-export interface InspectionLog {
-  type: 'DEVIATION' | 'TEMPERATURE' | 'ALCOHOL'
-  referenceId: number
-  title: string
-  description?: string
-  status?: string
-  severity?: string
-  module?: string
-  actor?: string
-  timestamp: string
-}
+import type { InspectionLog } from '../interfaces/Inspection.interface'
 
 export async function getInspectionLogs(): Promise<InspectionLog[]> {
   const res = await apiFetch('/api/inspection/logs')

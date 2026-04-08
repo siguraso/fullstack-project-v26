@@ -1,17 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as api from '@/services/deviation'
-
-export interface Deviation {
-  id?: number
-  title: string
-  category: 'TEMPERATURE' | 'HYGIENE' | 'ALCOHOL' | 'DOCUMENTATION' | 'OTHER'
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  module: 'IK_FOOD' | 'IK_ALCOHOL'
-  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED'
-  description: string
-  createdAt?: string
-}
+import type { Deviation } from '@/interfaces/Deviation.interface'
 
 export const useDeviationStore = defineStore('deviation', () => {
   const deviations = ref<Deviation[]>([])
@@ -20,7 +10,7 @@ export const useDeviationStore = defineStore('deviation', () => {
 
   const filters = ref({
     status: 'ALL',
-    severity: 'ALL'
+    severity: 'ALL',
   })
 
   const form = ref<Deviation>({
@@ -29,7 +19,7 @@ export const useDeviationStore = defineStore('deviation', () => {
     severity: 'CRITICAL',
     module: 'IK_FOOD',
     status: 'OPEN',
-    description: ''
+    description: '',
   })
 
   const filtered = computed(() => {
@@ -37,10 +27,10 @@ export const useDeviationStore = defineStore('deviation', () => {
       return []
     }
 
-    return deviations.value.filter(d => {
+    return deviations.value.filter((d) => {
       return (
-          (filters.value.status === 'ALL' || d.status === filters.value.status) &&
-          (filters.value.severity === 'ALL' || d.severity === filters.value.severity)
+        (filters.value.status === 'ALL' || d.status === filters.value.status) &&
+        (filters.value.severity === 'ALL' || d.severity === filters.value.severity)
       )
     })
   })
@@ -83,7 +73,7 @@ export const useDeviationStore = defineStore('deviation', () => {
       severity: 'LOW',
       module: 'IK_FOOD',
       status: 'OPEN',
-      description: ''
+      description: '',
     }
   }
 
@@ -95,6 +85,6 @@ export const useDeviationStore = defineStore('deviation', () => {
     loading,
     error,
     fetchDeviations,
-    createDeviation
+    createDeviation,
   }
 })

@@ -1,4 +1,4 @@
-  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
 type ApiEnvelope<T> = {
   success?: boolean
@@ -8,7 +8,7 @@ type ApiEnvelope<T> = {
   data?: T
 }
 
-export interface InviteValidationResponse {
+interface InviteValidationResponseData {
   valid: boolean
   email: string
   organizationId: number
@@ -49,7 +49,7 @@ async function parseResponseBody(response: Response): Promise<unknown> {
   return text.length > 0 ? { message: text } : null
 }
 
-export async function validateInviteToken(token: string): Promise<InviteValidationResponse> {
+export async function validateInviteToken(token: string): Promise<InviteValidationResponseData> {
   const response = await fetch(
     `${API_BASE_URL}/invitations/validate?token=${encodeURIComponent(token)}`,
     {
@@ -63,6 +63,5 @@ export async function validateInviteToken(token: string): Promise<InviteValidati
     throw new Error(readErrorMessage(payload, 'Invalid or expired invite token.'))
   }
 
-  return unwrap(payload as InviteValidationResponse | ApiEnvelope<InviteValidationResponse>)
+  return unwrap(payload as InviteValidationResponseData | ApiEnvelope<InviteValidationResponseData>)
 }
-
