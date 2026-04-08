@@ -14,6 +14,7 @@ import MainLayout from '@/views/MainLayout.vue'
 import SettingsView from '@/views/settings/SettingsView.vue'
 import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
 import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
+import AlcoholLogView from '@/views/alcohol-logs/AlcoholLogView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -86,6 +87,11 @@ const router = createRouter({
           path: '/temperature-logs',
           name: 'temperature-logs',
           component: TemperatureLogView,
+        },
+        {
+          path: '/alcohol-logs',
+          name: 'alcohol-logs',
+          component: AlcoholLogView,
         },
       ],
     },

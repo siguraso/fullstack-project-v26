@@ -56,6 +56,7 @@ const complianceGroups: NavGroup[] = [
         to: { path: '/checklists', query: { ik: 'alcohol' } },
       },
       { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'alcohol' } } },
+      { label: 'Alcohol Logs', icon: ScrollText, to: '/alcohol-logs' },
     ],
   },
 ]
