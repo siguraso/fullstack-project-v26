@@ -30,7 +30,7 @@ class DashboardControllerTest {
     private DashboardController dashboardController;
 
     @Test
-    void getOverview_shouldReturnOkApiResponseWithOverviewData() {
+    void testReturnOkApiResponseWithOverviewData() {
         DashboardOverviewDTO overview = new DashboardOverviewDTO();
         when(dashboardService.getOverview()).thenReturn(overview);
 
