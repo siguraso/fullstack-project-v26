@@ -1,5 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service;
 
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -72,6 +74,39 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
     public AlcoholLogDTO recordRefusal(AlcoholLogCreateRequest request) {
         request.setServiceRefused(true);
         return createLog(request);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlcoholLogDTO> getAllForCurrentOrgAsDTO() {
+        return getAllForCurrentOrg().stream().map(this::toEnrichedDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AlcoholLogDTO getByIdAsDTO(Long id) {
+        return toEnrichedDTO(getById(id));
+    }
+
+    private AlcoholLogDTO toEnrichedDTO(AlcoholComplianceLog entity) {
+        AlcoholLogDTO dto = mapper.toDTO(entity);
+
+        if (dto.getRecordedByName() != null && !dto.getRecordedByName().isBlank()) {
+            return dto;
+        }
+
+        if (dto.getRecordedById() == null) {
+            return dto;
+        }
+
+        userRepository.findById(dto.getRecordedById()).ifPresent(user -> {
+            String fullName = String.format("%s %s",
+                    user.getFirstName() != null ? user.getFirstName().trim() : "",
+                    user.getLastName() != null ? user.getLastName().trim() : "").trim();
+
+            String displayName = fullName;
+            dto.setRecordedByName(displayName == null || displayName.isBlank() ? null : displayName);
+        });
+
+        return dto;
     }
 
     private User resolveAuthenticatedUser(Long tenantId) {
