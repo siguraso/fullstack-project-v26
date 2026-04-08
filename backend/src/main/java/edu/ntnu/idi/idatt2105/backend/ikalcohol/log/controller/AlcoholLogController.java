@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogDTO;
-import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.mapper.AlcoholLogMapper;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service.AlcoholLogService;
 import jakarta.validation.Valid;
 
@@ -24,11 +23,9 @@ import jakarta.validation.Valid;
 public class AlcoholLogController {
 
     private final AlcoholLogService service;
-    private final AlcoholLogMapper mapper;
 
-    public AlcoholLogController(AlcoholLogService service, AlcoholLogMapper mapper) {
+    public AlcoholLogController(AlcoholLogService service) {
         this.service = service;
-        this.mapper = mapper;
     }
 
     @PostMapping
@@ -40,14 +37,13 @@ public class AlcoholLogController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<AlcoholLogDTO>>> getLogs() {
-        List<AlcoholLogDTO> logs = service.getAllForCurrentOrg().stream().map(mapper::toDTO).toList();
-        return ResponseEntity.ok(ApiResponse.ok(logs));
+        return ResponseEntity.ok(ApiResponse.ok(service.getAllForCurrentOrgAsDTO()));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<AlcoholLogDTO>> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(mapper.toDTO(service.getById(id))));
+        return ResponseEntity.ok(ApiResponse.ok(service.getByIdAsDTO(id)));
     }
 
     @DeleteMapping("/{id}")
