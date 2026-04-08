@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { TriangleAlert } from '@lucide/vue'
 </script>
 
 <template>
-  <aside class="guide-card">
-    <div class="panel-head">
-      <div class="panel-icon">
-        <TriangleAlert :size="20" aria-hidden="true" />
-      </div>
-      <h2 class="panel-title">Deviation guide</h2>
-    </div>
-
+  <InfoCard
+    class="guide-card"
+    title="Deviation guide"
+    :icon="TriangleAlert"
+    iconBackgroundColor="var(--neutral)"
+    iconColor="white"
+  >
     <p class="intro-copy">
       Use specific titles and short factual descriptions. The faster a teammate understands impact
       and urgency, the faster the issue gets resolved.
@@ -32,45 +32,16 @@ import { TriangleAlert } from '@lucide/vue'
         </p>
       </article>
     </div>
-  </aside>
+  </InfoCard>
 </template>
 
 <style scoped>
 .guide-card {
-  background: linear-gradient(180deg, var(--bg-secondary), #f8f9fb);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-soft);
-  padding: 22px;
+  margin: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.panel-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.panel-title {
-  margin: 0;
-  font-size: 24px;
-  line-height: 1.15;
-  color: var(--text);
-  font-weight: 800;
-}
-
-.panel-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
 }
 
 .intro-copy {

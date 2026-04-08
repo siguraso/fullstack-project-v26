@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
 import { useDeviationStore, type Deviation } from '@/stores/deviation'
@@ -33,16 +34,13 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-head">
-      <div class="title-wrap">
-        <div class="title-icon">
-          <Edit2 :size="20" aria-hidden="true" />
-        </div>
-        <h3 class="title-text">{{ heading }}</h3>
-      </div>
-    </div>
-
+  <InfoCard
+    class="card"
+    :title="heading"
+    :icon="Edit2"
+    iconBackgroundColor="var(--neutral)"
+    iconColor="white"
+  >
     <div class="form-grid">
       <label>
         <span>Deviation title *</span>
@@ -100,48 +98,12 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
         Submit deviation >
       </button>
     </div>
-  </div>
+  </InfoCard>
 </template>
 
 <style scoped>
 .card {
-  background: var(--bg-secondary);
-  padding: 22px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
-}
-
-.card-head {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.title-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-}
-
-.title-text {
   margin: 0;
-  color: var(--text);
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 800;
 }
 
 .form-grid {
