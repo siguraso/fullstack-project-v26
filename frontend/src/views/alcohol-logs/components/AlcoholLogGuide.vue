@@ -36,7 +36,7 @@ import { ScrollText } from '@lucide/vue'
 
 <style scoped>
 .guide-card {
-  background: linear-gradient(180deg, var(--surface), #f8f9fb);
+  background: linear-gradient(180deg, var(--bg-secondary), #f8f9fb);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow-soft);
@@ -122,4 +122,3 @@ import { ScrollText } from '@lucide/vue'
   }
 }
 </style>
-

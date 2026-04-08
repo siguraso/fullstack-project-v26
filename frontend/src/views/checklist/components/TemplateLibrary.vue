@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-  deleteTemplate,
-  generateChecklist,
-  toggleTemplate,
-} from '@/services/checklist'
+import { deleteTemplate, generateChecklist, toggleTemplate } from '@/services/checklist'
 
 interface Template {
   id: number
@@ -150,7 +146,7 @@ async function toggle(id: number) {
   background: white;
   border-radius: 16px;
   padding: 18px;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
   position: relative;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05);
 }
@@ -226,7 +222,7 @@ async function toggle(id: number) {
 
 .secondary {
   color: black;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
   background: transparent;
   padding: 10px;
   border-radius: 10px;

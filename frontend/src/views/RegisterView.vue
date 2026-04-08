@@ -323,7 +323,7 @@ async function handleSubmit() {
 
 .heading p {
   margin: 5px 0 0;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13.5px;
 }
 
@@ -344,7 +344,7 @@ async function handleSubmit() {
 }
 
 label {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -373,7 +373,7 @@ input[type='password'] {
   width: 100%;
   border: 1.5px solid var(--border);
   border-radius: 12px;
-  background: var(--surface-muted);
+  background: var(--bg);
   padding: 12px 14px 12px 37px;
   color: var(--text);
   font-size: 14px;
@@ -390,7 +390,7 @@ input::placeholder {
 
 input:focus {
   border-color: var(--primary);
-  background: var(--surface);
+  background: var(--bg-secondary);
 }
 
 .input-wrap:focus-within .icon {
@@ -414,7 +414,7 @@ input:focus {
 }
 
 .remember span {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
   font-weight: 400;
   letter-spacing: 0;
@@ -429,7 +429,7 @@ input:focus {
 }
 
 .helper-text {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -448,7 +448,7 @@ input:focus {
   border-radius: 999px;
   background: var(--neutral);
   padding: 13.5px;
-  color: var(--surface);
+  color: var(--bg-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -472,7 +472,7 @@ input:focus {
   margin: 0;
   border-left: 3px solid var(--primary);
   padding-left: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -485,7 +485,7 @@ input:focus {
 .footer {
   margin: 22px 0 0;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
 }
 

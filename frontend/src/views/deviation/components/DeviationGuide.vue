@@ -27,7 +27,9 @@ import { TriangleAlert } from '@lucide/vue'
       <article class="hint-card">
         <h3>Severity quick rule</h3>
         <p><strong>Low/Medium:</strong> Minor process issue with low risk.</p>
-        <p><strong>High/Critical:</strong> Safety or compliance risk requiring immediate follow-up.</p>
+        <p>
+          <strong>High/Critical:</strong> Safety or compliance risk requiring immediate follow-up.
+        </p>
       </article>
     </div>
   </aside>
@@ -35,7 +37,7 @@ import { TriangleAlert } from '@lucide/vue'
 
 <style scoped>
 .guide-card {
-  background: linear-gradient(180deg, var(--surface), #f8f9fb);
+  background: linear-gradient(180deg, var(--bg-secondary), #f8f9fb);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow-soft);
@@ -121,6 +123,3 @@ import { TriangleAlert } from '@lucide/vue'
   }
 }
 </style>
-
-
-

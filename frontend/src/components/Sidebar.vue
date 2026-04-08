@@ -206,7 +206,7 @@ async function logout() {
 .brand-kicker {
   display: inline-block;
   margin-bottom: 8px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -256,7 +256,7 @@ async function logout() {
 .nav-section-label {
   margin: 0;
   padding: 0 10px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;

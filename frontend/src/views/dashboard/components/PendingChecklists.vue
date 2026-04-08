@@ -82,7 +82,7 @@ async function toggleTask(id: number, completed: boolean) {
   display: flex;
   flex-direction: column;
   padding: 10px;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
   border-radius: 10px;
 }
 

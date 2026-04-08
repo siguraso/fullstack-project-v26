@@ -186,20 +186,20 @@ watch(totalPages, (nextTotalPages) => {
       <div class="filters-wrap">
         <Filter class="filter-icon" :size="16" aria-hidden="true" />
         <div class="filters">
-        <select v-model="store.filters.status">
-          <option value="ALL">Status: All</option>
-          <option value="OPEN">Open</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="RESOLVED">Resolved</option>
-        </select>
+          <select v-model="store.filters.status">
+            <option value="ALL">Status: All</option>
+            <option value="OPEN">Open</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+          </select>
 
-        <select v-model="store.filters.severity">
-          <option value="ALL">Severity: All</option>
-          <option value="LOW">Low</option>
-          <option value="MEDIUM">Medium</option>
-          <option value="HIGH">High</option>
-          <option value="CRITICAL">Critical</option>
-        </select>
+          <select v-model="store.filters.severity">
+            <option value="ALL">Severity: All</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
         </div>
       </div>
     </template>
@@ -268,7 +268,9 @@ watch(totalPages, (nextTotalPages) => {
             <span class="deviation-badge" :class="severityClass(d.severity)">{{ d.severity }}</span>
           </td>
           <td class="status-cell">
-            <span class="deviation-badge" :class="statusClass(d.status)">{{ formatStatus(d.status) }}</span>
+            <span class="deviation-badge" :class="statusClass(d.status)">{{
+              formatStatus(d.status)
+            }}</span>
           </td>
           <td>{{ formatDate(d.createdAt) }}</td>
           <td><button class="view" type="button">View</button></td>
@@ -314,7 +316,7 @@ watch(totalPages, (nextTotalPages) => {
   min-height: 34px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--surface);
+  background: var(--bg-secondary);
   font-size: 11px;
   color: var(--text-secondary);
 }
@@ -371,7 +373,7 @@ watch(totalPages, (nextTotalPages) => {
 .log-table-body td {
   text-align: left;
   padding: 15px 10px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1px solid var(--border);
   color: var(--text);
   font-size: 13px;
 }
@@ -436,7 +438,7 @@ watch(totalPages, (nextTotalPages) => {
 }
 
 .status-resolved {
-  background: var(--surface-muted);
+  background: var(--bg);
   color: var(--text-secondary);
 }
 
@@ -483,7 +485,7 @@ watch(totalPages, (nextTotalPages) => {
 
 .empty {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   padding: 24px;
 }
 

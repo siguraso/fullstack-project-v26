@@ -70,9 +70,9 @@ async function createLog() {
     description: description.value.trim() || null,
     logType: logType.value as any,
     status: status.value ? (status.value as any) : null,
-    idChecked: shouldShowIdChecked.value ? (idChecked.value || null) : null,
-    serviceRefused: shouldShowServiceRefused.value ? (serviceRefused.value || null) : null,
-    estimatedAge: shouldShowEstimatedAge.value ? (estimatedAge.value || null) : null,
+    idChecked: shouldShowIdChecked.value ? idChecked.value || null : null,
+    serviceRefused: shouldShowServiceRefused.value ? serviceRefused.value || null : null,
+    estimatedAge: shouldShowEstimatedAge.value ? estimatedAge.value || null : null,
   }
 
   isSubmitting.value = true
@@ -177,7 +177,7 @@ async function createLog() {
 
 <style scoped>
 .card {
-  background: var(--surface);
+  background: var(--bg-secondary);
   padding: 22px;
   border-radius: 14px;
   border: 1px solid var(--border);
@@ -346,14 +346,3 @@ textarea:focus {
   cursor: not-allowed;
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-

@@ -83,12 +83,19 @@ function toggleSort(field: SortField) {
 }
 
 function formatLogType(type: string): string {
-  return type.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
+  return type
+    .split('_')
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ')
 }
 
 function formatDate(date?: string): string {
   if (!date) return '—'
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 function getSortIcon(field: SortField): string {
@@ -150,7 +157,9 @@ function requestView(log: AlcoholLog) {
               <div class="detail-list">
                 <span v-if="log.idChecked" class="detail-tag">ID Checked</span>
                 <span v-if="log.serviceRefused" class="detail-tag">Service Refused</span>
-                <span v-if="log.estimatedAge !== null" class="detail-tag">Age: {{ log.estimatedAge }}</span>
+                <span v-if="log.estimatedAge !== null" class="detail-tag"
+                  >Age: {{ log.estimatedAge }}</span
+                >
               </div>
             </td>
             <td class="date-cell">{{ formatDate(log.recordedAt ?? log.createdAt) }}</td>
@@ -398,7 +407,7 @@ tbody tr:hover {
 
 .action-btn.view {
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-secondary);
   padding: 4px 10px;
 }
 
@@ -434,7 +443,7 @@ tbody tr:hover {
 }
 
 .page-btn:hover {
-  background: var(--surface);
+  background: var(--bg-secondary);
   border-color: var(--cta);
 }
 
@@ -449,12 +458,3 @@ td.actions-cell {
   text-align: center;
 }
 </style>
-
-
-
-
-
-
-
-
-

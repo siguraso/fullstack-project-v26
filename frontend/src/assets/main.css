@@ -13,24 +13,18 @@
   --bg-hover: rgb(202, 202, 202);
   --bg-active: rgb(170, 170, 170);
   --bg-secondary: #ffffff;
-  --neutral: #000000;
-  --neutral-hover: #333333;
-  --neutral-active: #666666;
   --cta-red: #ff9393;
   --cta-red-bg: #ffdad6;
   --cta-red-text: #93000a;
   --cta-red-btn: #ff0000;
   --cta-red-btn-hover: #e60000;
   --cta-red-btn-active: #b30000;
-  --stroke: #d8d8d8;
-  --text-secondary: #727272;
   --neutral: #1a1c1e;
-  --stroke: #e4e4e6;
-  --surface: #ffffff;
-  --surface-muted: #fafafa;
+  --neutral-hover: #333333;
+  --neutral-active: #666666;
   --text: var(--neutral);
-  --text-muted: #8a8a8e;
-  --border: var(--stroke);
+  --text-secondary: #727272;
+  --border: #d8d8d8;
   --shadow-soft: 0 28px 60px rgba(26, 28, 30, 0.08);
 }
 

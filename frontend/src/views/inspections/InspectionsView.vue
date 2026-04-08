@@ -107,7 +107,7 @@ function exportJson() {
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--stroke);
+  background: var(--border);
   cursor: pointer;
 }
 
@@ -115,7 +115,7 @@ function exportJson() {
 .table {
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
 }
 
 .table-head,

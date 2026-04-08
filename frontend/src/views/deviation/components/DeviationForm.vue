@@ -26,7 +26,9 @@ watchEffect(() => {
   }
 })
 
-const selectedLabel = computed(() => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General')
+const selectedLabel = computed(
+  () => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General',
+)
 const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Deviation`)
 </script>
 
@@ -85,23 +87,25 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
       <label class="description field-wide">
         <span>Detailed description</span>
         <textarea
-            v-model="store.form.description"
-            maxlength="500"
-            placeholder="Describe what happened, location, and immediate actions taken..."
+          v-model="store.form.description"
+          maxlength="500"
+          placeholder="Describe what happened, location, and immediate actions taken..."
         />
       </label>
     </div>
 
     <div class="footer">
       <small>{{ store.form.description.length }} / 500</small>
-      <button class="submit" type="button" @click="store.createDeviation">Submit deviation ></button>
+      <button class="submit" type="button" @click="store.createDeviation">
+        Submit deviation >
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
 .card {
-  background: var(--surface);
+  background: var(--bg-secondary);
   padding: 22px;
   border-radius: 14px;
   border: 1px solid var(--border);
@@ -168,7 +172,7 @@ input,
 select,
 textarea {
   border: 1px solid var(--border);
-  background: var(--surface-muted);
+  background: var(--bg);
   border-radius: 8px;
   color: var(--text);
 }
@@ -193,7 +197,7 @@ select {
   min-height: 34px;
   border: 1px solid var(--border);
   border-radius: 7px;
-  background: var(--surface);
+  background: var(--bg-secondary);
   color: var(--text-secondary);
   font-size: 10px;
   font-weight: 700;
@@ -244,7 +248,7 @@ textarea {
 }
 
 small {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
 }
 
@@ -273,6 +277,5 @@ small {
     grid-column: auto;
     grid-row: auto;
   }
-
 }
 </style>

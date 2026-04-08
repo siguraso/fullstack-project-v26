@@ -260,7 +260,7 @@ function deleteLog(logId: number) {
 
 .log-table-body td {
   padding: 15px 10px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1px solid var(--border);
 }
 
 .log-table-body tr:last-child td {

@@ -56,17 +56,31 @@ function formatDate(date?: string): string {
 
         <div class="detail-item">
           <span class="label">Recorded By</span>
-          <span class="value">{{ log.recordedByName ?? (log.recordedById ? `User #${log.recordedById}` : 'Unknown') }}</span>
+          <span class="value">{{
+            log.recordedByName ?? (log.recordedById ? `User #${log.recordedById}` : 'Unknown')
+          }}</span>
         </div>
 
         <div class="detail-item">
           <span class="label">ID Checked</span>
-          <span class="value">{{ log.idChecked === null || log.idChecked === undefined ? 'Not set' : (log.idChecked ? 'Yes' : 'No') }}</span>
+          <span class="value">{{
+            log.idChecked === null || log.idChecked === undefined
+              ? 'Not set'
+              : log.idChecked
+                ? 'Yes'
+                : 'No'
+          }}</span>
         </div>
 
         <div class="detail-item">
           <span class="label">Service Refused</span>
-          <span class="value">{{ log.serviceRefused === null || log.serviceRefused === undefined ? 'Not set' : (log.serviceRefused ? 'Yes' : 'No') }}</span>
+          <span class="value">{{
+            log.serviceRefused === null || log.serviceRefused === undefined
+              ? 'Not set'
+              : log.serviceRefused
+                ? 'Yes'
+                : 'No'
+          }}</span>
         </div>
 
         <div class="detail-item">
@@ -97,7 +111,7 @@ function formatDate(date?: string): string {
   width: min(720px, 92vw);
   max-height: 88vh;
   overflow: auto;
-  background: var(--surface);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 18px;
@@ -175,6 +189,3 @@ function formatDate(date?: string): string {
   }
 }
 </style>
-
-
-

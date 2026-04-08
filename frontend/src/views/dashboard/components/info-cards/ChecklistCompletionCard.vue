@@ -58,7 +58,7 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
   width: 100%;
   height: 5px;
   border-radius: 999px;
-  background-color: color-mix(in srgb, var(--stroke) 65%, white);
+  background-color: color-mix(in srgb, var(--border) 65%, white);
   overflow: hidden;
   margin-bottom: 8px;
 }

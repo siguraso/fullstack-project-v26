@@ -55,8 +55,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--stroke);
-  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-secondary);
   z-index: 1000;
 }
 
@@ -110,7 +110,7 @@ onMounted(() => {
 .spacer-line {
   width: 1px;
   height: 30px;
-  background-color: var(--stroke);
+  background-color: var(--border);
 }
 
 .storename {

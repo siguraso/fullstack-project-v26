@@ -65,7 +65,7 @@ const formatTimeAgo = (date: Date): string => {
 .activity-container {
   display: flex;
   flex-direction: column;
-  outline: 1px solid var(--stroke);
+  outline: 1px solid var(--border);
   border-radius: 10px;
   gap: 5px;
   padding: 10px;
@@ -102,7 +102,7 @@ const formatTimeAgo = (date: Date): string => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background-color: var(--stroke);
+  background-color: var(--border);
   border-radius: 50%;
   flex-shrink: 0;
   color: black;

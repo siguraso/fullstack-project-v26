@@ -26,9 +26,7 @@ const props = withDefaults(
   background-color: var(--bg-secondary);
   border-radius: 10px;
   padding: 16px;
-  box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.06),
-    0 10px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 
 .card-header {
