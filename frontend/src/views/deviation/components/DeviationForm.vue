@@ -38,8 +38,8 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
     class="card"
     :title="heading"
     :icon="Edit2"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
   >
     <div class="form-grid">
       <label>

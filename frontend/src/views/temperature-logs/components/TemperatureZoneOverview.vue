@@ -58,8 +58,8 @@ function openCreateOverlay() {
     class="info-card"
     title="Temperature zones"
     :icon="Box"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-green)"
+    iconColor="var(--icon-stroke-green)"
     :addToHeader="true"
   >
     <template #extra-header-content>

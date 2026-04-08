@@ -8,8 +8,8 @@ import { ScrollText } from '@lucide/vue'
     class="guide-card"
     title="Alcohol log guide"
     :icon="ScrollText"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-green)"
+    iconColor="var(--icon-stroke-green)"
   >
     <p class="intro-copy">
       Keep entries factual and specific. Clear details help teams verify compliance quickly and

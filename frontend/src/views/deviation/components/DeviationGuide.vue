@@ -8,8 +8,8 @@ import { TriangleAlert } from '@lucide/vue'
     class="guide-card"
     title="Deviation guide"
     :icon="TriangleAlert"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-yellow)"
+    iconColor="var(--icon-stroke-yellow)"
   >
     <p class="intro-copy">
       Use specific titles and short factual descriptions. The faster a teammate understands impact

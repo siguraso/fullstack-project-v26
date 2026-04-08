@@ -41,7 +41,8 @@ const quickActions = [
     class="info-card"
     title="Quick Actions"
     :icon="Activity"
-    :iconBackgroundColor="'#b5fed1'"
+    :iconBackgroundColor="'var(--icon-bg-green)'"
+    :iconColor="'var(--icon-stroke-green)'"
   >
     <div class="action-list">
       <button

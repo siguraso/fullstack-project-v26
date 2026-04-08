@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
 import type { AlcoholLog } from '@/interfaces/AlcoholLog.interface'
-import { ScrollText } from '@lucide/vue'
+import { History } from '@lucide/vue'
 import { computed, ref } from 'vue'
 
 type SortField = 'logType' | 'status' | 'recordedAt'
@@ -110,10 +110,10 @@ function requestView(log: AlcoholLog) {
 
 <template>
   <InfoCard
-    :icon="ScrollText"
+    :icon="History"
     title="Existing Alcohol Logs"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="#ffffff"
+    iconBackgroundColor="var(--icon-bg-blue)"
+    iconColor="var(--icon-stroke-blue)"
   >
     <div class="table-wrapper">
       <table v-if="!isLoading && currentPageLogs.length" class="table">

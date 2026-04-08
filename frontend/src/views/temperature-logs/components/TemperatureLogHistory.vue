@@ -113,8 +113,8 @@ function deleteLog(logId: number) {
     class="info-card"
     title="Temperature Log History"
     :icon="History"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-blue)"
+    iconColor="var(--icon-stroke-blue)"
   >
     <template #extra-header-content>
       <div class="zone-filter-wrap">

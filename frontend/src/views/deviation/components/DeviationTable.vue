@@ -178,8 +178,8 @@ watch(totalPages, (nextTotalPages) => {
     class="info-card"
     :title="props.title"
     :icon="History"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-blue)"
+    iconColor="var(--icon-stroke-blue)"
     :addToHeader="true"
   >
     <template #extra-header-content>

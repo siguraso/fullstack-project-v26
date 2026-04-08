@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TaskListItem from '@/components/ui/TaskListItem.vue'
-import { BottleWine, BrushCleaning, ForkKnife, ChevronDownIcon } from '@lucide/vue'
+import { ChevronDownIcon } from '@lucide/vue'
 import { ref, computed, watchEffect } from 'vue'
 import Card from '@/components/ui/Card.vue'
 import { updateChecklistItem } from '@/services/checklist'

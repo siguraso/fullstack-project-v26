@@ -9,6 +9,7 @@
 }
 
 :root {
+  /* main color scheme */
   --bg: #f6f6f6;
   --bg-hover: rgb(202, 202, 202);
   --bg-active: rgb(170, 170, 170);
@@ -26,6 +27,19 @@
   --text-secondary: #727272;
   --border: #d8d8d8;
   --shadow-soft: 0 28px 60px rgba(26, 28, 30, 0.08);
+
+  /* icon colors */
+  --icon-bg-blue: #d2e4fb;
+  --icon-stroke-blue: #003984;
+
+  --icon-bg-green: #d2fbd8;
+  --icon-stroke-green: #007a2e;
+
+  --icon-bg-yellow: #ffedb6;
+  --icon-stroke-yellow: #8e5500;
+
+  --icon-bg-purple: #e8d2fb;
+  --icon-stroke-purple: #5e2e8e;
 }
 
 *,

@@ -103,8 +103,8 @@ async function createLog() {
     class="card"
     title="Create Alcohol Log"
     :icon="Edit2"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
   >
     <form @submit.prevent="createLog" class="form-grid">
       <label>

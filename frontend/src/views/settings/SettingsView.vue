@@ -408,8 +408,8 @@ onMounted(() => {
       <InfoCard
         title="Organisation profile"
         :icon="Building2"
-        icon-background-color="#e7efe3"
-        icon-color="#305431"
+        icon-background-color="var(--icon-bg-green)"
+        icon-color="var(--icon-stroke-green)"
         class="main-panel"
       >
         <p v-if="tenantError" class="message-banner error-banner">{{ tenantError }}</p>
@@ -470,8 +470,8 @@ onMounted(() => {
       <InfoCard
         title="Staff roles & permissions"
         :icon="UserRound"
-        icon-background-color="#ece9fb"
-        icon-color="#4c3da5"
+        icon-background-color="var(--icon-bg-purple)"
+        icon-color="var(--icon-stroke-purple)"
         class="main-panel"
       >
         <p v-if="inviteError" class="message-banner error-banner">{{ inviteError }}</p>
