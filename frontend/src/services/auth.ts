@@ -19,6 +19,10 @@ interface AuthLoginResponseData {
   role?: UserRole
 }
 
+interface RefreshTokenResponseData {
+  accessToken?: string
+}
+
 function getStorage(remember: boolean): Storage {
   return remember ? window.localStorage : window.sessionStorage
 }
@@ -105,6 +109,16 @@ function readLoginResponseData(payload: unknown): AuthLoginResponseData | null {
   }
 
   return unwrappedPayload as AuthLoginResponseData
+}
+
+function readRefreshTokenResponseData(payload: unknown): RefreshTokenResponseData | null {
+  const unwrappedPayload = unwrapApiResponse(payload)
+
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
+  }
+
+  return unwrappedPayload as RefreshTokenResponseData
 }
 
 async function parseResponseBody(response: Response): Promise<unknown> {
@@ -217,6 +231,8 @@ export async function refreshToken() {
 
   if (!res.ok) return null
 
-  const json = await res.json()
-  return json.data.accessToken
+  const responseBody = await parseResponseBody(res)
+  const data = readRefreshTokenResponseData(responseBody)
+
+  return data?.accessToken ?? null
 }
