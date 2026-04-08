@@ -16,7 +16,7 @@ async function loadLogs() {
 
 onMounted(loadLogs)
 
-// 🔄 senere kan du legge polling her
+// legg til polling her
 // setInterval(loadLogs, 10000)
 
 function formatDate(date: string) {
@@ -107,7 +107,8 @@ function exportJson() {
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   cursor: pointer;
 }
 

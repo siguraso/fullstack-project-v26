@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  Building2,
-  Pencil,
-  UserRound,
-} from '@lucide/vue'
+import { Building2, Pencil, UserRound } from '@lucide/vue'
 import Card from '@/components/ui/Card.vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
 import {
@@ -87,7 +83,6 @@ const userForm = reactive<UserForm>({
 })
 
 const initialTenantPayload = ref('')
-
 
 const roleOptions = computed(() =>
   [
@@ -406,16 +401,7 @@ onMounted(() => {
 
 <template>
   <div class="settings-view">
-    <section class="hero-card">
-      <div class="hero-copy">
-        <p class="section-label">Configuration</p>
-        <h1>Workspace settings</h1>
-        <p>
-          Manage the organisation profile, keep contact data current, and maintain staff access
-          without leaving the main workspace.
-        </p>
-      </div>
-    </section>
+    <h1>Organisation Configuration</h1>
 
     <section class="content-grid">
       <InfoCard
@@ -677,7 +663,10 @@ onMounted(() => {
                 type="button"
                 class="danger-button"
                 :disabled="
-                  isSavingUser || isUserEditorLoading || isSelectedUserBeingDeactivated || !selectedUser.active
+                  isSavingUser ||
+                  isUserEditorLoading ||
+                  isSelectedUserBeingDeactivated ||
+                  !selectedUser.active
                 "
                 @click="deactivateSelectedUser(selectedUser)"
               >
@@ -885,7 +874,9 @@ onMounted(() => {
 
 :deep(.invite-popup-enter-active),
 :deep(.invite-popup-leave-active) {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 :deep(.invite-popup-enter-from),
@@ -905,10 +896,9 @@ onMounted(() => {
 .table-head,
 .table-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) minmax(100px, 0.75fr) minmax(180px, 1fr) minmax(
-      92px,
-      0.65fr
-    ) minmax(150px, 0.85fr);
+  grid-template-columns:
+    minmax(220px, 1.5fr) minmax(100px, 0.75fr) minmax(180px, 1fr) minmax(92px, 0.65fr)
+    minmax(150px, 0.85fr);
   gap: 14px;
   align-items: center;
 }
@@ -1066,10 +1056,9 @@ button:disabled {
 
   .table-head,
   .table-row {
-    grid-template-columns: minmax(180px, 1.3fr) minmax(88px, 0.7fr) minmax(160px, 1fr) minmax(
-        84px,
-        0.6fr
-      ) minmax(128px, 0.8fr);
+    grid-template-columns:
+      minmax(180px, 1.3fr) minmax(88px, 0.7fr) minmax(160px, 1fr) minmax(84px, 0.6fr)
+      minmax(128px, 0.8fr);
     gap: 10px;
     padding-left: 14px;
     padding-right: 14px;

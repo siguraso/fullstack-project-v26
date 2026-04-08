@@ -81,6 +81,7 @@ const quickActions = [
   text-align: left;
   font-size: 12px;
   background-color: var(--bg);
+  border: 1px solid var(--border);
   transition:
     background-color 220ms ease,
     color 220ms ease;

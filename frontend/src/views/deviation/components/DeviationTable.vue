@@ -303,11 +303,6 @@ watch(totalPages, (nextTotalPages) => {
   margin-left: auto;
 }
 
-.filters {
-  display: flex;
-  gap: 8px;
-}
-
 .filter-icon {
   color: var(--text-secondary);
 }
