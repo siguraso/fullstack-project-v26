@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { AlcoholLog } from '@/interfaces/AlcoholLog.interface'
+import InfoCard from '@/components/ui/InfoCard.vue'
+import { ScrollText } from '@lucide/vue'
 
 defineProps<{
   log: AlcoholLog | null
@@ -32,11 +34,17 @@ function formatDate(date?: string): string {
 
 <template>
   <div v-if="isOpen && log" class="dialog-overlay" @click.self="emit('close')">
-    <div class="dialog-content">
-      <div class="dialog-header">
-        <h3>{{ log.title }}</h3>
+    <InfoCard
+      class="dialog-content"
+      :title="log.title"
+      :icon="ScrollText"
+      iconBackgroundColor="var(--neutral)"
+      iconColor="white"
+      :addToHeader="true"
+    >
+      <template #extra-header-content>
         <button type="button" class="close-btn" @click="emit('close')">Close</button>
-      </div>
+      </template>
 
       <div class="details-grid">
         <div class="detail-item">
@@ -93,7 +101,7 @@ function formatDate(date?: string): string {
         <h4>Description</h4>
         <p>{{ log.description }}</p>
       </div>
-    </div>
+    </InfoCard>
   </div>
 </template>
 
@@ -111,25 +119,11 @@ function formatDate(date?: string): string {
   width: min(720px, 92vw);
   max-height: 88vh;
   overflow: auto;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-}
-
-.dialog-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.dialog-header h3 {
   margin: 0;
-  color: var(--text);
 }
 
 .close-btn {
+  margin-left: auto;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
