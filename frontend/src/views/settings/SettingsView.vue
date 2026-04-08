@@ -11,13 +11,11 @@ import {
   getUsers,
   updateCurrentTenant,
   updateUser,
-  type Tenant,
-  type TenantUpdatePayload,
-  type User,
-  type UserUpdatePayload,
 } from '@/services/settings'
 import { useTenantStore } from '@/stores/tenant'
 import Avatar from '@/components/ui/Avatar.vue'
+import { type Tenant, type TenantUpdatePayload } from '@/interfaces/Tenant.interface'
+import { type User, type UserUpdatePayload } from '@/interfaces/User.interface'
 
 type TenantForm = {
   name: string

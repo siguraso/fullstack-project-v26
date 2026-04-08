@@ -7,7 +7,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/
 const API_URL = `${API_BASE_URL}/ikalcohol/logs`
 const REQUEST_TIMEOUT_MS = 10000
 
-interface AlcoholLogResponse {
+interface AlcoholLogResponseData {
   id: number
   title: string
   description?: string | null
@@ -24,7 +24,7 @@ interface AlcoholLogResponse {
   updatedAt?: string
 }
 
-function normalizeAlcoholLog(log: AlcoholLogResponse): AlcoholLog | null {
+function normalizeAlcoholLog(log: AlcoholLogResponseData): AlcoholLog | null {
   if (!log.id || !log.logType) {
     return null
   }
@@ -78,7 +78,7 @@ export async function fetchAlcoholLogs(): Promise<AlcoholLog[]> {
   const data = await parseJsonSafely(response)
 
   const unwrapped = data
-    ? unwrap<Array<AlcoholLogResponse>>(data as ApiEnvelope<Array<AlcoholLogResponse>>)
+    ? unwrap<Array<AlcoholLogResponseData>>(data as ApiEnvelope<Array<AlcoholLogResponseData>>)
     : null
 
   if (!Array.isArray(unwrapped)) {
@@ -126,7 +126,7 @@ export async function createAlcoholLog(payload: AlcoholLogInput): Promise<Alcoho
   const data = await parseJsonSafely(response)
 
   const unwrapped = data
-    ? unwrap<AlcoholLogResponse>(data as ApiEnvelope<AlcoholLogResponse>)
+    ? unwrap<AlcoholLogResponseData>(data as ApiEnvelope<AlcoholLogResponseData>)
     : null
 
   if (!unwrapped) {
@@ -141,6 +141,3 @@ export async function createAlcoholLog(payload: AlcoholLogInput): Promise<Alcoho
 
   return normalized
 }
-
-
-
