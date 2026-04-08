@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  Building2,
-  Pencil,
-  UserRound,
-} from '@lucide/vue'
+import { Building2, Pencil, UserRound } from '@lucide/vue'
 import Card from '@/components/ui/Card.vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
 import {
@@ -21,6 +17,7 @@ import {
   type UserUpdatePayload,
 } from '@/services/settings'
 import { useTenantStore } from '@/stores/tenant'
+import Avatar from '@/components/ui/Avatar.vue'
 
 type TenantForm = {
   name: string
@@ -87,7 +84,6 @@ const userForm = reactive<UserForm>({
 })
 
 const initialTenantPayload = ref('')
-
 
 const roleOptions = computed(() =>
   [
@@ -406,23 +402,14 @@ onMounted(() => {
 
 <template>
   <div class="settings-view">
-    <section class="hero-card">
-      <div class="hero-copy">
-        <p class="section-label">Configuration</p>
-        <h1>Workspace settings</h1>
-        <p>
-          Manage the organisation profile, keep contact data current, and maintain staff access
-          without leaving the main workspace.
-        </p>
-      </div>
-    </section>
+    <h1>Organisation Configuration</h1>
 
     <section class="content-grid">
       <InfoCard
         title="Organisation profile"
         :icon="Building2"
-        icon-background-color="#e7efe3"
-        icon-color="#305431"
+        icon-background-color="var(--icon-bg-green)"
+        icon-color="var(--icon-stroke-green)"
         class="main-panel"
       >
         <p v-if="tenantError" class="message-banner error-banner">{{ tenantError }}</p>
@@ -483,8 +470,8 @@ onMounted(() => {
       <InfoCard
         title="Staff roles & permissions"
         :icon="UserRound"
-        icon-background-color="#ece9fb"
-        icon-color="#4c3da5"
+        icon-background-color="var(--icon-bg-purple)"
+        icon-color="var(--icon-stroke-purple)"
         class="main-panel"
       >
         <p v-if="inviteError" class="message-banner error-banner">{{ inviteError }}</p>
@@ -517,11 +504,7 @@ onMounted(() => {
           </label>
 
           <div class="toolbar-invite">
-            <button
-              type="button"
-              class="secondary-button invite-toolbar-button"
-              @click="toggleInvitePopup"
-            >
+            <button type="button" class="invite-button" @click="toggleInvitePopup">
               {{ isInvitePopupOpen ? 'Close' : 'Invite Staff' }}
             </button>
 
@@ -565,7 +548,7 @@ onMounted(() => {
             <article v-for="user in filteredUsers" :key="user.id" class="table-row">
               <div class="table-cell staff-cell">
                 <span class="mobile-label">Staff member</span>
-                <div class="avatar">{{ initialsForUser(user) }}</div>
+                <Avatar :name="fullName(user)" />
                 <div>
                   <strong>{{ fullName(user) }}</strong>
                   <p>{{ user.username }}</p>
@@ -677,7 +660,10 @@ onMounted(() => {
                 type="button"
                 class="danger-button"
                 :disabled="
-                  isSavingUser || isUserEditorLoading || isSelectedUserBeingDeactivated || !selectedUser.active
+                  isSavingUser ||
+                  isUserEditorLoading ||
+                  isSelectedUserBeingDeactivated ||
+                  !selectedUser.active
                 "
                 @click="deactivateSelectedUser(selectedUser)"
               >
@@ -851,14 +837,6 @@ onMounted(() => {
   min-width: 180px;
 }
 
-.invite-toolbar-button {
-  padding: 10px 16px;
-  border-radius: 12px;
-  border-color: rgba(76, 61, 165, 0.25);
-  background: linear-gradient(180deg, #ffffff, #f6f4ff);
-  font-weight: 600;
-}
-
 .invite-toolbar-button:hover {
   background: linear-gradient(180deg, #ffffff, #f0ecff);
   border-color: rgba(76, 61, 165, 0.36);
@@ -885,7 +863,9 @@ onMounted(() => {
 
 :deep(.invite-popup-enter-active),
 :deep(.invite-popup-leave-active) {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 :deep(.invite-popup-enter-from),
@@ -905,10 +885,9 @@ onMounted(() => {
 .table-head,
 .table-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) minmax(100px, 0.75fr) minmax(180px, 1fr) minmax(
-      92px,
-      0.65fr
-    ) minmax(150px, 0.85fr);
+  grid-template-columns:
+    minmax(220px, 1.5fr) minmax(100px, 0.75fr) minmax(180px, 1fr) minmax(92px, 0.65fr)
+    minmax(150px, 0.85fr);
   gap: 14px;
   align-items: center;
 }
@@ -951,18 +930,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: #eef0e7;
-  color: #305431;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  flex-shrink: 0;
 }
 
 .role-chip,
@@ -1066,10 +1033,9 @@ button:disabled {
 
   .table-head,
   .table-row {
-    grid-template-columns: minmax(180px, 1.3fr) minmax(88px, 0.7fr) minmax(160px, 1fr) minmax(
-        84px,
-        0.6fr
-      ) minmax(128px, 0.8fr);
+    grid-template-columns:
+      minmax(180px, 1.3fr) minmax(88px, 0.7fr) minmax(160px, 1fr) minmax(84px, 0.6fr)
+      minmax(128px, 0.8fr);
     gap: 10px;
     padding-left: 14px;
     padding-right: 14px;

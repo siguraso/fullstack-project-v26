@@ -8,8 +8,6 @@ import CriticalAlerts from './components/CriticalAlerts.vue'
 import { onMounted, ref } from 'vue'
 import { getDashboardOverview } from '@/services/dashboard'
 
-type DashboardState = 'ready' | 'loading' | 'error'
-
 const dashboard = ref<any>(null)
 const loading = ref(true)
 

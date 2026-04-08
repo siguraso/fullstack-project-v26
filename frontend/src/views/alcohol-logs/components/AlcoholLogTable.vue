@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
 import type { AlcoholLog } from '@/interfaces/AlcoholLog.interface'
-import { ScrollText } from '@lucide/vue'
+import { History } from '@lucide/vue'
 import { computed, ref } from 'vue'
 
 type SortField = 'logType' | 'status' | 'recordedAt'
@@ -83,12 +83,19 @@ function toggleSort(field: SortField) {
 }
 
 function formatLogType(type: string): string {
-  return type.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
+  return type
+    .split('_')
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ')
 }
 
 function formatDate(date?: string): string {
   if (!date) return '—'
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 function getSortIcon(field: SortField): string {
@@ -103,10 +110,10 @@ function requestView(log: AlcoholLog) {
 
 <template>
   <InfoCard
-    :icon="ScrollText"
+    :icon="History"
     title="Existing Alcohol Logs"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="#ffffff"
+    iconBackgroundColor="var(--icon-bg-blue)"
+    iconColor="var(--icon-stroke-blue)"
   >
     <div class="table-wrapper">
       <table v-if="!isLoading && currentPageLogs.length" class="table">
@@ -150,7 +157,9 @@ function requestView(log: AlcoholLog) {
               <div class="detail-list">
                 <span v-if="log.idChecked" class="detail-tag">ID Checked</span>
                 <span v-if="log.serviceRefused" class="detail-tag">Service Refused</span>
-                <span v-if="log.estimatedAge !== null" class="detail-tag">Age: {{ log.estimatedAge }}</span>
+                <span v-if="log.estimatedAge !== null" class="detail-tag"
+                  >Age: {{ log.estimatedAge }}</span
+                >
               </div>
             </td>
             <td class="date-cell">{{ formatDate(log.recordedAt ?? log.createdAt) }}</td>
@@ -202,7 +211,7 @@ function requestView(log: AlcoholLog) {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .col-title {
@@ -230,18 +239,17 @@ function requestView(log: AlcoholLog) {
 }
 
 thead {
-  background: var(--bg);
-  border-bottom: 2px solid var(--border);
+  color: var(--text-secondary);
 }
 
 th {
-  padding: 12px;
+  padding: 12px 10px;
   text-align: left;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 14px;
   color: var(--text-secondary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 th.sortable {
@@ -263,10 +271,14 @@ th.sortable:hover .sort-icon {
 }
 
 td {
-  padding: 12px;
+  padding: 15px 10px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
 tbody tr:hover {
@@ -378,30 +390,6 @@ tbody tr:hover {
   text-align: center;
 }
 
-.action-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--text);
-}
-
-.action-btn.view {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  padding: 4px 10px;
-}
-
 .empty-state {
   padding: 40px 20px;
   text-align: center;
@@ -410,38 +398,38 @@ tbody tr:hover {
 
 .pagination {
   display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  justify-content: flex-start;
+  margin-top: 15px;
+  gap: 10px;
 }
 
 .page-btn {
-  width: 32px;
+  min-width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
+  border: none;
+  background: none;
+  color: var(--text-secondary);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: background-color 0.15s ease;
 }
 
 .page-btn:hover {
-  background: var(--surface);
-  border-color: var(--cta);
+  background: var(--bg);
 }
 
 .page-btn.active {
-  background: var(--cta);
-  color: white;
-  border-color: var(--cta);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.page-btn:active {
+  background: var(--bg-hover);
 }
 
 th.actions,
@@ -449,12 +437,3 @@ td.actions-cell {
   text-align: center;
 }
 </style>
-
-
-
-
-
-
-
-
-

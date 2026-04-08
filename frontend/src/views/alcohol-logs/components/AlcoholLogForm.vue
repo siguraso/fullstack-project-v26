@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { Edit2 } from '@lucide/vue'
 import type { AlcoholLog, AlcoholLogInput } from '@/interfaces/AlcoholLog.interface'
 import { createAlcoholLog } from '@/services/alcoholLog'
@@ -70,9 +71,9 @@ async function createLog() {
     description: description.value.trim() || null,
     logType: logType.value as any,
     status: status.value ? (status.value as any) : null,
-    idChecked: shouldShowIdChecked.value ? (idChecked.value || null) : null,
-    serviceRefused: shouldShowServiceRefused.value ? (serviceRefused.value || null) : null,
-    estimatedAge: shouldShowEstimatedAge.value ? (estimatedAge.value || null) : null,
+    idChecked: shouldShowIdChecked.value ? idChecked.value || null : null,
+    serviceRefused: shouldShowServiceRefused.value ? serviceRefused.value || null : null,
+    estimatedAge: shouldShowEstimatedAge.value ? estimatedAge.value || null : null,
   }
 
   isSubmitting.value = true
@@ -98,16 +99,13 @@ async function createLog() {
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-head">
-      <div class="title-wrap">
-        <div class="title-icon">
-          <Edit2 :size="20" aria-hidden="true" />
-        </div>
-        <h3 class="title-text">Create Alcohol Log</h3>
-      </div>
-    </div>
-
+  <InfoCard
+    class="card"
+    title="Create Alcohol Log"
+    :icon="Edit2"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
+  >
     <form @submit.prevent="createLog" class="form-grid">
       <label>
         <span>Log title *</span>
@@ -169,51 +167,15 @@ async function createLog() {
 
     <div class="footer">
       <button class="submit" type="button" :disabled="isSubmitting" @click="createLog">
-        {{ isSubmitting ? 'Creating...' : 'Create log >' }}
+        {{ isSubmitting ? 'Creating...' : 'Create log' }}
       </button>
     </div>
-  </div>
+  </InfoCard>
 </template>
 
 <style scoped>
 .card {
-  background: var(--surface);
-  padding: 22px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
-}
-
-.card-head {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.title-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-}
-
-.title-text {
   margin: 0;
-  color: var(--text);
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 800;
 }
 
 .form-grid {
@@ -228,47 +190,9 @@ label {
 }
 
 label span {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.9em;
   color: var(--text-secondary);
-}
-
-input,
-select {
-  font-size: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--neutral);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
-}
-
-textarea {
-  font-size: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-  min-height: 80px;
-  resize: vertical;
-}
-
-textarea:focus {
-  outline: none;
-  border-color: var(--neutral);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+  margin-bottom: 5px;
 }
 
 .field-wide {
@@ -292,7 +216,6 @@ textarea:focus {
   cursor: pointer;
   font-size: 14px;
   font-weight: normal;
-  text-transform: none;
   letter-spacing: normal;
   color: var(--text);
 }
@@ -318,27 +241,13 @@ textarea:focus {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid var(--border);
 }
 
 .submit {
-  padding: 10px 16px;
-  background: var(--neutral);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.submit:hover:not(:disabled) {
-  filter: brightness(0.9);
+  min-width: 120px;
 }
 
 .submit:disabled {
@@ -346,14 +255,3 @@ textarea:focus {
   cursor: not-allowed;
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-

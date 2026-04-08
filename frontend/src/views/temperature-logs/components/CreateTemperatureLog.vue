@@ -78,8 +78,8 @@ function setSelectedZone() {
     class="info-card"
     title="Create Temperature Log"
     :icon="Edit2"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
   >
     <div class="input-field">
       <p class="subtext">Storage Unit</p>
@@ -125,7 +125,7 @@ function setSelectedZone() {
 .input-field {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   gap: 10px;
 }
 

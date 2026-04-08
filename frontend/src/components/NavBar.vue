@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, Key, User2Icon } from '@lucide/vue'
+import { Bell, Key } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
 import { useTenantStore } from '@/stores/tenant'
+import Avatar from './ui/Avatar.vue'
 
 const router = useRouter()
 const session = getAuthSession()
-const userLabel = computed(() => session?.email ?? 'Signed in user')
+const userEmail = computed(() => session?.email ?? 'Signed in user')
 const tenantStore = useTenantStore()
 const storeName = computed(() => tenantStore.tenantName)
 
@@ -36,10 +37,10 @@ onMounted(() => {
       <div class="icon-wrapper">
         <component :is="Bell" :size="20" aria-hidden="true" class="notification-bell" />
       </div>
-      <div class="icon-wrapper" @click="logout">
-        <component :is="User2Icon" :size="20" aria-hidden="true" class="profile-picture" />
+      <div @click="logout">
+        <Avatar :name="userEmail" :size="30" />
       </div>
-      <p class="user-label">{{ userLabel }}</p>
+      <p class="user-label">{{ userEmail }}</p>
     </div>
   </nav>
 </template>
@@ -55,8 +56,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--stroke);
-  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-secondary);
   z-index: 1000;
 }
 
@@ -110,7 +111,7 @@ onMounted(() => {
 .spacer-line {
   width: 1px;
   height: 30px;
-  background-color: var(--stroke);
+  background-color: var(--border);
 }
 
 .storename {

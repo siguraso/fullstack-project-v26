@@ -2,6 +2,8 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '@/services/auth'
+import { Building, Key, Lock, Mail, User } from '@lucide/vue'
+import InfoCard from '@/components/ui/InfoCard.vue'
 
 const form = reactive({
   firstName: '',
@@ -45,7 +47,9 @@ async function handleSubmit() {
   } catch (error) {
     feedbackTone.value = 'error'
     feedbackMessage.value =
-      error instanceof Error ? error.message : 'Unable to create your account right now. Please try again.'
+      error instanceof Error
+        ? error.message
+        : 'Unable to create your account right now. Please try again.'
   } finally {
     isSubmitting.value = false
   }
@@ -78,25 +82,14 @@ async function handleSubmit() {
     </div>
 
     <section class="scene">
-      <div class="card">
-        <div class="brand">
-          <svg
-            class="brand-mark"
-            width="24"
-            height="38"
-            viewBox="0 0 24 38"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="10" r="8" stroke="currentColor" stroke-width="3.5" />
-            <rect x="9.5" y="16" width="5" height="18" rx="2" fill="currentColor" />
-            <rect x="14.5" y="26" width="6" height="4" rx="1.5" fill="currentColor" />
-            <rect x="14.5" y="30" width="4" height="2" rx="1" fill="var(--bg)" />
-          </svg>
-          <span class="brand-name">Regula</span>
-        </div>
-
+      <InfoCard
+        :title="'Regula'"
+        :icon="Key"
+        :iconBackgroundColor="'var(--neutral)'"
+        :iconColor="'white'"
+        :iconTransform="'rotate(-45deg)'"
+        class="card"
+      >
         <header class="heading">
           <h1>Create your account</h1>
           <p>Register to access your workspace and compliance tools.</p>
@@ -107,10 +100,7 @@ async function handleSubmit() {
             <div class="field">
               <label for="first-name">First name</label>
               <div class="input-wrap">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M5 20a7 7 0 0 1 14 0" />
-                </svg>
+                <User class="icon" :size="13" aria-hidden="true" />
                 <input
                   id="first-name"
                   v-model="form.firstName"
@@ -126,10 +116,7 @@ async function handleSubmit() {
             <div class="field">
               <label for="last-name">Last name</label>
               <div class="input-wrap">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M5 20a7 7 0 0 1 14 0" />
-                </svg>
+                <User class="icon" :size="13" aria-hidden="true" />
                 <input
                   id="last-name"
                   v-model="form.lastName"
@@ -146,11 +133,7 @@ async function handleSubmit() {
           <div class="field">
             <label for="org-number">Organisation number</label>
             <div class="input-wrap">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 20V8l8-4 8 4v12" />
-                <path d="M9 20v-5h6v5" />
-                <path d="M8 10h.01M12 10h.01M16 10h.01" />
-              </svg>
+              <Building class="icon" :size="13" aria-hidden="true" />
               <input
                 id="org-number"
                 v-model="form.orgNumber"
@@ -166,10 +149,7 @@ async function handleSubmit() {
           <div class="field">
             <label for="email">Email</label>
             <div class="input-wrap">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <polyline points="2,4 12,13 22,4" />
-              </svg>
+              <Mail class="icon" :size="13" aria-hidden="true" />
               <input
                 id="email"
                 v-model="form.email"
@@ -185,10 +165,7 @@ async function handleSubmit() {
           <div class="field">
             <label for="password">Password</label>
             <div class="input-wrap">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+              <Lock class="icon" :size="13" aria-hidden="true" />
               <input
                 id="password"
                 v-model="form.password"
@@ -229,7 +206,7 @@ async function handleSubmit() {
           <span class="accent accent-secondary"></span>
           <span class="accent accent-tertiary"></span>
         </div>
-      </div>
+      </InfoCard>
     </section>
   </main>
 </template>
@@ -241,8 +218,7 @@ async function handleSubmit() {
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(0, 102, 255, 0.08), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.09), transparent 24%),
-    var(--bg);
+    radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.09), transparent 24%), var(--bg);
 }
 
 .backdrop {
@@ -332,24 +308,6 @@ async function handleSubmit() {
   animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 36px;
-}
-
-.brand-mark,
-.brand-name {
-  color: var(--neutral);
-}
-
-.brand-name {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-}
-
 .heading {
   margin-bottom: 28px;
 }
@@ -365,7 +323,7 @@ async function handleSubmit() {
 
 .heading p {
   margin: 5px 0 0;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13.5px;
 }
 
@@ -386,7 +344,7 @@ async function handleSubmit() {
 }
 
 label {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -401,15 +359,11 @@ label {
   position: absolute;
   top: 50%;
   left: 13px;
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   transform: translateY(-50%);
-  stroke: #c4c4c8;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
-  transition: stroke 0.2s ease;
+  color: #c4c4c8;
+  transition: color 0.2s ease;
   pointer-events: none;
 }
 
@@ -419,7 +373,7 @@ input[type='password'] {
   width: 100%;
   border: 1.5px solid var(--border);
   border-radius: 12px;
-  background: var(--surface-muted);
+  background: var(--bg);
   padding: 12px 14px 12px 37px;
   color: var(--text);
   font-size: 14px;
@@ -436,11 +390,11 @@ input::placeholder {
 
 input:focus {
   border-color: var(--primary);
-  background: var(--surface);
+  background: var(--bg-secondary);
 }
 
 .input-wrap:focus-within .icon {
-  stroke: var(--primary);
+  color: var(--primary);
 }
 
 .row {
@@ -460,7 +414,7 @@ input:focus {
 }
 
 .remember span {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
   font-weight: 400;
   letter-spacing: 0;
@@ -475,7 +429,7 @@ input:focus {
 }
 
 .helper-text {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -494,7 +448,7 @@ input:focus {
   border-radius: 999px;
   background: var(--neutral);
   padding: 13.5px;
-  color: var(--surface);
+  color: var(--bg-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -518,7 +472,7 @@ input:focus {
   margin: 0;
   border-left: 3px solid var(--primary);
   padding-left: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -531,7 +485,7 @@ input:focus {
 .footer {
   margin: 22px 0 0;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
 }
 

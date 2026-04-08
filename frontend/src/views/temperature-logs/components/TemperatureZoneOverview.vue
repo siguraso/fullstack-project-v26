@@ -58,8 +58,8 @@ function openCreateOverlay() {
     class="info-card"
     title="Temperature zones"
     :icon="Box"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-green)"
+    iconColor="var(--icon-stroke-green)"
     :addToHeader="true"
   >
     <template #extra-header-content>
@@ -168,7 +168,7 @@ function openCreateOverlay() {
 
 .log-table-body td {
   padding: 15px 10px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1px solid var(--border);
 }
 
 .log-table-body tr:last-child td {

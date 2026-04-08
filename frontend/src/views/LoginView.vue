@@ -2,7 +2,8 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '@/services/auth'
-import { Key } from '@lucide/vue'
+import { Key, Lock, Mail } from '@lucide/vue'
+import InfoCard from '@/components/ui/InfoCard.vue'
 
 const form = reactive({
   email: '',
@@ -73,14 +74,14 @@ async function handleSubmit() {
     </div>
 
     <section class="scene">
-      <div class="card">
-        <div class="brand">
-          <div class="brand-mark">
-            <Key class="logo-icon" />
-          </div>
-          <span class="brand-name">Regula</span>
-        </div>
-
+      <InfoCard
+        :title="'Regula'"
+        :icon="Key"
+        :iconBackgroundColor="'var(--neutral)'"
+        :iconColor="'white'"
+        :iconTransform="'rotate(-45deg)'"
+        class="card"
+      >
         <header class="heading">
           <h1>Welcome back</h1>
           <p>Sign in to continue to your workspace.</p>
@@ -90,10 +91,7 @@ async function handleSubmit() {
           <div class="field">
             <label for="email">Email</label>
             <div class="input-wrap">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <polyline points="2,4 12,13 22,4" />
-              </svg>
+              <Mail class="icon" :size="13" aria-hidden="true" />
               <input
                 id="email"
                 v-model="form.email"
@@ -109,17 +107,14 @@ async function handleSubmit() {
           <div class="field">
             <label for="password">Password</label>
             <div class="input-wrap">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+              <Lock class="icon" :size="13" aria-hidden="true" />
               <input
                 id="password"
                 v-model="form.password"
                 type="password"
                 required
                 autocomplete="current-password"
-                placeholder="••••••••"
+                placeholder="Password"
                 :disabled="isSubmitting"
               />
             </div>
@@ -152,7 +147,7 @@ async function handleSubmit() {
           <span class="accent accent-secondary"></span>
           <span class="accent accent-tertiary"></span>
         </div>
-      </div>
+      </InfoCard>
     </section>
   </main>
 </template>
@@ -301,7 +296,7 @@ async function handleSubmit() {
 
 .heading p {
   margin: 5px 0 0;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13.5px;
 }
 
@@ -316,7 +311,7 @@ async function handleSubmit() {
 }
 
 label {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -331,15 +326,11 @@ label {
   position: absolute;
   top: 50%;
   left: 13px;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   transform: translateY(-50%);
-  stroke: #c4c4c8;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
-  transition: stroke 0.2s ease;
+  color: #c4c4c8;
+  transition: color 0.2s ease;
   pointer-events: none;
 }
 
@@ -348,7 +339,7 @@ input[type='password'] {
   width: 100%;
   border: 1.5px solid var(--border);
   border-radius: 12px;
-  background: var(--surface-muted);
+  background: var(--bg);
   padding: 12px 14px 12px 37px;
   color: var(--text);
   font-size: 14px;
@@ -365,11 +356,11 @@ input::placeholder {
 
 input:focus {
   border-color: var(--primary);
-  background: var(--surface);
+  background: var(--bg-secondary);
 }
 
 .input-wrap:focus-within .icon {
-  stroke: var(--primary);
+  color: var(--primary);
 }
 
 .row {
@@ -389,7 +380,7 @@ input:focus {
 }
 
 .remember span {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
   font-weight: 400;
   letter-spacing: 0;
@@ -423,7 +414,7 @@ input:focus {
   border-radius: 999px;
   background: var(--neutral);
   padding: 13.5px;
-  color: var(--surface);
+  color: var(--bg-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -447,7 +438,7 @@ input:focus {
   margin: 0;
   border-left: 3px solid var(--primary);
   padding-left: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -460,7 +451,7 @@ input:focus {
 .footer {
   margin: 22px 0 0;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12.5px;
 }
 

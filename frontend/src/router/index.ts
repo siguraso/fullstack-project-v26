@@ -5,7 +5,6 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import InviteAcceptView from '../views/InviteAcceptView.vue'
 import DeviationView from '../views/deviation/DeviationView.vue'
-import TemperatureView from '../views/temperature/TemperatureView.vue'
 import TasksView from '@/views/tasks/TasksView.vue'
 import LogsView from '@/views/logs/LogsView.vue'
 import InspectionsView from '@/views/inspections/InspectionsView.vue'
@@ -48,11 +47,6 @@ const router = createRouter({
           path: '/deviation',
           name: 'deviation',
           component: DeviationView,
-        },
-        {
-          path: '/temperature',
-          name: 'temperature',
-          component: TemperatureView,
         },
         {
           path: '/checklists',
@@ -108,7 +102,6 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && authenticated) {
     return { name: 'dashboard' }
   }
-
 
   return true
 })

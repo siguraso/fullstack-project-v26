@@ -382,7 +382,7 @@ async function createCustomItem() {
   background: white;
   border-radius: 20px;
   padding: 24px;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
 }
 
 .builder-header {
@@ -443,7 +443,7 @@ async function createCustomItem() {
   padding: 12px 0;
   border: none;
   border-radius: 0;
-  border-bottom: 2px solid var(--stroke);
+  border-bottom: 2px solid var(--border);
   font-size: 18px;
 }
 
@@ -520,7 +520,7 @@ async function createCustomItem() {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
-  border: 2px dashed var(--stroke);
+  border: 2px dashed var(--border);
   background: transparent;
   cursor: pointer;
 }
@@ -534,7 +534,7 @@ async function createCustomItem() {
   background: white;
   border-radius: 20px;
   padding: 20px;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
 }
 
 .subtext {
@@ -551,7 +551,7 @@ async function createCustomItem() {
   padding: 10px;
   border-radius: 10px;
   margin: 12px 0;
-  border-bottom: 2px solid var(--stroke);
+  border-bottom: 2px solid var(--border);
 }
 
 .search:focus {

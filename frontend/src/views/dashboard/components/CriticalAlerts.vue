@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Card from '@/components/ui/Card.vue'
 import { resolveDeviation } from '@/services/deviation'
-import { Thermometer, TimerReset, TriangleAlert } from '@lucide/vue'
+import { TriangleAlert } from '@lucide/vue'
 
 const props = defineProps<{
   alerts: any[]

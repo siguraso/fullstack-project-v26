@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { AlertTriangle } from '@lucide/vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
 
@@ -15,7 +14,8 @@ const props = defineProps<{
     class="info-card"
     title="Deviations"
     :icon="AlertTriangle"
-    iconBackgroundColor="#feddb5"
+    iconBackgroundColor="var(--icon-bg-yellow)"
+    iconColor="var(--icon-stroke-yellow)"
   >
     <h3>{{ props.active }}</h3>
     <p>Active Deviations</p>

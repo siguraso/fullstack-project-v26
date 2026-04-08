@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
 import { useDeviationStore, type Deviation } from '@/stores/deviation'
@@ -26,21 +27,20 @@ watchEffect(() => {
   }
 })
 
-const selectedLabel = computed(() => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General')
+const selectedLabel = computed(
+  () => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General',
+)
 const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Deviation`)
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-head">
-      <div class="title-wrap">
-        <div class="title-icon">
-          <Edit2 :size="20" aria-hidden="true" />
-        </div>
-        <h3 class="title-text">{{ heading }}</h3>
-      </div>
-    </div>
-
+  <InfoCard
+    class="card"
+    :title="heading"
+    :icon="Edit2"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
+  >
     <div class="form-grid">
       <label>
         <span>Deviation title *</span>
@@ -85,59 +85,23 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
       <label class="description field-wide">
         <span>Detailed description</span>
         <textarea
-            v-model="store.form.description"
-            maxlength="500"
-            placeholder="Describe what happened, location, and immediate actions taken..."
+          v-model="store.form.description"
+          maxlength="500"
+          placeholder="Describe what happened, location, and immediate actions taken..."
         />
       </label>
     </div>
 
     <div class="footer">
       <small>{{ store.form.description.length }} / 500</small>
-      <button class="submit" type="button" @click="store.createDeviation">Submit deviation ></button>
+      <button class="submit" type="button" @click="store.createDeviation">Submit Deviation</button>
     </div>
-  </div>
+  </InfoCard>
 </template>
 
 <style scoped>
 .card {
-  background: var(--surface);
-  padding: 22px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
-}
-
-.card-head {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.title-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-}
-
-.title-text {
   margin: 0;
-  color: var(--text);
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 800;
 }
 
 .form-grid {
@@ -157,30 +121,9 @@ label {
 }
 
 label > span {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 0.9em;
   color: var(--text-secondary);
-}
-
-input,
-select,
-textarea {
-  border: 1px solid var(--border);
-  background: var(--surface-muted);
-  border-radius: 8px;
-  color: var(--text);
-}
-
-input {
-  min-height: 42px;
-  padding: 10px 12px;
-}
-
-select {
-  min-height: 42px;
-  padding: 8px 10px;
+  margin-bottom: 5px;
 }
 
 .severity {
@@ -193,10 +136,8 @@ select {
   min-height: 34px;
   border: 1px solid var(--border);
   border-radius: 7px;
-  background: var(--surface);
+  background: var(--bg-secondary);
   color: var(--text-secondary);
-  font-size: 10px;
-  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
@@ -219,8 +160,8 @@ select {
 }
 
 .severity-btn.critical.active {
-  background: var(--cta-red);
-  border-color: var(--cta-red);
+  background: var(--cta-red-btn);
+  border-color: var(--cta-red-btn);
   color: var(--bg);
 }
 
@@ -244,24 +185,13 @@ textarea {
 }
 
 small {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
 }
 
 .submit {
-  background: var(--neutral);
-  border: 1px solid var(--neutral);
-  border-radius: 8px;
   min-height: 42px;
-  min-width: 220px;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-}
-
-.submit:hover {
-  background: var(--neutral-hover);
+  min-width: 200px;
 }
 
 @media (max-width: 1020px) {
@@ -273,6 +203,5 @@ small {
     grid-column: auto;
     grid-row: auto;
   }
-
 }
 </style>

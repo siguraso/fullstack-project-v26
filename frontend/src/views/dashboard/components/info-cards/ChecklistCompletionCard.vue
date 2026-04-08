@@ -21,7 +21,12 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
 </script>
 
 <template>
-  <InfoCard title="Checklist Completion" :icon="ClipboardCheck" iconBackgroundColor="#d2e4fb">
+  <InfoCard
+    title="Checklist Completion"
+    :icon="ClipboardCheck"
+    :iconBackgroundColor="'var(--icon-bg-blue)'"
+    :iconColor="'var(--icon-stroke-blue)'"
+  >
     <div class="checklist-label">
       <h3>{{ props.completed }} / {{ props.total }}</h3>
       <p>Tasks Completed</p>
@@ -58,7 +63,7 @@ const completionRateLabel = computed(() => `${Math.round(completionRate.value)}%
   width: 100%;
   height: 5px;
   border-radius: 999px;
-  background-color: color-mix(in srgb, var(--stroke) 65%, white);
+  background-color: color-mix(in srgb, var(--border) 65%, white);
   overflow: hidden;
   margin-bottom: 8px;
 }

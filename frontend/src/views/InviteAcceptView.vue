@@ -25,9 +25,21 @@ const form = reactive({
 })
 
 const inviteSteps = [
-  { icon: Mail, title: 'Verified invite', description: 'We checked the token and confirmed your email.' },
-  { icon: UserRound, title: 'Complete profile', description: 'Add your name and optional phone number.' },
-  { icon: ShieldCheck, title: 'Secure access', description: 'Choose a password and enter the workspace.' },
+  {
+    icon: Mail,
+    title: 'Verified invite',
+    description: 'We checked the token and confirmed your email.',
+  },
+  {
+    icon: UserRound,
+    title: 'Complete profile',
+    description: 'Add your name and optional phone number.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Secure access',
+    description: 'Choose a password and enter the workspace.',
+  },
 ]
 
 const inviteSummary = computed(() => {
@@ -119,10 +131,22 @@ onMounted(() => {
       <div class="glow glow-primary"></div>
       <div class="glow glow-secondary"></div>
       <svg class="threads" viewBox="0 0 1600 900" preserveAspectRatio="none">
-        <path class="thread thread-primary" d="M260 0C340 110 180 250 300 430C380 550 240 715 310 900" />
-        <path class="thread thread-secondary" d="M610 0C720 150 520 295 680 470C780 600 620 760 700 900" />
-        <path class="thread thread-tertiary" d="M1030 0C1145 120 950 300 1120 480C1220 620 1060 780 1140 900" />
-        <path class="thread thread-neutral" d="M1370 0C1450 105 1320 245 1410 430C1490 595 1360 760 1435 900" />
+        <path
+          class="thread thread-primary"
+          d="M260 0C340 110 180 250 300 430C380 550 240 715 310 900"
+        />
+        <path
+          class="thread thread-secondary"
+          d="M610 0C720 150 520 295 680 470C780 600 620 760 700 900"
+        />
+        <path
+          class="thread thread-tertiary"
+          d="M1030 0C1145 120 950 300 1120 480C1220 620 1060 780 1140 900"
+        />
+        <path
+          class="thread thread-neutral"
+          d="M1370 0C1450 105 1320 245 1410 430C1490 595 1360 760 1435 900"
+        />
       </svg>
     </div>
 
@@ -204,12 +228,24 @@ onMounted(() => {
               <div class="field-grid">
                 <label class="field">
                   <span>First name</span>
-                  <input v-model="form.firstName" type="text" required autocomplete="given-name" placeholder="Jane" />
+                  <input
+                    v-model="form.firstName"
+                    type="text"
+                    required
+                    autocomplete="given-name"
+                    placeholder="Jane"
+                  />
                 </label>
 
                 <label class="field">
                   <span>Last name</span>
-                  <input v-model="form.lastName" type="text" required autocomplete="family-name" placeholder="Doe" />
+                  <input
+                    v-model="form.lastName"
+                    type="text"
+                    required
+                    autocomplete="family-name"
+                    placeholder="Doe"
+                  />
                 </label>
               </div>
 
@@ -220,7 +256,12 @@ onMounted(() => {
 
               <label class="field">
                 <span>Phone number</span>
-                <input v-model="form.phone" type="tel" autocomplete="tel" placeholder="+47 99 99 99 99" />
+                <input
+                  v-model="form.phone"
+                  type="tel"
+                  autocomplete="tel"
+                  placeholder="+47 99 99 99 99"
+                />
               </label>
 
               <label class="field">
@@ -258,8 +299,7 @@ onMounted(() => {
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(0, 102, 255, 0.08), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.09), transparent 24%),
-    var(--bg);
+    radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.09), transparent 24%), var(--bg);
 }
 
 .backdrop {
@@ -420,7 +460,7 @@ h1 {
   max-width: 56ch;
   font-size: 1.02rem;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .invite-steps {
@@ -460,7 +500,7 @@ h1 {
 .card-header p,
 .state-card p,
 .invite-summary span {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   line-height: 1.55;
 }
 
@@ -599,7 +639,7 @@ h2 {
 
 .field input[readonly] {
   background: #f6f7f9;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .remember {
@@ -674,6 +714,3 @@ h2 {
   }
 }
 </style>
-
-
-
