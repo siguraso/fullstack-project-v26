@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { AlertTriangle } from '@lucide/vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
 

@@ -17,6 +17,7 @@ import {
   type UserUpdatePayload,
 } from '@/services/settings'
 import { useTenantStore } from '@/stores/tenant'
+import Avatar from '@/components/ui/Avatar.vue'
 
 type TenantForm = {
   name: string
@@ -503,11 +504,7 @@ onMounted(() => {
           </label>
 
           <div class="toolbar-invite">
-            <button
-              type="button"
-              class="secondary-button invite-toolbar-button"
-              @click="toggleInvitePopup"
-            >
+            <button type="button" class="invite-button" @click="toggleInvitePopup">
               {{ isInvitePopupOpen ? 'Close' : 'Invite Staff' }}
             </button>
 
@@ -551,7 +548,7 @@ onMounted(() => {
             <article v-for="user in filteredUsers" :key="user.id" class="table-row">
               <div class="table-cell staff-cell">
                 <span class="mobile-label">Staff member</span>
-                <div class="avatar">{{ initialsForUser(user) }}</div>
+                <Avatar :name="fullName(user)" />
                 <div>
                   <strong>{{ fullName(user) }}</strong>
                   <p>{{ user.username }}</p>
@@ -840,14 +837,6 @@ onMounted(() => {
   min-width: 180px;
 }
 
-.invite-toolbar-button {
-  padding: 10px 16px;
-  border-radius: 12px;
-  border-color: rgba(76, 61, 165, 0.25);
-  background: linear-gradient(180deg, #ffffff, #f6f4ff);
-  font-weight: 600;
-}
-
 .invite-toolbar-button:hover {
   background: linear-gradient(180deg, #ffffff, #f0ecff);
   border-color: rgba(76, 61, 165, 0.36);
@@ -941,18 +930,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: #eef0e7;
-  color: #305431;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  flex-shrink: 0;
 }
 
 .role-chip,
