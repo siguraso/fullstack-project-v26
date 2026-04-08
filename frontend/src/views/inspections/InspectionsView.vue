@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getInspectionLogs, type InspectionLog } from '@/services/inspection'
+import { getInspectionLogs } from '@/services/inspection'
+import type { InspectionLog } from '@/interfaces/Inspection.interface'
 import { Download } from '@lucide/vue'
 
 const logs = ref<InspectionLog[]>([])

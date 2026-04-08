@@ -2,7 +2,7 @@
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { getAuthSession } from '@/services/auth'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { Box, ChevronLeft } from '@lucide/vue'
+import { Box, ChevronLeft, Pen, Pencil, PencilOff } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
@@ -71,7 +71,7 @@ function openCreateOverlay() {
           <th>Zone Name</th>
           <th>Lower limit</th>
           <th>Upper limit</th>
-          <th v-if="role == 'ADMIN'"></th>
+          <th v-if="role == 'ADMIN'">Actions</th>
         </tr>
       </thead>
       <tbody class="log-table-body">
@@ -80,7 +80,9 @@ function openCreateOverlay() {
           <td>{{ zone.lowerLimitCelsius }}°C</td>
           <td>{{ zone.upperLimitCelsius }}°C</td>
           <td v-if="role == 'ADMIN'">
-            <button class="edit-btn" @click="openEditOverlay(zone)">Edit</button>
+            <button class="edit-btn" @click="openEditOverlay(zone)" aria-label="Edit zone">
+              <Pencil :size="16" aria-hidden="true" />
+            </button>
           </td>
         </tr>
       </tbody>
@@ -176,6 +178,19 @@ function openCreateOverlay() {
 }
 
 .edit-btn {
-  width: 100%;
+  background-color: var(--bg-secondary);
+  color: var(--neutral);
+  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  place-items: center;
+}
+
+.edit-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.edit-btn:active {
+  background-color: var(--bg-active);
 }
 </style>

@@ -3,7 +3,7 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import { getAuthSession } from '@/services/auth'
 import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { History, Check, TriangleAlert, ChevronLeft, Filter } from '@lucide/vue'
+import { History, Check, TriangleAlert, ChevronLeft, Filter, Trash2 } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
@@ -135,7 +135,7 @@ function deleteLog(logId: number) {
           <th>Temperature (°C)</th>
           <th>Status</th>
           <th>Logged By</th>
-          <th v-if="canDeleteLogs"></th>
+          <th v-if="canDeleteLogs">Actions</th>
         </tr>
       </thead>
       <tbody class="log-table-body">
@@ -162,7 +162,9 @@ function deleteLog(logId: number) {
           </td>
           <td>{{ log.recordedByName ?? 'Unknown user' }}</td>
           <td v-if="canDeleteLogs">
-            <button class="delete-btn" @click="deleteLog(log.id)">Delete</button>
+            <button class="delete-btn" @click="deleteLog(log.id)">
+              <Trash2 :size="16" aria-hidden="true" />
+            </button>
           </td>
         </tr>
       </tbody>
@@ -303,8 +305,9 @@ function deleteLog(logId: number) {
 }
 
 .delete-btn {
-  width: 100%;
   background-color: var(--cta-red-btn);
   color: white;
+  height: 36px;
+  width: 36px;
 }
 </style>
