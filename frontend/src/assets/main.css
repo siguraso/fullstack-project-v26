@@ -53,13 +53,6 @@ body,
   background-color: var(--bg);
 }
 
-input {
-  height: 25px;
-  padding: 5px;
-  border-radius: 10px;
-  border: 2px solid var(--stroke);
-}
-
 button {
   border-radius: 10px;
   min-height: 35px;
