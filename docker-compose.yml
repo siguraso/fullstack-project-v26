@@ -11,7 +11,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: regula-frontend
     depends_on:
