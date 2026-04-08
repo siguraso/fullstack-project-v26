@@ -167,7 +167,7 @@ async function createLog() {
 
     <div class="footer">
       <button class="submit" type="button" :disabled="isSubmitting" @click="createLog">
-        {{ isSubmitting ? 'Creating...' : 'Create log >' }}
+        {{ isSubmitting ? 'Creating...' : 'Create log' }}
       </button>
     </div>
   </InfoCard>
@@ -190,47 +190,9 @@ label {
 }
 
 label span {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.9em;
   color: var(--text-secondary);
-}
-
-input,
-select {
-  font-size: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--neutral);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
-}
-
-textarea {
-  font-size: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-  min-height: 80px;
-  resize: vertical;
-}
-
-textarea:focus {
-  outline: none;
-  border-color: var(--neutral);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+  margin-bottom: 5px;
 }
 
 .field-wide {
@@ -254,7 +216,6 @@ textarea:focus {
   cursor: pointer;
   font-size: 14px;
   font-weight: normal;
-  text-transform: none;
   letter-spacing: normal;
   color: var(--text);
 }
@@ -280,27 +241,13 @@ textarea:focus {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid var(--border);
 }
 
 .submit {
-  padding: 10px 16px;
-  background: var(--neutral);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.submit:hover:not(:disabled) {
-  filter: brightness(0.9);
+  min-width: 120px;
 }
 
 .submit:disabled {

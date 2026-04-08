@@ -94,9 +94,7 @@ const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Dev
 
     <div class="footer">
       <small>{{ store.form.description.length }} / 500</small>
-      <button class="submit" type="button" @click="store.createDeviation">
-        Submit deviation >
-      </button>
+      <button class="submit" type="button" @click="store.createDeviation">Submit Deviation</button>
     </div>
   </InfoCard>
 </template>
@@ -123,30 +121,9 @@ label {
 }
 
 label > span {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 0.9em;
   color: var(--text-secondary);
-}
-
-input,
-select,
-textarea {
-  border: 1px solid var(--border);
-  background: var(--bg);
-  border-radius: 8px;
-  color: var(--text);
-}
-
-input {
-  min-height: 42px;
-  padding: 10px 12px;
-}
-
-select {
-  min-height: 42px;
-  padding: 8px 10px;
+  margin-bottom: 5px;
 }
 
 .severity {
@@ -161,8 +138,6 @@ select {
   border-radius: 7px;
   background: var(--bg-secondary);
   color: var(--text-secondary);
-  font-size: 10px;
-  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
@@ -185,8 +160,8 @@ select {
 }
 
 .severity-btn.critical.active {
-  background: var(--cta-red);
-  border-color: var(--cta-red);
+  background: var(--cta-red-btn);
+  border-color: var(--cta-red-btn);
   color: var(--bg);
 }
 
@@ -215,19 +190,8 @@ small {
 }
 
 .submit {
-  background: var(--neutral);
-  border: 1px solid var(--neutral);
-  border-radius: 8px;
   min-height: 42px;
-  min-width: 220px;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-}
-
-.submit:hover {
-  background: var(--neutral-hover);
+  min-width: 200px;
 }
 
 @media (max-width: 1020px) {

@@ -125,7 +125,7 @@ function setSelectedZone() {
 .input-field {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   gap: 10px;
 }
 
