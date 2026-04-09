@@ -48,32 +48,19 @@ const primaryItems: NavItem[] = [
   { label: 'Documents', icon: FolderOpen, to: '/documents' },
   { label: 'Deviations', icon: TriangleAlert, to: '/deviation' },
   { label: 'Inspections', icon: SearchCheck, to: '/inspections' },
+  { label: 'Checklists', icon: ClipboardCheck, to: '/checklists' },
 ]
 
 const complianceGroups: NavGroup[] = [
   {
     key: 'food',
     label: 'IK-food',
-    items: [
-      {
-        label: 'Checklists',
-        icon: ClipboardCheck,
-        to: { path: '/checklists', query: { ik: 'food' } },
-      },
-      { label: 'Temperature Logs', icon: Thermometer, to: '/temperature-logs' },
-    ],
+    items: [{ label: 'Temperature Logs', icon: Thermometer, to: '/temperature-logs' }],
   },
   {
     key: 'alcohol',
     label: 'IK-alcohol',
-    items: [
-      {
-        label: 'Checklists',
-        icon: ClipboardCheck,
-        to: { path: '/checklists', query: { ik: 'alcohol' } },
-      },
-      { label: 'Alcohol Logs', icon: ScrollText, to: '/alcohol-logs' },
-    ],
+    items: [{ label: 'Alcohol Logs', icon: ScrollText, to: '/alcohol-logs' }],
   },
 ]
 
