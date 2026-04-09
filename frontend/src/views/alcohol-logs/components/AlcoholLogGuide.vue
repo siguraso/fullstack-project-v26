@@ -60,7 +60,8 @@ import { ScrollText } from '@lucide/vue'
 
 .hint-card {
   border: 1px solid var(--border);
-  border-left: 4px solid var(--neutral);
+  border-bottom: 4px solid var(--neutral);
+  border-left: 1px solid var(--neutral);
   border-radius: 10px;
   background: #ffffff;
   padding: 14px;
