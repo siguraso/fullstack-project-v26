@@ -193,7 +193,7 @@ async function logout() {
         </section>
       </div>
 
-      <section class="nav-section nav-section-bottom">
+      <section v-if="canAccessSettings" class="nav-section nav-section-bottom">
         <ul class="nav-list">
           <li v-for="item in footerItems" :key="item.label">
             <button
@@ -294,8 +294,9 @@ async function logout() {
 
 .nav-section-bottom {
   margin-top: auto;
-  padding-top: 14px;
+  margin-bottom: 14px;
   border-top: 1px solid var(--border);
+  padding-top: 14px;
   flex-shrink: 0;
 }
 
