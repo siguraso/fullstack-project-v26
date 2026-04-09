@@ -1,8 +1,11 @@
 package edu.ntnu.idi.idatt2105.backend.common.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +35,9 @@ class SecurityConfigTest {
     @Test
     void protectedRouteRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/deviations"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
     @Test
@@ -48,6 +53,17 @@ class SecurityConfigTest {
         mockMvc.perform(get("/api/invitations/validate")
                         .param("token", "invalid-token"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void insufficientRoleReturnsForbiddenApiResponse() throws Exception {
+        mockMvc.perform(patch("/api/deviations/1")
+                        .with(user("staff@example.com").roles("STAFF"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"OPEN\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
     }
 }
 
