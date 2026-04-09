@@ -37,7 +37,7 @@ onMounted(() => {
       <div class="icon-wrapper">
         <component :is="Bell" :size="20" aria-hidden="true" class="notification-bell" />
       </div>
-      <div @click="logout">
+      <div>
         <Avatar :name="userEmail" :size="30" />
       </div>
       <p class="user-label">{{ userEmail }}</p>
