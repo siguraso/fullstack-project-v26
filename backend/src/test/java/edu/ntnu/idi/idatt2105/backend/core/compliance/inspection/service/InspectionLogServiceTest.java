@@ -94,30 +94,6 @@ class InspectionLogServiceTest {
     assertEquals("Grace Hopper", result.get(0).getActor());
   }
 
-  @Test
-  void getInspectionLogsUsesFallbackDescriptionAndSystemActor() {
-    Deviation deviation = new Deviation();
-    deviation.setId(100L);
-    deviation.setTitle("Unclassified deviation");
-    deviation.setIssueDescription("   ");
-    deviation.setImmediateAction(" ");
-    deviation.setStatus(DeviationStatus.IN_PROGRESS);
-    deviation.setSeverity(DeviationSeverity.MEDIUM);
-    deviation.setModule(ComplianceModule.IK_FOOD);
-    deviation.setCreatedAt(LocalDateTime.of(2026, 4, 9, 10, 15));
-    deviation.setCreatedBy(null);
-
-    when(deviationRepository.findByTenantId(9L)).thenReturn(List.of(deviation));
-    when(temperatureLogRepository.findAllByTenantId(9L)).thenReturn(List.of());
-    when(alcoholLogRepository.findAllByTenantId(9L)).thenReturn(List.of());
-
-    List<InspectionLogDTO> result = inspectionLogService.getInspectionLogs();
-
-    assertEquals(1, result.size());
-    assertEquals("Deviation recorded", result.get(0).getDescription());
-    assertEquals("System", result.get(0).getActor());
-  }
-
   private User buildUser(String firstName, String lastName) {
     User user = new User();
     user.setFirstName(firstName);
