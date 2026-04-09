@@ -61,7 +61,7 @@ describe('TemperatureZoneOverview', () => {
     expect(wrapper.emitted('create-zone')).toHaveLength(1)
     expect(wrapper.emitted('edit-zone')).toHaveLength(1)
 
-    await wrapper.findAll('button.page-button')[1].trigger('click')
+    await wrapper.findAll('button.page-button')[1]!.trigger('click')
     expect(wrapper.text()).toContain('Page 2 of 2')
   })
 
@@ -76,7 +76,7 @@ describe('TemperatureZoneOverview', () => {
     })
 
     const wrapper = mount(TemperatureZoneOverview, {
-      props: { zones: [zones[0]] },
+      props: { zones: [zones[0]!] },
       global: {
         stubs: {
           InfoCard: InfoCardStub,

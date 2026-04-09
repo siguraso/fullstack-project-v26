@@ -15,6 +15,7 @@ function parseSession(value: string | null): AuthSession | null {
 
     return {
       email: parsed.email ?? '',
+      fullName: parsed.fullName ?? null,
       remember: parsed.remember ?? false,
       token: parsed.token ?? null,
       refreshToken: parsed.refreshToken ?? null,

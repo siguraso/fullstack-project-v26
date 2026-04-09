@@ -50,9 +50,9 @@ describe('EditTemperatureZone', () => {
 
     const inputs = wrapper.findAll('input')
 
-    await inputs[0].setValue('Prep Updated')
-    await inputs[1].setValue(1)
-    await inputs[2].setValue(7)
+    await inputs[0]!.setValue('Prep Updated')
+    await inputs[1]!.setValue(1)
+    await inputs[2]!.setValue(7)
     await wrapper.get('button.save-btn').trigger('click')
 
     expect(wrapper.emitted('save')).toEqual([

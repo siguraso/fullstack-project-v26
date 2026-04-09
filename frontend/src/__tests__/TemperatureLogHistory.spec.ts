@@ -101,9 +101,9 @@ describe('TemperatureLogHistory', () => {
 
     const bodyRows = wrapper.findAll('tbody tr')
     expect(bodyRows).toHaveLength(4)
-    expect(bodyRows[0].text()).toContain('8')
+    expect(bodyRows[0]!.text()).toContain('8')
 
-    await wrapper.findAll('button.page-button')[1].trigger('click')
+    await wrapper.findAll('button.page-button')[1]!.trigger('click')
     expect(wrapper.text()).toContain('Page 2 of 2')
 
     const select = wrapper.get('select')
@@ -120,7 +120,7 @@ describe('TemperatureLogHistory', () => {
   it('marks out-of-range readings as abnormal', () => {
     const wrapper = mount(TemperatureLogHistory, {
       props: {
-        temperatureLogs: [logs[1]],
+        temperatureLogs: [logs[1]!],
         temperatureZones: zones,
       },
       global: {

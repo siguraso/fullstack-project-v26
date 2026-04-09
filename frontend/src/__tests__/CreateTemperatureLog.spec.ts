@@ -77,7 +77,7 @@ describe('CreateTemperatureLog', () => {
 
     await wrapper.get('select').setValue('1')
     await wrapper.get('input.temperature-input').setValue('3')
-    await wrapper.findAll('input')[1].setValue('Routine check')
+    await wrapper.findAll('input')[1]!.setValue('Routine check')
     await wrapper.get('button.create-btn').trigger('click')
 
     expect(createTemperatureLog).toHaveBeenCalledWith({

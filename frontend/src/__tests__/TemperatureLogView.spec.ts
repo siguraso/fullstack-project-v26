@@ -265,7 +265,7 @@ describe('TemperatureLogView', () => {
     vi.mocked(getTemperatureZones).mockResolvedValue(zoneFixture)
     vi.mocked(fetchTemperatureLogs).mockResolvedValue(logFixture)
     vi.mocked(editTemperatureZone).mockResolvedValue({
-      ...zoneFixture[0],
+      ...zoneFixture[0]!,
       name: 'Updated Zone Name',
     })
 

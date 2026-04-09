@@ -38,9 +38,9 @@ describe('CreateTemperatureZone', () => {
 
     const inputs = wrapper.findAll('input')
 
-    await inputs[0].setValue('Freezer')
-    await inputs[1].setValue(-18)
-    await inputs[2].setValue(-5)
+    await inputs[0]!.setValue('Freezer')
+    await inputs[1]!.setValue(-18)
+    await inputs[2]!.setValue(-5)
     await wrapper.get('button.save-btn').trigger('click')
 
     expect(wrapper.emitted('create')).toEqual([
