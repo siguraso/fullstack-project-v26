@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Bell, Key, Menu } from '@lucide/vue'
 import { clearAuthSession, getAuthSession } from '@/services/auth'
 import { useTenantStore } from '@/stores/tenant'
+import { useRouter } from 'vue-router'
 import Avatar from './ui/Avatar.vue'
 
 const props = withDefaults(
@@ -21,19 +21,42 @@ const emit = defineEmits<{
   'toggle-sidebar': []
 }>()
 
-const router = useRouter()
 const session = getAuthSession()
-const userEmail = computed(() => session?.email ?? 'Signed in user')
+const fullName = computed(() => session?.fullName ?? 'Signed in user')
+const email = computed(() => session?.email ?? '')
 const tenantStore = useTenantStore()
 const storeName = computed(() => tenantStore.tenantName)
+const router = useRouter()
+const isUserMenuOpen = ref(false)
 
-async function logout() {
+function toggleUserMenu() {
+  isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+function closeUserMenu() {
+  isUserMenuOpen.value = false
+}
+
+function onDocumentClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (target.closest('.user-menu-wrapper')) return
+  closeUserMenu()
+}
+
+async function handleLogout() {
   clearAuthSession()
-  await router.push('/login')
+  closeUserMenu()
+  await router.push({ name: 'login' })
 }
 
 onMounted(() => {
   tenantStore.fetchTenant()
+  document.addEventListener('click', onDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
 })
 </script>
 
@@ -63,10 +86,22 @@ onMounted(() => {
       <div class="icon-wrapper">
         <component :is="Bell" :size="20" aria-hidden="true" class="notification-bell" />
       </div>
-      <div>
-        <Avatar :name="userEmail" :size="30" />
+      <div class="user-menu-wrapper" @click.stop>
+        <button
+          type="button"
+          class="avatar-trigger"
+          aria-label="Open user menu"
+          :aria-expanded="isUserMenuOpen"
+          @click="toggleUserMenu"
+        >
+          <Avatar :name="fullName" :size="30" />
+        </button>
+        <div v-if="isUserMenuOpen" class="user-menu" role="menu" aria-label="User menu">
+          <p class="user-menu-email">{{ email }}</p>
+          <button type="button" class="user-menu-logout" @click="handleLogout">Log out</button>
+        </div>
       </div>
-      <p class="user-label">{{ userEmail }}</p>
+      <p class="user-label">{{ fullName }}</p>
     </div>
   </nav>
 </template>
@@ -98,6 +133,7 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 15px;
   min-width: 0;
+  position: relative;
 }
 
 .user-label {
@@ -165,6 +201,61 @@ onMounted(() => {
 
 .icon-wrapper:hover {
   background-color: var(--bg-hover);
+}
+
+.user-menu-wrapper {
+  position: relative;
+}
+
+.avatar-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatar-trigger:focus-visible {
+  outline: 2px solid var(--neutral);
+  outline-offset: 2px;
+}
+
+.user-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 10%);
+  padding: 10px;
+  z-index: 1001;
+}
+
+.user-menu-email {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.user-menu-logout {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.user-menu-logout:hover {
+  background: var(--bg-hover);
 }
 
 .menu-toggle {

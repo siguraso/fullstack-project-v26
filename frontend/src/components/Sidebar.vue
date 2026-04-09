@@ -67,7 +67,7 @@ const complianceGroups: NavGroup[] = [
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
-const canAccessSettings = session?.role === 'ADMIN' || session?.role === 'MANAGER'
+const canAccessSettings = session?.role === 'ADMIN'
 
 const footerItems: NavItem[] = canAccessSettings
   ? [{ label: 'Settings', icon: Settings, to: '/settings' }]
@@ -193,7 +193,7 @@ async function logout() {
         </section>
       </div>
 
-      <section class="nav-section nav-section-bottom">
+      <section v-if="canAccessSettings" class="nav-section nav-section-bottom">
         <ul class="nav-list">
           <li v-for="item in footerItems" :key="item.label">
             <button
@@ -211,11 +211,6 @@ async function logout() {
         </ul>
       </section>
     </nav>
-
-    <div class="user-info">
-      <p>{{ userEmail }}</p>
-      <button type="button" class="logout-button" @click="logout">Logout</button>
-    </div>
   </aside>
 </template>
 
@@ -294,8 +289,9 @@ async function logout() {
 
 .nav-section-bottom {
   margin-top: auto;
-  padding-top: 14px;
+  margin-bottom: 14px;
   border-top: 1px solid var(--border);
+  padding-top: 14px;
   flex-shrink: 0;
 }
 

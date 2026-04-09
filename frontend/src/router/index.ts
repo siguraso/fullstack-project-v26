@@ -51,17 +51,19 @@ const router = createRouter({
           path: '/inspections',
           name: 'inspections',
           component: InspectionsView,
+          meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
         },
         {
           path: '/settings',
           name: 'settings',
           component: SettingsView,
-          meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
+          meta: { allowedRoles: ['ADMIN'] },
         },
         {
           path: '/documents',
           name: 'documents',
           component: DocumentsView,
+          meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
         },
         {
           path: '/checklist-builder',

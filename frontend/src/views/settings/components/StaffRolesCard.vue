@@ -139,7 +139,6 @@ function fullName(user: Pick<User, 'firstName' | 'lastName'>) {
             <Avatar :name="fullName(user)" />
             <div>
               <strong>{{ fullName(user) }}</strong>
-              <p>{{ user.username }}</p>
             </div>
           </div>
 
