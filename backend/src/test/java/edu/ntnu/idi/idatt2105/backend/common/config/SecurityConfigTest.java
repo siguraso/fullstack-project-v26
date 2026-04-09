@@ -56,6 +56,15 @@ class SecurityConfigTest {
     }
 
     @Test
+    void swaggerEndpointsArePublic() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/swagger-ui/index.html"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void insufficientRoleReturnsForbiddenApiResponse() throws Exception {
         mockMvc.perform(patch("/api/deviations/1")
                         .with(user("staff@example.com").roles("STAFF"))
