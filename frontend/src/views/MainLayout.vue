@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar.vue'
 
 const LOGIN_TRANSITION_STATE_KEY = 'loginTransition'
 const LOGIN_SHELL_ENTER_DURATION_MS = 640
-const MOBILE_SHELL_BREAKPOINT_QUERY = '(max-width: 960px)'
+const MOBILE_SHELL_BREAKPOINT_PX = 960
 
 const route = useRoute()
 const playLoginShellEnter = ref(false)
@@ -14,7 +14,7 @@ const isMobileShell = ref(false)
 const isSidebarOpen = ref(false)
 
 let clearAnimationTimer: number | undefined
-let shellMediaQuery: MediaQueryList | null = null
+let handleWindowResize: (() => void) | null = null
 
 function closeSidebar() {
   isSidebarOpen.value = false
@@ -28,10 +28,10 @@ function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
-function syncShellMode(query: MediaQueryList | MediaQueryListEvent) {
-  isMobileShell.value = query.matches
+function syncShellMode() {
+  isMobileShell.value = window.innerWidth <= MOBILE_SHELL_BREAKPOINT_PX
 
-  if (!query.matches) {
+  if (!isMobileShell.value) {
     closeSidebar()
   }
 }
@@ -64,9 +64,9 @@ function clearLoginTransitionFlag() {
 }
 
 onMounted(() => {
-  shellMediaQuery = window.matchMedia(MOBILE_SHELL_BREAKPOINT_QUERY)
-  syncShellMode(shellMediaQuery)
-  shellMediaQuery.addEventListener('change', syncShellMode)
+  handleWindowResize = syncShellMode
+  syncShellMode()
+  window.addEventListener('resize', handleWindowResize)
   window.addEventListener('keydown', handleShellKeydown)
 
   if (!hasLoginTransitionFlag()) {
@@ -91,7 +91,9 @@ onBeforeUnmount(() => {
 
   document.body.style.overflow = ''
   window.removeEventListener('keydown', handleShellKeydown)
-  shellMediaQuery?.removeEventListener('change', syncShellMode)
+  if (handleWindowResize) {
+    window.removeEventListener('resize', handleWindowResize)
+  }
 })
 
 watch(
@@ -117,7 +119,7 @@ watch([isMobileShell, isSidebarOpen], ([mobile, open]) => {
       v-if="isMobileShell && isSidebarOpen"
       type="button"
       class="sidebar-backdrop"
-      aria-label="Close navigation"
+      aria-label="Close sidebar overlay"
       @click="closeSidebar"
     ></button>
     <div class="dashboard-shell">

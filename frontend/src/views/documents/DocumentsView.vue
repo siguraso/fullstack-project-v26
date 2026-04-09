@@ -83,7 +83,9 @@ const previewMimeType = computed(() => previewDocument.value?.mimeType ?? '')
 const previewIsPdf = computed(() => previewMimeType.value === 'application/pdf')
 const previewIsImage = computed(() => previewMimeType.value.startsWith('image/'))
 const previewIsText = computed(
-  () => previewMimeType.value.startsWith('text/') || previewDocument.value?.originalFilename.endsWith('.txt'),
+  () =>
+    previewMimeType.value.startsWith('text/') ||
+    previewDocument.value?.originalFilename.endsWith('.txt'),
 )
 const canPreviewCurrentDocument = computed(
   () => previewIsPdf.value || previewIsImage.value || previewIsText.value,
@@ -329,7 +331,12 @@ function canPreviewDocument(document: Pick<DocumentSummary, 'mimeType' | 'origin
   const mimeType = document.mimeType.toLowerCase()
   const filename = document.originalFilename.toLowerCase()
 
-  return mimeType === 'application/pdf' || mimeType.startsWith('image/') || mimeType.startsWith('text/') || filename.endsWith('.txt')
+  return (
+    mimeType === 'application/pdf' ||
+    mimeType.startsWith('image/') ||
+    mimeType.startsWith('text/') ||
+    filename.endsWith('.txt')
+  )
 }
 
 async function openPreview(document: DocumentSummary) {
@@ -340,7 +347,8 @@ async function openPreview(document: DocumentSummary) {
   isPreviewOpen.value = true
 
   if (!canPreviewDocument(document)) {
-    previewError.value = 'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
+    previewError.value =
+      'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
     return
   }
 
@@ -349,7 +357,10 @@ async function openPreview(document: DocumentSummary) {
   try {
     const file = await fetchDocumentFile(document)
 
-    if (file.mimeType.startsWith('text/') || document.originalFilename.toLowerCase().endsWith('.txt')) {
+    if (
+      file.mimeType.startsWith('text/') ||
+      document.originalFilename.toLowerCase().endsWith('.txt')
+    ) {
       previewTextContent.value = await file.blob.text()
     }
 
@@ -577,7 +588,11 @@ onMounted(() => {
         <header class="document-form-header">
           <div>
             <h2>{{ isEditing ? 'Edit document' : 'Upload document' }}</h2>
-            <p>{{ isEditing ? 'Replace the file only if needed.' : 'Add a new file to the library.' }}</p>
+            <p>
+              {{
+                isEditing ? 'Replace the file only if needed.' : 'Add a new file to the library.'
+              }}
+            </p>
           </div>
           <button type="button" class="close-button" @click="closeForm">Close</button>
         </header>
@@ -642,7 +657,11 @@ onMounted(() => {
       </section>
     </div>
 
-    <div v-if="isPreviewOpen && previewDocument" class="overlay-backdrop" @click.self="closePreview">
+    <div
+      v-if="isPreviewOpen && previewDocument"
+      class="overlay-backdrop"
+      @click.self="closePreview"
+    >
       <section class="preview-card">
         <header class="document-form-header">
           <div>
@@ -652,7 +671,11 @@ onMounted(() => {
             </p>
           </div>
           <div class="preview-header-actions">
-            <button type="button" class="secondary-action" @click="downloadDocument(previewDocument)">
+            <button
+              type="button"
+              class="secondary-action"
+              @click="downloadDocument(previewDocument)"
+            >
               Download
             </button>
             <button type="button" class="close-button" @click="closePreview">Close</button>
@@ -1045,12 +1068,202 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .documents-view {
+    gap: 16px;
+  }
+
+  .page-header {
+    gap: 12px;
+  }
+
+  .page-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .page-header button {
+    width: 100%;
+  }
+
   .toolbar-card,
   .results-card,
   .document-form-card,
   .preview-card {
-    padding: 16px;
+    padding: 14px;
     border-radius: 16px;
+  }
+
+  .toolbar-card,
+  .results-card {
+    overflow: hidden;
+  }
+
+  .area-toggle,
+  .tag-row,
+  .suggestion-row,
+  .actions,
+  .form-actions {
+    gap: 8px;
+  }
+
+  .area-button,
+  .secondary-action,
+  .danger-action,
+  .primary-action,
+  .close-button,
+  .tag-chip,
+  .suggestion-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .toolbar-grid {
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    min-width: 0;
+  }
+
+  .table-shell {
+    overflow: visible;
+  }
+
+  .documents-table,
+  .documents-table thead,
+  .documents-table tbody,
+  .documents-table tr,
+  .documents-table td,
+  .documents-table th {
+    display: block;
+    width: 100%;
+  }
+
+  .documents-table thead {
+    display: none;
+  }
+
+  .documents-table tr {
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .documents-table td {
+    padding: 10px 0;
+    border-top: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .documents-table td::before {
+    flex: 0 0 7.5rem;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .documents-table td:nth-child(1)::before {
+    content: 'Document';
+  }
+
+  .documents-table td:nth-child(2)::before {
+    content: 'Bucket';
+  }
+
+  .documents-table td:nth-child(3)::before {
+    content: 'Tags';
+  }
+
+  .documents-table td:nth-child(4)::before {
+    content: 'Updated';
+  }
+
+  .documents-table td:nth-child(5)::before {
+    content: 'File';
+  }
+
+  .documents-table td:nth-child(6)::before {
+    content: 'Uploaded by';
+  }
+
+  .documents-table td:nth-child(7)::before {
+    content: 'Actions';
+  }
+
+  .document-title,
+  .document-description,
+  .muted,
+  .table-tags,
+  .actions {
+    min-width: 0;
+  }
+
+  .document-title,
+  .document-description,
+  .muted,
+  .table-tag {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .table-tags {
+    justify-content: flex-end;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .actions .secondary-action,
+  .actions .danger-action {
+    width: auto;
+    flex: 1 1 0;
+  }
+
+  .overlay-backdrop {
+    padding: 12px;
+    align-items: stretch;
+  }
+
+  .document-form-card,
+  .preview-card {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+  }
+
+  .document-form-header,
+  .preview-card .document-form-header {
+    flex-direction: column;
+  }
+
+  .preview-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .preview-header-actions .secondary-action,
+  .preview-header-actions .close-button {
+    flex: 1 1 0;
+  }
+
+  .preview-body {
+    min-height: 0;
+    max-height: none;
+  }
+
+  .preview-frame {
+    min-height: 58vh;
   }
 
   .documents-table th:nth-child(3),
