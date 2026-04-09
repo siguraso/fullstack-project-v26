@@ -112,9 +112,9 @@ function closeDetails() {
 
 .top-row {
   display: grid;
-  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
   margin-bottom: 16px;
 }
 
@@ -123,16 +123,20 @@ function closeDetails() {
 }
 
 .guide-panel {
-  height: 100%;
+  position: sticky;
+  top: 24px;
 }
 
 @media (max-width: 1250px) {
   .top-row {
     grid-template-columns: 1fr;
   }
+
+  .guide-panel {
+    position: static;
+  }
 }
 </style>
-
 
 
 

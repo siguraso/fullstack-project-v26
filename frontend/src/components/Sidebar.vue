@@ -6,6 +6,7 @@ import {
   ChevronDown,
   X,
   ClipboardCheck,
+  FolderOpen,
   LayoutDashboard,
   SearchCheck,
   Settings,
@@ -44,6 +45,7 @@ const emit = defineEmits<{
 
 const primaryItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
+  { label: 'Documents', icon: FolderOpen, to: '/documents' },
   { label: 'Deviations', icon: TriangleAlert, to: '/deviation' },
   { label: 'Inspections', icon: SearchCheck, to: '/inspections' },
 ]
@@ -75,11 +77,15 @@ const complianceGroups: NavGroup[] = [
   },
 ]
 
-const footerItems: NavItem[] = [{ label: 'Settings', icon: Settings, to: '/settings' }]
-
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
+const canAccessSettings = session?.role === 'ADMIN' || session?.role === 'MANAGER'
+
+const footerItems: NavItem[] = canAccessSettings
+  ? [{ label: 'Settings', icon: Settings, to: '/settings' }]
+  : []
+
 const userEmail = computed(() => session?.email ?? 'Signed in user')
 const openGroups = reactive<Record<NavGroup['key'], boolean>>({
   food: true,
@@ -228,10 +234,11 @@ async function logout() {
 
 <style scoped>
 .sidebar {
-  width: var(--sidebar-width, 220px);
-  min-width: var(--sidebar-width, 220px);
-  height: calc(100vh - var(--navbar-height, 64px));
-  position: fixed;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--sidebar-width, 220px);
+  height: calc(100dvh - var(--navbar-height, 64px));
+  position: sticky;
   top: var(--navbar-height, 64px);
   left: 0;
   padding: 20px 14px 16px;
@@ -240,7 +247,8 @@ async function logout() {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  z-index: 1100;
+  align-self: start;
+  z-index: 100;
 }
 
 .brand-block {
@@ -448,15 +456,19 @@ async function logout() {
 
 @media (max-width: 960px) {
   .sidebar-mobile {
+    position: fixed;
     top: var(--navbar-height, 54px);
+    left: 0;
     bottom: 0;
     width: min(86vw, 320px);
     min-width: 0;
+    max-width: none;
     height: auto;
     padding: 16px 14px 18px;
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
     transform: translateX(-110%);
     transition: transform 220ms ease;
+    z-index: 1100;
   }
 
   .sidebar-mobile.sidebar-open {

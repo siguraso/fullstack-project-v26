@@ -161,12 +161,13 @@ watch([isMobileShell, isSidebarOpen], ([mobile, open]) => {
 .dashboard-shell {
   --navbar-height: 54px;
   --sidebar-width: max(15vw, 220px);
-  min-height: 100vh;
-  padding-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  align-items: start;
 }
 
 .dashboard-main {
-  margin-left: var(--sidebar-width);
   padding: 24px;
   min-width: 0;
 }
@@ -214,10 +215,10 @@ watch([isMobileShell, isSidebarOpen], ([mobile, open]) => {
 @media (max-width: 960px) {
   .dashboard-shell {
     --sidebar-width: 0px;
+    grid-template-columns: 1fr;
   }
 
   .dashboard-main {
-    margin-left: 0;
     padding: 18px 16px 24px;
   }
 }

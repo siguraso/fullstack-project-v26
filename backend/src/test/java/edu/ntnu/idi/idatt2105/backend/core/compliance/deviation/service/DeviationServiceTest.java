@@ -102,8 +102,39 @@ class DeviationServiceTest {
 		assertEquals(DeviationSeverity.CRITICAL, saved.getSeverity());
 		assertEquals(DeviationCategory.HYGIENE, saved.getCategory());
 		assertEquals(DeviationStatus.OPEN, saved.getStatus());
+		assertNull(saved.getChecklistItemId());
+		assertNull(saved.getLogId());
 		assertNotNull(saved.getCreatedAt());
 		assertNull(saved.getResolvedAt());
+	}
+
+	@Test
+	void testCreateSetsOptionalLinks() {
+		CreateDeviationRequest request = new CreateDeviationRequest();
+		request.setModule(ComplianceModule.IK_FOOD);
+		request.setTitle("Linked deviation");
+		request.setDescription("Description");
+		request.setSeverity(DeviationSeverity.HIGH);
+		request.setCategory(DeviationCategory.TEMPERATURE);
+		request.setStatus(DeviationStatus.OPEN);
+		request.setChecklistItemId(12L);
+		request.setLogId(34L);
+
+		Tenant tenant = new Tenant();
+		tenant.setId(1L);
+
+		when(tenantRepo.findById(1L)).thenReturn(Optional.of(tenant));
+		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(mapper.toDTO(any(Deviation.class))).thenReturn(new DeviationDTO());
+
+		deviationService.create(request);
+
+		ArgumentCaptor<Deviation> captor = ArgumentCaptor.forClass(Deviation.class);
+		verify(deviationRepo).save(captor.capture());
+		Deviation saved = captor.getValue();
+
+		assertEquals(12L, saved.getChecklistItemId());
+		assertEquals(34L, saved.getLogId());
 	}
 
 	@Test

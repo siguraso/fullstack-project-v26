@@ -11,6 +11,7 @@ public class ChecklistInstanceDTO {
     private Long id;
     private String status;
     private String name;
+    private String module;
     private LocalDate date;
 
     private List<ChecklistItemDTO> items;

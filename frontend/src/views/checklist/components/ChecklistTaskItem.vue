@@ -14,9 +14,8 @@ const emit = defineEmits<{
   toggle: [id: number, completed: boolean]
 }>()
 
-function onToggle(event: Event) {
-  const checked = (event.target as HTMLInputElement).checked
-  emit('toggle', props.task.id, checked)
+function toggle() {
+  emit('toggle', props.task.id, !props.task.completed)
 }
 </script>
 
@@ -27,13 +26,14 @@ function onToggle(event: Event) {
       completed: task.completed,
       high: task.priority === 'high',
     }"
+    @click="toggle"
   >
     <!-- LEFT BORDER INDICATOR -->
     <div class="left-border" />
 
     <!-- checkbox -->
-    <div class="checkbox">
-      <input type="checkbox" :checked="task.completed" @change="onToggle" />
+    <div class="checkbox" @click.stop>
+      <input type="checkbox" :checked="task.completed" @change="toggle" />
     </div>
 
     <!-- content -->
@@ -44,9 +44,6 @@ function onToggle(event: Event) {
       </div>
 
       <p class="description">{{ task.description }}</p>
-
-      <!-- optional comment -->
-      <input v-if="!task.completed" class="comment-input" placeholder="Add optional comment..." />
     </div>
 
     <!-- right side -->
@@ -65,6 +62,22 @@ function onToggle(event: Event) {
   background: #ffffff;
   gap: 16px;
   position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 👇 darker when completed */
+.task.completed {
+  opacity: 0.7;
+  background: #f1f5f9;
+}
+
+.task:hover {
+  background: #f8fafc;
+}
+
+.task.completed:hover {
+  background: #e2e8f0;
 }
 
 .task.completed .left-border {
@@ -94,6 +107,7 @@ function onToggle(event: Event) {
 .content h3 {
   margin: 0;
   font-size: 18px;
+  transition: color 0.35s ease;
 }
 
 .content p {
@@ -111,15 +125,6 @@ function onToggle(event: Event) {
   margin: 6px 0 0;
   font-size: 14px;
   color: var(--text-secondary);
-}
-
-.comment-input {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: #f3f4f5;
-  width: 100%;
 }
 
 .right {

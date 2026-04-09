@@ -1,16 +1,29 @@
-
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import DeviationForm from './components/DeviationForm.vue'
 import DeviationGuide from './components/DeviationGuide.vue'
 import DeviationTable from './components/DeviationTable.vue'
+import DeviationDetailsDialog from './components/DeviationDetailsDialog.vue'
 import { useDeviationStore } from '@/stores/deviation'
+import type { Deviation } from '@/interfaces/Deviation.interface'
 
 const store = useDeviationStore()
+const isDetailsOpen = ref(false)
+const selectedDeviation = ref<Deviation | null>(null)
 
 onMounted(() => {
   store.fetchDeviations()
 })
+
+function openDetails(deviation: Deviation) {
+  selectedDeviation.value = deviation
+  isDetailsOpen.value = true
+}
+
+function closeDetails() {
+  isDetailsOpen.value = false
+  selectedDeviation.value = null
+}
 </script>
 
 <template>
@@ -21,12 +34,17 @@ onMounted(() => {
 
     <p v-if="store.error" class="error-banner">{{ store.error }}</p>
 
-    <div class="top-row">
-      <DeviationForm class="form-panel" title="Report Deviation" />
-      <DeviationGuide class="guide-panel" />
-    </div>
+    
+    <DeviationForm class="form-panel" title="Report Deviation" />
+    
 
-    <DeviationTable />
+    <DeviationTable @view-requested="openDetails" />
+
+    <DeviationDetailsDialog
+      :deviation="selectedDeviation"
+      :isOpen="isDetailsOpen"
+      @close="closeDetails"
+    />
   </div>
 </template>
 
@@ -68,9 +86,9 @@ onMounted(() => {
 
 .top-row {
   display: grid;
-  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .form-panel {
@@ -78,13 +96,17 @@ onMounted(() => {
 }
 
 .guide-panel {
-  height: 100%;
+  position: sticky;
+  top: 24px;
 }
-
 
 @media (max-width: 1250px) {
   .top-row {
     grid-template-columns: 1fr;
+  }
+
+  .guide-panel {
+    position: static;
   }
 }
 </style>

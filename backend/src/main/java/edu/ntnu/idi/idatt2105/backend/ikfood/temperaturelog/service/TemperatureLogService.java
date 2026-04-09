@@ -15,7 +15,6 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogDTO;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.entity.TemperatureComplianceLog;
@@ -35,21 +34,18 @@ public class TemperatureLogService extends BaseComplianceLogService<TemperatureC
     private final UserRepository userRepository;
     private final TemperatureZoneRepository temperatureZoneRepository;
     private final TemperatureLogMapper mapper;
-    private final DeviationService deviationService;
 
     public TemperatureLogService(
             TemperatureLogRepository repository,
             TenantRepository tenantRepository,
             UserRepository userRepository,
             TemperatureZoneRepository temperatureZoneRepository,
-            TemperatureLogMapper mapper,
-            DeviationService deviationService) {
+            TemperatureLogMapper mapper) {
         this.repository = repository;
         this.tenantRepository = tenantRepository;
         this.userRepository = userRepository;
         this.temperatureZoneRepository = temperatureZoneRepository;
         this.mapper = mapper;
-        this.deviationService = deviationService;
     }
 
     @Override
@@ -76,17 +72,10 @@ public class TemperatureLogService extends BaseComplianceLogService<TemperatureC
         LogStatus status = resolveStatus(request.getTemperatureCelsius(), zone);
         TemperatureComplianceLog tempLog = mapper.toEntity(request, tenant, recordedBy, zone, status);
         TemperatureComplianceLog savedLog = repository.save(tempLog);
-        boolean deviationCreated = false;
-
-        if (status == LogStatus.WARNING) {
-            deviationService.createFromLog(savedLog);
-            deviationCreated = true;
-        }
-
-        log.info("Created temperature log id={} status={} deviationCreated={}", savedLog.getId(), status, deviationCreated);
+        log.info("Created temperature log id={} status={} deviationCreated=false", savedLog.getId(), status);
 
         TemperatureLogDTO dto = mapper.toDTO(savedLog);
-        dto.setDeviationCreated(deviationCreated);
+        dto.setDeviationCreated(false);
         return dto;
     }
 
