@@ -53,7 +53,6 @@ VALUES
 -- Temperature logs (tenant 1)
 INSERT INTO temperature_compliance_logs (tenant_id, recorded_by, module, title, description, log_status, recorded_at, temperature_zone_id, temperature_celsius)
 VALUES
-<<<<<<< HEAD
     (1, 2, 'IK_FOOD', 'Temperature reading - Cold room 1',    'Opening shift check',              'OK',       DATEADD('DAY', -7, CURRENT_TIMESTAMP), 1,  3.1),
     (1, 3, 'IK_FOOD', 'Temperature reading - Display fridge', 'Slightly above target',             'WARNING',  DATEADD('DAY', -6, CURRENT_TIMESTAMP), 3,  7.2),
     (1, 4, 'IK_FOOD', 'Temperature reading - Cold room 1',    'Midday check',                      'OK',       DATEADD('DAY', -5, CURRENT_TIMESTAMP), 1,  3.8),
@@ -71,10 +70,71 @@ VALUES
     (2, 7, 'IK_FOOD', 'Temperature reading - Fish storage', 'Opening check',   'OK',      DATEADD('DAY', -3, CURRENT_TIMESTAMP), 6,  1.5),
     (2, 8, 'IK_FOOD', 'Temperature reading - Fish storage', 'Afternoon check', 'WARNING', DATEADD('DAY', -2, CURRENT_TIMESTAMP), 6,  3.8),
     (2, 7, 'IK_FOOD', 'Temperature reading - Rice warmer',  'Lunch service',   'OK',      DATEADD('DAY', -1, CURRENT_TIMESTAMP), 8,  65.0),
-    (2, 8, 'IK_FOOD', 'Temperature reading - Freezer 1',    'Closing check',   'OK',      CURRENT_TIMESTAMP,                     7, -20.1);
-=======
+    (2, 8, 'IK_FOOD', 'Temperature reading - Freezer 1',    'Closing check',   'OK',      CURRENT_TIMESTAMP,                     7, -20.1),
     (1, 2, 'IK_FOOD', 'Temperature reading - Cold room 1', 'Opening shift check', 'OK', CURRENT_TIMESTAMP, 1, 3.1),
     (1, 3, 'IK_FOOD', 'Temperature reading - Display fridge', 'Slightly above target', 'WARNING', CURRENT_TIMESTAMP, 3, 7.2);
+
+-- ============================================================
+-- DEVIATION TEST DATA
+-- ============================================================
+
+-- Deviations (tenant 1)
+INSERT INTO deviations (tenant_id, module, title, description, severity, category, status, created_by, created_at, resolved_at)
+VALUES
+    (1, 'IK_FOOD',    'Freezer temperature exceeded limit',       'Freezer room reached -10°C after door was left ajar. Food discarded per protocol.',           'CRITICAL', 'TEMPERATURE',    'RESOLVED',     3, DATEADD('DAY', -14, CURRENT_TIMESTAMP), DATEADD('DAY', -12, CURRENT_TIMESTAMP)),
+    (1, 'IK_FOOD',    'Expired dairy products found',             'Three packs of cream cheese past best-before date discovered during expiry check.',            'HIGH',     'HYGIENE',        'RESOLVED',     4, DATEADD('DAY', -10, CURRENT_TIMESTAMP), DATEADD('DAY',  -9, CURRENT_TIMESTAMP)),
+    (1, 'IK_FOOD',    'Display fridge above 6°C',                 'Display fridge recorded at 7.2°C during morning check. Refrigeration engineer called.',        'HIGH',     'TEMPERATURE',    'IN_PROGRESS',  3, DATEADD('DAY',  -6, CURRENT_TIMESTAMP), NULL),
+    (1, 'IK_FOOD',    'Cutting board cross-contamination risk',   'Raw meat residue found on fish cutting board. Boards re-labelled and staff re-briefed.',       'MEDIUM',   'HYGIENE',        'RESOLVED',     5, DATEADD('DAY',  -5, CURRENT_TIMESTAMP), DATEADD('DAY',  -4, CURRENT_TIMESTAMP)),
+    (1, 'IK_FOOD',    'Missing allergen information on menu',     'Nut allergen not listed for the chef''s special. Menu corrected and staff informed.',          'HIGH',     'DOCUMENTATION',  'RESOLVED',     2, DATEADD('DAY',  -4, CURRENT_TIMESTAMP), DATEADD('DAY',  -3, CURRENT_TIMESTAMP)),
+    (1, 'IK_FOOD',    'Hot holding below 60°C',                   'Soup held at 58°C during lunch service. Discarded and batch restarted.',                       'CRITICAL', 'TEMPERATURE',    'RESOLVED',     4, DATEADD('DAY',  -3, CURRENT_TIMESTAMP), DATEADD('DAY',  -3, CURRENT_TIMESTAMP)),
+    (1, 'IK_ALCOHOL', 'Age verification not performed',           'Staff member served customer without checking ID. Customer appeared under 25. Formal warning.', 'CRITICAL', 'ALCOHOL',        'IN_PROGRESS',  2, DATEADD('DAY',  -2, CURRENT_TIMESTAMP), NULL),
+    (1, 'IK_FOOD',    'Hand washing station out of soap',         'Soap dispenser empty at kitchen entrance for approximately 2 hours.',                          'MEDIUM',   'HYGIENE',        'RESOLVED',     5, DATEADD('DAY',  -2, CURRENT_TIMESTAMP), DATEADD('DAY',  -2, CURRENT_TIMESTAMP)),
+    (1, 'IK_ALCOHOL', 'Alcohol served outside licensed hours',    'One beer served 10 minutes after end of skjenketid. Incident documented.',                     'HIGH',     'ALCOHOL',        'OPEN',         3, DATEADD('DAY',  -1, CURRENT_TIMESTAMP), NULL),
+    (1, 'IK_FOOD',    'Pest activity observed near dry storage',  'Mouse droppings found behind dry goods shelf. Pest control notified.',                         'HIGH',     'SAFETY',         'OPEN',         2, CURRENT_TIMESTAMP,                       NULL),
+    (1, 'IK_FOOD',    'Thermometer calibration overdue',          'Probe thermometer not calibrated within required 6-month window.',                             'LOW',      'DOCUMENTATION',  'OPEN',         4, CURRENT_TIMESTAMP,                       NULL),
+    (1, 'IK_FOOD',    'Delivery accepted with damaged packaging', 'Two boxes of frozen goods received with torn outer packaging. Goods quarantined pending check.','MEDIUM',   'HYGIENE',        'IN_PROGRESS',  5, CURRENT_TIMESTAMP,                       NULL);
+
+-- Deviations (tenant 2)
+INSERT INTO deviations (tenant_id, module, title, description, severity, category, status, created_by, created_at, resolved_at)
+VALUES
+    (2, 'IK_FOOD',    'Fish storage above 2°C',                   'Fish storage recorded at 3.8°C. Stock assessed and partly discarded.',                        'CRITICAL', 'TEMPERATURE',    'RESOLVED',     7, DATEADD('DAY',  -2, CURRENT_TIMESTAMP), DATEADD('DAY',  -1, CURRENT_TIMESTAMP)),
+    (2, 'IK_FOOD',    'Rice warmer temperature not logged',        'Afternoon rice warmer check was not recorded in compliance log.',                             'LOW',      'DOCUMENTATION',  'RESOLVED',     8, DATEADD('DAY',  -1, CURRENT_TIMESTAMP), DATEADD('DAY',  -1, CURRENT_TIMESTAMP)),
+    (2, 'IK_FOOD',    'Allergen cross-contact with nut sauce',     'Nut-based sauce stored adjacent to nut-free dishes without barrier. Corrected immediately.',  'HIGH',     'HYGIENE',        'OPEN',         7, CURRENT_TIMESTAMP,                       NULL);
+
+-- Deviations (tenant 3)
+INSERT INTO deviations (tenant_id, module, title, description, severity, category, status, created_by, created_at, resolved_at)
+VALUES
+    (3, 'IK_ALCOHOL', 'Underage customer served alcohol',         'Customer aged 17 served beer. Staff immediately removed drink. Formal investigation opened.', 'CRITICAL', 'ALCOHOL',        'IN_PROGRESS',  10, DATEADD('DAY', -5, CURRENT_TIMESTAMP), NULL),
+    (3, 'IK_ALCOHOL', 'Liquor license not displayed',             'Skjenkebevilling was not visible at the bar. Repositioned and confirmed.',                    'MEDIUM',   'DOCUMENTATION',  'RESOLVED',     11, DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP)),
+    (3, 'IK_ALCOHOL', 'Intoxicated customer served',              'Visibly intoxicated guest served two drinks before staff intervened.',                        'CRITICAL', 'ALCOHOL',        'OPEN',         10, DATEADD('DAY', -1, CURRENT_TIMESTAMP), NULL);
+
+-- ============================================================
+-- ALCOHOL LOG TEST DATA
+-- ============================================================
+
+-- Alcohol compliance logs (tenant 1)
+INSERT INTO alcohol_compliance_logs (tenant_id, recorded_by, module, title, description, log_status, recorded_at, log_type, id_checked, service_refused, estimated_age)
+VALUES
+    (1, 3, 'IK_ALCOHOL', 'Age verification - table 4',          'Customer appeared under 25. Valid ID confirmed (22 yrs).',           'OK',       DATEADD('DAY', -7, CURRENT_TIMESTAMP), 'AGE_VERIFICATION', TRUE,  FALSE, 22),
+    (1, 4, 'IK_ALCOHOL', 'Service refusal - bar area',          'Customer refused service due to visible intoxication.',              'WARNING',  DATEADD('DAY', -6, CURRENT_TIMESTAMP), 'SERVICE_REFUSAL',  FALSE, TRUE,  NULL),
+    (1, 3, 'IK_ALCOHOL', 'Age verification - walk-in',          'Customer appeared underage. No valid ID produced. Service refused.', 'CRITICAL', DATEADD('DAY', -5, CURRENT_TIMESTAMP), 'AGE_VERIFICATION', TRUE,  TRUE,  17),
+    (1, 5, 'IK_ALCOHOL', 'Age verification - table 9',          'ID checked, customer confirmed 19 years old.',                      'OK',       DATEADD('DAY', -4, CURRENT_TIMESTAMP), 'AGE_VERIFICATION', TRUE,  FALSE, 19),
+    (1, 3, 'IK_ALCOHOL', 'Closing stock count',                 'End-of-day spirits, wine and beer inventory recorded.',             'OK',       DATEADD('DAY', -4, CURRENT_TIMESTAMP), 'CLOSING_STOCK',    FALSE, FALSE, NULL),
+    (1, 2, 'IK_ALCOHOL', 'Responsible service training session','All bar staff attended refresher course on Alkoholloven.',          'OK',       DATEADD('DAY', -3, CURRENT_TIMESTAMP), 'TRAINING',         FALSE, FALSE, NULL),
+    (1, 4, 'IK_ALCOHOL', 'Age verification - group booking',    'Three members of group checked, all confirmed 18+.',                'OK',       DATEADD('DAY', -2, CURRENT_TIMESTAMP), 'AGE_VERIFICATION', TRUE,  FALSE, 18),
+    (1, 5, 'IK_ALCOHOL', 'Service refusal - aggressive guest',  'Guest refused service after displaying aggressive behaviour.',      'WARNING',  DATEADD('DAY', -1, CURRENT_TIMESTAMP), 'SERVICE_REFUSAL',  FALSE, TRUE,  NULL),
+    (1, 3, 'IK_ALCOHOL', 'Age verification - table 2',          'ID not requested as customer clearly above 25.',                   'OK',       CURRENT_TIMESTAMP,                       'AGE_VERIFICATION', FALSE, FALSE, NULL),
+    (1, 4, 'IK_ALCOHOL', 'Closing stock count',                 'End-of-day inventory completed without discrepancies.',            'OK',       CURRENT_TIMESTAMP,                       'CLOSING_STOCK',    FALSE, FALSE, NULL);
+
+-- Alcohol compliance logs (tenant 3)
+INSERT INTO alcohol_compliance_logs (tenant_id, recorded_by, module, title, description, log_status, recorded_at, log_type, id_checked, service_refused, estimated_age)
+VALUES
+    (3, 11, 'IK_ALCOHOL', 'Age verification - bar stool 3',     'Customer checked and confirmed 21 years old.',                     'OK',       DATEADD('DAY', -5, CURRENT_TIMESTAMP), 'AGE_VERIFICATION', TRUE,  FALSE, 21),
+    (3, 10, 'IK_ALCOHOL', 'Underage service incident',          'Customer served before age was verified. Service halted. Formal report filed.',  'CRITICAL', DATEADD('DAY', -5, CURRENT_TIMESTAMP), 'INCIDENT', TRUE, TRUE, 17),
+    (3, 11, 'IK_ALCOHOL', 'Age verification - group of 4',      'Full group ID-checked. All confirmed 18+.',                        'OK',       DATEADD('DAY', -3, CURRENT_TIMESTAMP), 'AGE_VERIFICATION', TRUE,  FALSE, 20),
+    (3, 10, 'IK_ALCOHOL', 'Service refusal - intoxicated',      'Guest visibly intoxicated on arrival. Entry and service refused.', 'WARNING',  DATEADD('DAY', -2, CURRENT_TIMESTAMP), 'SERVICE_REFUSAL',  FALSE, TRUE,  NULL),
+    (3, 11, 'IK_ALCOHOL', 'Closing stock count',                'Weekly stock count completed. Minor variance in spirits noted.',   'WARNING',  DATEADD('DAY', -1, CURRENT_TIMESTAMP), 'CLOSING_STOCK',    FALSE, FALSE, NULL),
+    (3, 10, 'IK_ALCOHOL', 'Age verification - late night entry','Customer appeared young. ID confirmed 23 years old.',             'OK',       CURRENT_TIMESTAMP,                       'AGE_VERIFICATION', TRUE,  FALSE, 23);
 
 -- ============================================================
 -- CHECKLIST TEST DATA
@@ -275,4 +335,3 @@ INSERT INTO checklist_presets (title, description, category, priority, tab, grou
     ('Staff HACCP Training Log',
      'Confirm all food-handling staff have completed required HACCP awareness training. Update the training log.',
      'IK_FOOD', 'LOW', 'HACCP', 'Record Keeping', 10);
->>>>>>> origin/dev
