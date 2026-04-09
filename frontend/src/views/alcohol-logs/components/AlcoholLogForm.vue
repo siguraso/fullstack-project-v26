@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { AlertTriangle, Edit2, X } from '@lucide/vue'
-import type { AlcoholLog, AlcoholLogInput, AlcoholLogType, LogStatus } from '@/interfaces/AlcoholLog.interface'
+import type {
+  AlcoholLog,
+  AlcoholLogInput,
+  AlcoholLogType,
+  LogStatus,
+} from '@/interfaces/AlcoholLog.interface'
 import { createAlcoholLog } from '@/services/alcoholLog'
 import { computed, ref, watch } from 'vue'
 import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
@@ -125,9 +130,7 @@ function seedDeviationForm(payload: AlcoholLogInput) {
     module: 'IK_ALCOHOL',
     status: 'OPEN',
     reportedDate: today,
-    issueDate: today,
     issueDescription: details,
-    immediateActionDate: today,
   })
 }
 
@@ -218,7 +221,8 @@ async function submitAlcoholDeviation() {
     const createdDeviation = await deviationStore.createDeviation({ logId: createdLog.id })
 
     if (!createdDeviation) {
-      error.value = 'The alcohol log was saved, but the linked deviation still needs to be completed.'
+      error.value =
+        'The alcohol log was saved, but the linked deviation still needs to be completed.'
       return
     }
 
@@ -323,7 +327,12 @@ async function submitAlcoholDeviation() {
           </p>
         </div>
 
-        <button class="close-btn" type="button" :disabled="isSubmitting" @click="closeDeviationModal">
+        <button
+          class="close-btn"
+          type="button"
+          :disabled="isSubmitting"
+          @click="closeDeviationModal"
+        >
           <X :size="18" aria-hidden="true" />
         </button>
       </div>

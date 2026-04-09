@@ -198,3 +198,15 @@ public class InspectionLogService {
         return list.stream().filter(l -> status == l.getStatus()).count();
     }
 }
+    private String summarizeDeviation(Deviation deviation) {
+        if (deviation.getIssueDescription() != null && !deviation.getIssueDescription().isBlank()) {
+            return deviation.getIssueDescription();
+        }
+
+        if (deviation.getImmediateAction() != null && !deviation.getImmediateAction().isBlank()) {
+            return deviation.getImmediateAction();
+        }
+
+        return "Deviation recorded";
+    }
+}

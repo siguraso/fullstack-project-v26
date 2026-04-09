@@ -246,7 +246,7 @@ class DashboardServiceTest {
         Deviation deviation = new Deviation();
         deviation.setId(id);
         deviation.setTitle(title);
-        deviation.setDescription("Deviation details");
+        deviation.setIssueDescription("Deviation details");
         deviation.setSeverity(DeviationSeverity.CRITICAL);
         deviation.setStatus(DeviationStatus.OPEN);
         deviation.setCreatedAt(createdAt);

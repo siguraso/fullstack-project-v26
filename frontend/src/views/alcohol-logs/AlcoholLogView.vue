@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AlcoholLogForm from './components/AlcoholLogForm.vue'
 import AlcoholLogGuide from './components/AlcoholLogGuide.vue'
 import AlcoholLogTable from './components/AlcoholLogTable.vue'
@@ -32,6 +32,41 @@ onMounted(() => {
   void loadLogs()
 })
 
+function lockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = ''
+  document.body.style.overflow = ''
+}
+
+watch(
+  isDetailsOpen,
+  (isOpen) => {
+    if (isOpen) {
+      lockBodyScroll()
+      return
+    }
+
+    unlockBodyScroll()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  unlockBodyScroll()
+})
+
 function handleAlcoholLogCreated(log: AlcoholLog) {
   logs.value = [log, ...logs.value]
 }
@@ -60,17 +95,9 @@ function closeDetails() {
       <AlcoholLogGuide class="guide-panel" />
     </div>
 
-    <AlcoholLogTable
-      :logs="logs"
-      :isLoading="isLoadingLogs"
-      @view-requested="openDetails"
-    />
+    <AlcoholLogTable :logs="logs" :isLoading="isLoadingLogs" @view-requested="openDetails" />
 
-    <AlcoholLogDetailsDialog
-      :log="selectedLog"
-      :isOpen="isDetailsOpen"
-      @close="closeDetails"
-    />
+    <AlcoholLogDetailsDialog :log="selectedLog" :isOpen="isDetailsOpen" @close="closeDetails" />
   </div>
 </template>
 
@@ -112,31 +139,24 @@ function closeDetails() {
 
 .top-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
   margin-bottom: 16px;
 }
 
 .form-panel {
   width: 100%;
+  height: 100%;
 }
 
 .guide-panel {
-  position: sticky;
-  top: 24px;
+  height: 100%;
 }
 
 @media (max-width: 1250px) {
   .top-row {
     grid-template-columns: 1fr;
   }
-
-  .guide-panel {
-    position: static;
-  }
 }
 </style>
-
-
-

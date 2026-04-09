@@ -116,7 +116,7 @@ async function logout() {
       'sidebar-open': props.open,
       'sidebar-closed': props.isMobile && !props.open,
     }"
-    :aria-hidden="props.isMobile ? !props.open : undefined"
+    :inert="props.isMobile && !props.open ? true : undefined"
   >
     <div v-if="props.isMobile" class="mobile-header">
       <div class="mobile-brand">
@@ -296,6 +296,7 @@ async function logout() {
   margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .nav-section-label {
@@ -415,6 +416,7 @@ async function logout() {
   gap: 10px;
   padding: 18px 10px 0;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .user-info p {
@@ -448,9 +450,8 @@ async function logout() {
     left: 0;
     bottom: 0;
     width: min(86vw, 320px);
-    min-width: 0;
     max-width: none;
-    height: auto;
+    min-width: 0;
     padding: 16px 14px 18px;
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
     transform: translateX(-110%);
@@ -464,6 +465,23 @@ async function logout() {
 
   .sidebar-mobile.sidebar-closed {
     pointer-events: none;
+  }
+
+  .sidebar-mobile .nav-shell {
+    overflow: hidden;
+    padding-bottom: 6px;
+  }
+
+  .sidebar-mobile .nav-main {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+
+  .sidebar-mobile .nav-section-bottom {
+    margin-top: 0;
+    background: #ffffff;
   }
 
   .sidebar-mobile .mobile-header {

@@ -3,7 +3,7 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import type { TemperatureLog, TemperatureLogInput } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { createTemperatureLog } from '@/services/temperatureLog'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { AlertTriangle, Edit2, X } from '@lucide/vue'
 import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
 import { useDeviationStore } from '@/stores/deviation'
@@ -32,6 +32,41 @@ const selectedZone = computed(
   () => props.temperatureZones.find((zone) => zone.id === selectedZoneId.value) ?? null,
 )
 
+function lockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = ''
+  document.body.style.overflow = ''
+}
+
+watch(
+  isDeviationModalOpen,
+  (isOpen) => {
+    if (isOpen) {
+      lockBodyScroll()
+      return
+    }
+
+    unlockBodyScroll()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  unlockBodyScroll()
+})
+
 function buildPayload(): TemperatureLogInput | null {
   if (!selectedZoneId.value || temperature.value === null) {
     return null
@@ -45,7 +80,9 @@ function buildPayload(): TemperatureLogInput | null {
 }
 
 function isOutsideAllowedRange(zone: TemperatureZone, measuredTemperature: number) {
-  return measuredTemperature < zone.lowerLimitCelsius || measuredTemperature > zone.upperLimitCelsius
+  return (
+    measuredTemperature < zone.lowerLimitCelsius || measuredTemperature > zone.upperLimitCelsius
+  )
 }
 
 function resetTemperatureForm() {
@@ -68,15 +105,12 @@ function seedDeviationForm(zone: TemperatureZone, measuredTemperature: number, n
   deviationStore.resetForm()
   deviationStore.patchForm({
     title: `${zone.name} temperature deviation`,
-    referenceNumber: '',
     category: 'TEMPERATURE',
     severity: 'HIGH',
     module: 'IK_FOOD',
     status: 'OPEN',
     reportedDate: today,
-    issueDate: today,
     issueDescription: `Recorded ${measuredTemperature}°C in ${zone.name}. Allowed range is ${zone.lowerLimitCelsius}°C to ${zone.upperLimitCelsius}°C.${noteLine}`,
-    immediateActionDate: today,
   })
 }
 
@@ -194,7 +228,11 @@ async function submitTemperatureDeviation() {
   >
     <div class="input-field">
       <p class="subtext">Storage Unit</p>
-      <select v-model.number="selectedZoneId" class="deviation-filter" aria-label="Select storage unit">
+      <select
+        v-model.number="selectedZoneId"
+        class="deviation-filter"
+        aria-label="Select storage unit"
+      >
         <option :value="null" selected disabled>Select Storage Unit</option>
         <option v-for="zone in temperatureZones" :key="zone.id" :value="zone.id">
           {{ zone.name }}
@@ -203,7 +241,8 @@ async function submitTemperatureDeviation() {
     </div>
 
     <div v-if="selectedZone" class="zone-range">
-      Allowed range: {{ selectedZone.lowerLimitCelsius }}°C to {{ selectedZone.upperLimitCelsius }}°C
+      Allowed range: {{ selectedZone.lowerLimitCelsius }}°C to
+      {{ selectedZone.upperLimitCelsius }}°C
     </div>
 
     <div class="input-field">
@@ -240,12 +279,17 @@ async function submitTemperatureDeviation() {
           </div>
           <h2>Complete the deviation before saving this temperature log</h2>
           <p>
-            This temperature is outside the configured range for the selected zone. Fill in the
-            rest of the deviation details to continue.
+            This temperature is outside the configured range for the selected zone. Fill in the rest
+            of the deviation details to continue.
           </p>
         </div>
 
-        <button class="close-btn" type="button" :disabled="isSubmitting" @click="closeDeviationModal">
+        <button
+          class="close-btn"
+          type="button"
+          :disabled="isSubmitting"
+          @click="closeDeviationModal"
+        >
           <X :size="18" aria-hidden="true" />
         </button>
       </div>
@@ -267,6 +311,11 @@ async function submitTemperatureDeviation() {
 </template>
 
 <style scoped>
+.info-card {
+  width: 100%;
+  min-width: 0;
+}
+
 .input-field {
   display: flex;
   flex-direction: column;
@@ -384,6 +433,7 @@ async function submitTemperatureDeviation() {
   border-radius: 999px;
   border: 1px solid var(--border);
   background: #ffffff;
+  color: #000000;
 }
 
 .close-btn:disabled {
@@ -392,6 +442,10 @@ async function submitTemperatureDeviation() {
 }
 
 @media (max-width: 640px) {
+  .info-card {
+    max-width: 100%;
+  }
+
   .overlay-backdrop {
     align-items: flex-start;
     padding: 12px;
@@ -399,7 +453,7 @@ async function submitTemperatureDeviation() {
 
   .deviation-dialog {
     max-height: none;
-    padding: 16px;
+    padding: 14px;
   }
 
   .dialog-header {

@@ -1,69 +1,54 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as api from '@/services/deviation'
-import type { CreateDeviationInput, Deviation, DeviationFormInput } from '@/interfaces/Deviation.interface'
+import { getAuthSession } from '@/services/auth'
+import type {
+  CreateDeviationInput,
+  Deviation,
+  DeviationFormInput,
+} from '@/interfaces/Deviation.interface'
+
+function getTodayDate() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function resolveDiscoveredByDefault() {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  const session = getAuthSession()
+  const fullName = session?.fullName?.trim()
+
+  if (fullName) {
+    return fullName
+  }
+
+  return session?.email ?? ''
+}
 
 function createEmptyForm(): DeviationFormInput {
   return {
     title: '',
-    referenceNumber: '',
     category: 'TEMPERATURE',
     severity: 'LOW',
     module: 'IK_FOOD',
     status: 'OPEN',
-    reportedDate: '',
-    discoveredBy: '',
+    reportedDate: getTodayDate(),
+    discoveredBy: resolveDiscoveredByDefault(),
     reportedTo: '',
     assignedTo: '',
-    issueDate: '',
     issueDescription: '',
-    immediateActionDate: '',
     immediateAction: '',
-    immediateActionSignature: '',
-    causeDate: '',
     rootCause: '',
-    correctiveActionDate: '',
     correctiveAction: '',
-    correctiveActionSignature: '',
-    completionDate: '',
     completionNotes: '',
-    completionSignature: '',
   }
-}
-
-function buildSection(label: string, value: string) {
-  const normalized = value.trim()
-  return normalized ? `${label}: ${normalized}` : null
-}
-
-function buildDeviationDescription(form: DeviationFormInput) {
-  return [
-    buildSection('Reference number', form.referenceNumber),
-    buildSection('Reported date', form.reportedDate),
-    buildSection('Discovered by', form.discoveredBy),
-    buildSection('Reported to', form.reportedTo),
-    buildSection('Assigned to', form.assignedTo),
-    buildSection('Issue date', form.issueDate),
-    buildSection('Describe the error / what went wrong', form.issueDescription),
-    buildSection('Immediate action date', form.immediateActionDate),
-    buildSection('Immediate action taken', form.immediateAction),
-    buildSection('Immediate action signature', form.immediateActionSignature),
-    buildSection('Cause analysis date', form.causeDate),
-    buildSection('Possible cause', form.rootCause),
-    buildSection('Corrective action date', form.correctiveActionDate),
-    buildSection('Corrective action / prevention', form.correctiveAction),
-    buildSection('Corrective action signature', form.correctiveActionSignature),
-    buildSection('Completion date', form.completionDate),
-    buildSection('Corrective action completed', form.completionNotes),
-    buildSection('Completion signature', form.completionSignature),
-  ]
-    .filter((section): section is string => section !== null)
-    .join('\n\n')
 }
 
 function buildCreateDeviationPayload(
   form: DeviationFormInput,
-  links?: Pick<CreateDeviationInput, 'checklistItemId' | 'logId'>,
+  links?: Pick<CreateDeviationInput, 'logId'>,
 ): CreateDeviationInput {
   return {
     title: form.title.trim(),
@@ -71,8 +56,15 @@ function buildCreateDeviationPayload(
     severity: form.severity,
     module: form.module,
     status: form.status,
-    description: buildDeviationDescription(form),
-    checklistItemId: links?.checklistItemId,
+    reportedDate: form.reportedDate,
+    discoveredBy: form.discoveredBy.trim(),
+    reportedTo: form.reportedTo.trim(),
+    assignedTo: form.assignedTo.trim(),
+    issueDescription: form.issueDescription.trim(),
+    immediateAction: form.immediateAction.trim(),
+    rootCause: form.rootCause.trim(),
+    correctiveAction: form.correctiveAction.trim(),
+    completionNotes: form.completionNotes.trim(),
     logId: links?.logId,
   }
 }
@@ -141,7 +133,7 @@ export const useDeviationStore = defineStore('deviation', () => {
     }
   }
 
-  async function createDeviation(links?: Pick<CreateDeviationInput, 'checklistItemId' | 'logId'>) {
+  async function createDeviation(links?: Pick<CreateDeviationInput, 'logId'>) {
     if (!validateForm()) {
       return null
     }

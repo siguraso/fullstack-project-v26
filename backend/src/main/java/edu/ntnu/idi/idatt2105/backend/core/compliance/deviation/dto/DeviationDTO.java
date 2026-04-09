@@ -8,13 +8,20 @@ public class DeviationDTO {
 
     private Long id;
     private String title;
-    private String description;
+    private String reportedDate;
+    private String discoveredBy;
+    private String reportedTo;
+    private String assignedTo;
+    private String issueDescription;
+    private String immediateAction;
+    private String rootCause;
+    private String correctiveAction;
+    private String completionNotes;
     private String status;
     private String severity;
     private String category;
     private ComplianceModule module;
 
-    private Long checklistItemId;
     private Long logId;
 
     private String createdAt;

@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,13 +19,11 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistInstance;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistItemTemplate;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistTemplate;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.CreateDeviationRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.UpdateDeviationRequest;
@@ -40,6 +39,7 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
+import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DeviationServiceTest {
@@ -51,6 +51,9 @@ class DeviationServiceTest {
 	private TenantRepository tenantRepo;
 
 	@Mock
+	private UserRepository userRepository;
+
+	@Mock
 	private DeviationMapper mapper;
 
 	@InjectMocks
@@ -59,11 +62,14 @@ class DeviationServiceTest {
 	@BeforeEach
 	void setUpTenantContext() {
 		TenantContext.setCurrentOrg(1L);
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken("reporter@test.no", "N/A"));
 	}
 
 	@AfterEach
 	void clearTenantContext() {
 		TenantContext.clear();
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
@@ -71,7 +77,15 @@ class DeviationServiceTest {
 		CreateDeviationRequest request = new CreateDeviationRequest();
 		request.setModule(ComplianceModule.IK_FOOD);
 		request.setTitle("Test deviation");
-		request.setDescription("Description");
+		request.setReportedDate(LocalDate.of(2026, 4, 9));
+		request.setDiscoveredBy("Alice");
+		request.setReportedTo("Manager");
+		request.setAssignedTo("Chef");
+		request.setIssueDescription("Description");
+		request.setImmediateAction("Action");
+		request.setRootCause("Cause");
+		request.setCorrectiveAction("Correction");
+		request.setCompletionNotes("Done");
 		request.setSeverity(DeviationSeverity.CRITICAL);
 		request.setCategory(DeviationCategory.HYGIENE);
 		request.setStatus(DeviationStatus.OPEN);
@@ -79,10 +93,15 @@ class DeviationServiceTest {
 		Tenant tenant = new Tenant();
 		tenant.setId(1L);
 
+		User reporter = new User();
+		reporter.setId(55L);
+		reporter.setTenant(tenant);
+
 		DeviationDTO mappedDto = new DeviationDTO();
 		mappedDto.setTitle("Test deviation");
 
 		when(tenantRepo.findById(1L)).thenReturn(Optional.of(tenant));
+		when(userRepository.findByEmail("reporter@test.no")).thenReturn(Optional.of(reporter));
 		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		when(mapper.toDTO(any(Deviation.class))).thenReturn(mappedDto);
 
@@ -98,32 +117,44 @@ class DeviationServiceTest {
 		assertEquals(tenant, saved.getTenant());
 		assertEquals(ComplianceModule.IK_FOOD, saved.getModule());
 		assertEquals("Test deviation", saved.getTitle());
-		assertEquals("Description", saved.getDescription());
+		assertEquals(LocalDate.of(2026, 4, 9), saved.getReportedDate());
+		assertEquals("Alice", saved.getDiscoveredBy());
+		assertEquals("Manager", saved.getReportedTo());
+		assertEquals("Chef", saved.getAssignedTo());
+		assertEquals("Description", saved.getIssueDescription());
+		assertEquals("Action", saved.getImmediateAction());
+		assertEquals("Cause", saved.getRootCause());
+		assertEquals("Correction", saved.getCorrectiveAction());
+		assertEquals("Done", saved.getCompletionNotes());
 		assertEquals(DeviationSeverity.CRITICAL, saved.getSeverity());
 		assertEquals(DeviationCategory.HYGIENE, saved.getCategory());
 		assertEquals(DeviationStatus.OPEN, saved.getStatus());
-		assertNull(saved.getChecklistItemId());
+		assertEquals(reporter, saved.getCreatedBy());
 		assertNull(saved.getLogId());
 		assertNotNull(saved.getCreatedAt());
 		assertNull(saved.getResolvedAt());
 	}
 
 	@Test
-	void testCreateSetsOptionalLinks() {
+	void testCreateSetsLogLinkAndCreatedBy() {
 		CreateDeviationRequest request = new CreateDeviationRequest();
 		request.setModule(ComplianceModule.IK_FOOD);
 		request.setTitle("Linked deviation");
-		request.setDescription("Description");
+		request.setIssueDescription("Description");
 		request.setSeverity(DeviationSeverity.HIGH);
 		request.setCategory(DeviationCategory.TEMPERATURE);
 		request.setStatus(DeviationStatus.OPEN);
-		request.setChecklistItemId(12L);
 		request.setLogId(34L);
 
 		Tenant tenant = new Tenant();
 		tenant.setId(1L);
 
+		User reporter = new User();
+		reporter.setId(55L);
+		reporter.setTenant(tenant);
+
 		when(tenantRepo.findById(1L)).thenReturn(Optional.of(tenant));
+		when(userRepository.findByEmail("reporter@test.no")).thenReturn(Optional.of(reporter));
 		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		when(mapper.toDTO(any(Deviation.class))).thenReturn(new DeviationDTO());
 
@@ -133,7 +164,7 @@ class DeviationServiceTest {
 		verify(deviationRepo).save(captor.capture());
 		Deviation saved = captor.getValue();
 
-		assertEquals(12L, saved.getChecklistItemId());
+		assertEquals(reporter, saved.getCreatedBy());
 		assertEquals(34L, saved.getLogId());
 	}
 
@@ -243,45 +274,6 @@ class DeviationServiceTest {
 	}
 
 	@Test
-	void testCreateFromChecklistBuildsExpectedDeviation() {
-		Tenant tenant = new Tenant();
-		tenant.setId(1L);
-
-		ChecklistTemplate template = new ChecklistTemplate();
-		template.setModule(ComplianceModule.IK_FOOD);
-
-		ChecklistInstance checklist = new ChecklistInstance();
-		checklist.setTenant(tenant);
-		checklist.setTemplate(template);
-
-		ChecklistItemTemplate templateItem = new ChecklistItemTemplate();
-		templateItem.setDescription("Wash hands before handling food");
-
-		ChecklistItemInstance item = new ChecklistItemInstance();
-		item.setId(123L);
-		item.setChecklist(checklist);
-		item.setTemplateItem(templateItem);
-
-		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-		deviationService.createFromChecklist(item);
-
-		ArgumentCaptor<Deviation> captor = ArgumentCaptor.forClass(Deviation.class);
-		verify(deviationRepo).save(captor.capture());
-		Deviation saved = captor.getValue();
-
-		assertEquals(tenant, saved.getTenant());
-		assertEquals(ComplianceModule.IK_FOOD, saved.getModule());
-		assertEquals("Checklist item not completed", saved.getTitle());
-		assertEquals("Wash hands before handling food", saved.getDescription());
-		assertEquals(DeviationSeverity.MEDIUM, saved.getSeverity());
-		assertEquals(DeviationCategory.HYGIENE, saved.getCategory());
-		assertEquals(DeviationStatus.OPEN, saved.getStatus());
-		assertEquals(123L, saved.getChecklistItemId());
-		assertNotNull(saved.getCreatedAt());
-	}
-
-	@Test
 	void testCreateFromLogBuildsExpectedDeviation() {
 		Tenant tenant = new Tenant();
 		tenant.setId(2L);
@@ -309,7 +301,8 @@ class DeviationServiceTest {
 		assertEquals(tenant, saved.getTenant());
 		assertEquals(ComplianceModule.IK_ALCOHOL, saved.getModule());
 		assertEquals("Critical log detected", saved.getTitle());
-		assertEquals("Missing alcohol report", saved.getDescription());
+		assertEquals("Missing alcohol report", saved.getIssueDescription());
+		assertNotNull(saved.getReportedDate());
 		assertEquals(DeviationSeverity.CRITICAL, saved.getSeverity());
 		assertEquals(DeviationCategory.ALCOHOL, saved.getCategory());
 		assertEquals(DeviationStatus.OPEN, saved.getStatus());

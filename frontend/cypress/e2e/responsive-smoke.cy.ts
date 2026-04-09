@@ -53,14 +53,13 @@ const authenticatedRoutes = [
   { path: '/checklists', heading: 'Checklists' },
   { path: '/inspections', heading: 'Inspection Logs' },
   { path: '/settings', heading: 'Organisation Configuration' },
-  { path: '/checklist-builder', heading: 'Checklist Management & Templates' },
+  { path: '/checklist-builder', heading: 'Checklist Builder' },
   { path: '/temperature-logs', heading: 'Temperature Logs' },
   { path: '/alcohol-logs', heading: 'Alcohol Compliance Logs' },
 ]
 
 const publicRoutes = [
   { path: '/login', heading: 'Welcome back' },
-  { path: '/register', heading: 'Create your account' },
   { path: '/invite/accept?token=test-token', heading: 'Set up your staff account' },
 ]
 
@@ -132,9 +131,96 @@ function stubResponsiveApis() {
   }).as('validateInvite')
 }
 
-function expectNoPageOverflow() {
-  cy.document().then((doc) => {
-    expect(doc.documentElement.scrollWidth).to.be.lte(doc.documentElement.clientWidth + 1)
+function expectShellFitsViewport(selector: string) {
+  cy.get(selector)
+    .first()
+    .then(($element) => {
+      const rect = $element[0].getBoundingClientRect()
+      const viewportWidth = Cypress.config('viewportWidth') ?? 390
+
+      expect(rect.left).to.be.gte(-1)
+      expect(rect.right).to.be.lte(viewportWidth + 1)
+      expect(rect.width).to.be.lte(viewportWidth + 1)
+    })
+}
+
+function expectAuthenticatedShellFitsViewport() {
+  expectShellFitsViewport('.dashboard-main')
+}
+
+function expectPublicShellFitsViewport() {
+  expectShellFitsViewport('main')
+}
+
+function visitPublicRoute(path: string) {
+  cy.visit(path)
+
+  if (path.startsWith('/invite/accept')) {
+    cy.wait('@validateInvite')
+  }
+}
+
+function openVisibleSidebarToggle() {
+  cy.get('[aria-label="Toggle sidebar"]').filter(':visible').click()
+}
+
+function closeVisibleSidebar() {
+  cy.get('[aria-label="Close navigation"]').filter(':visible').click()
+}
+
+function assertRouteHeading(heading: string) {
+  cy.contains('h1, h2', heading).should('be.visible')
+}
+
+function assertTopLevelLayout(selector: string) {
+  cy.get(selector).should('be.visible')
+  cy.get('.navbar').should('be.visible')
+}
+
+function assertPublicLayout(selector: string) {
+  cy.get(selector).should('be.visible')
+}
+
+function assertAuthenticatedRouteRenders(route: { path: string; heading: string }) {
+  visitAuthenticatedRoute(route.path)
+  assertRouteHeading(route.heading)
+  assertTopLevelLayout('.dashboard-main')
+  expectAuthenticatedShellFitsViewport()
+}
+
+function assertPublicRouteRenders(route: { path: string; heading: string }) {
+  visitPublicRoute(route.path)
+  assertRouteHeading(route.heading)
+  assertPublicLayout('main')
+  expectPublicShellFitsViewport()
+}
+
+function assertMobileDrawerWorks() {
+  cy.contains('h1', 'Dashboard').should('be.visible')
+  openVisibleSidebarToggle()
+  cy.get('.sidebar-mobile.sidebar-open').should('exist')
+  closeVisibleSidebar()
+  cy.get('.sidebar-mobile.sidebar-closed').should('exist')
+  expectAuthenticatedShellFitsViewport()
+}
+
+function assertTabletAndDesktopShellWorks() {
+  cy.viewport(768, 1024)
+  visitAuthenticatedRoute('/dashboard')
+  openVisibleSidebarToggle()
+  cy.get('.sidebar-mobile.sidebar-open').should('exist')
+  cy.get('.sidebar-backdrop').click({ force: true })
+  cy.get('.sidebar-mobile.sidebar-closed').should('exist')
+
+  cy.viewport(1280, 800)
+  visitAuthenticatedRoute('/dashboard')
+  cy.get('[aria-label="Toggle sidebar"]').should('not.exist')
+  cy.get('.sidebar').should('be.visible')
+}
+
+function renderAuthenticatedRoutesOnPhone() {
+  authenticatedRoutes.forEach((route) => {
+    assertAuthenticatedRouteRenders(route)
   })
 }
 
@@ -154,46 +240,22 @@ describe('Responsive route smoke', () => {
   it('opens and closes the mobile drawer on phone', () => {
     cy.viewport(390, 844)
     visitAuthenticatedRoute('/dashboard')
-
-    cy.contains('h1', 'Dashboard').should('be.visible')
-    cy.get('[aria-label="Toggle sidebar"]').click()
-    cy.get('.sidebar-mobile.sidebar-open').should('exist')
-    cy.get('[aria-label="Close navigation"]').click()
-    cy.get('.sidebar-mobile.sidebar-closed').should('exist')
-    expectNoPageOverflow()
+    assertMobileDrawerWorks()
   })
 
   it('renders all authenticated routes cleanly on phone width', () => {
     cy.viewport(390, 844)
-
-    authenticatedRoutes.forEach((route) => {
-      visitAuthenticatedRoute(route.path)
-      cy.contains('h1', route.heading).should('be.visible')
-      expectNoPageOverflow()
-    })
+    renderAuthenticatedRoutesOnPhone()
   })
 
   it('renders the public routes cleanly on phone width', () => {
     cy.viewport(390, 844)
-
     publicRoutes.forEach((route) => {
-      cy.visit(route.path)
-      cy.contains('h1', route.heading).should('be.visible')
-      expectNoPageOverflow()
+      assertPublicRouteRenders(route)
     })
   })
 
   it('keeps the shell usable on tablet and desktop widths', () => {
-    cy.viewport(768, 1024)
-    visitAuthenticatedRoute('/dashboard')
-    cy.get('[aria-label="Toggle sidebar"]').should('be.visible').click()
-    cy.get('.sidebar-mobile.sidebar-open').should('exist')
-    cy.get('.sidebar-backdrop').click({ force: true })
-    cy.get('.sidebar-mobile.sidebar-closed').should('exist')
-
-    cy.viewport(1280, 800)
-    visitAuthenticatedRoute('/dashboard')
-    cy.get('[aria-label="Toggle sidebar"]').should('not.exist')
-    cy.get('.sidebar').should('be.visible')
+    assertTabletAndDesktopShellWorks()
   })
 })

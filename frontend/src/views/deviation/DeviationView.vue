@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import DeviationForm from './components/DeviationForm.vue'
-import DeviationGuide from './components/DeviationGuide.vue'
 import DeviationTable from './components/DeviationTable.vue'
 import DeviationDetailsDialog from './components/DeviationDetailsDialog.vue'
 import { useDeviationStore } from '@/stores/deviation'
@@ -24,6 +23,11 @@ function closeDetails() {
   isDetailsOpen.value = false
   selectedDeviation.value = null
 }
+
+async function handleResolved() {
+  await store.fetchDeviations()
+  closeDetails()
+}
 </script>
 
 <template>
@@ -34,9 +38,7 @@ function closeDetails() {
 
     <p v-if="store.error" class="error-banner">{{ store.error }}</p>
 
-    
     <DeviationForm class="form-panel" title="Report Deviation" />
-    
 
     <DeviationTable @view-requested="openDetails" />
 
@@ -44,6 +46,7 @@ function closeDetails() {
       :deviation="selectedDeviation"
       :isOpen="isDetailsOpen"
       @close="closeDetails"
+      @resolved="handleResolved"
     />
   </div>
 </template>
@@ -84,29 +87,7 @@ function closeDetails() {
   font-size: 13px;
 }
 
-.top-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-  gap: 16px;
-  align-items: start;
-}
-
 .form-panel {
   width: 100%;
-}
-
-.guide-panel {
-  position: sticky;
-  top: 24px;
-}
-
-@media (max-width: 1250px) {
-  .top-row {
-    grid-template-columns: 1fr;
-  }
-
-  .guide-panel {
-    position: static;
-  }
 }
 </style>

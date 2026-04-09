@@ -15,6 +15,7 @@ function parseSession(value: string | null): AuthSession | null {
 
     return {
       email: parsed.email ?? '',
+      fullName: parsed.fullName ?? null,
       remember: parsed.remember ?? false,
       token: parsed.token ?? null,
       refreshToken: parsed.refreshToken ?? null,
@@ -117,6 +118,8 @@ function buildHeaders(options: RequestInit, token: string | null): Headers {
 }
 
 export async function jsonApiFetch(url: string, options: JsonApiFetchOptions = {}) {
+  console.log(url)
+
   const { skipAuthRefresh = false, ...requestOptions } = options
   const token = readStoredSession()?.session.token ?? null
 

@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,14 +41,22 @@ class DeviationControllerTest {
     CreateDeviationRequest request = new CreateDeviationRequest();
     request.setModule(ComplianceModule.IK_FOOD);
     request.setTitle("Test Deviation");
-    request.setDescription("This is a test deviation.");
+    request.setReportedDate(LocalDate.of(2026, 4, 9));
+    request.setDiscoveredBy("Jane");
+    request.setReportedTo("Manager");
+    request.setAssignedTo("Kitchen lead");
+    request.setIssueDescription("This is a test deviation.");
+    request.setImmediateAction("Separated affected items.");
+    request.setRootCause("Fridge thermostat fault.");
+    request.setCorrectiveAction("Replace thermostat.");
+    request.setCompletionNotes("Scheduled service.");
     request.setSeverity(DeviationSeverity.CRITICAL);
     request.setCategory(DeviationCategory.HYGIENE);
     request.setStatus(DeviationStatus.OPEN);
 
     DeviationDTO createdDeviation = new DeviationDTO();
     createdDeviation.setTitle("Test Deviation");
-    createdDeviation.setDescription("This is a test deviation.");
+    createdDeviation.setIssueDescription("This is a test deviation.");
     createdDeviation.setModule(ComplianceModule.IK_FOOD);
 
     when(deviationService.create(request)).thenReturn(createdDeviation);

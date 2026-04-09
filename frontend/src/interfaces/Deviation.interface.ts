@@ -1,9 +1,4 @@
-export type DeviationCategory =
-  | 'TEMPERATURE'
-  | 'HYGIENE'
-  | 'ALCOHOL'
-  | 'DOCUMENTATION'
-  | 'OTHER'
+export type DeviationCategory = 'TEMPERATURE' | 'HYGIENE' | 'ALCOHOL' | 'DOCUMENTATION' | 'OTHER'
 
 export type DeviationSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
@@ -18,7 +13,15 @@ export interface Deviation {
   severity: DeviationSeverity
   module: DeviationModule
   status: DeviationStatus
-  description: string
+  reportedDate: string
+  discoveredBy: string
+  reportedTo: string
+  assignedTo: string
+  issueDescription: string
+  immediateAction: string
+  rootCause: string
+  correctiveAction: string
+  completionNotes: string
   createdAt?: string
 }
 
@@ -28,14 +31,20 @@ export interface CreateDeviationInput {
   severity: DeviationSeverity
   module: DeviationModule
   status: DeviationStatus
-  description: string
-  checklistItemId?: number
+  reportedDate: string
+  discoveredBy: string
+  reportedTo: string
+  assignedTo: string
+  issueDescription: string
+  immediateAction: string
+  rootCause: string
+  correctiveAction: string
+  completionNotes: string
   logId?: number
 }
 
 export interface DeviationFormInput {
   title: string
-  referenceNumber: string
   category: DeviationCategory
   severity: DeviationSeverity
   module: DeviationModule
@@ -44,17 +53,9 @@ export interface DeviationFormInput {
   discoveredBy: string
   reportedTo: string
   assignedTo: string
-  issueDate: string
   issueDescription: string
-  immediateActionDate: string
   immediateAction: string
-  immediateActionSignature: string
-  causeDate: string
   rootCause: string
-  correctiveActionDate: string
   correctiveAction: string
-  correctiveActionSignature: string
-  completionDate: string
   completionNotes: string
-  completionSignature: string
 }
