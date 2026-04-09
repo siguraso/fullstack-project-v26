@@ -21,7 +21,7 @@ import { TriangleAlert } from '@lucide/vue'
         <h3>Sections to complete</h3>
         <p><strong>Header:</strong> Title, reference number, severity, and who is involved.</p>
         <p><strong>Middle:</strong> What happened, immediate action, cause, and prevention.</p>
-        <p><strong>Close-out:</strong> Completion date and signatures when the action is done.</p>
+        <p><strong>Close-out:</strong> Completion date and follow-up when the action is done.</p>
       </article>
 
       <article class="hint-card">

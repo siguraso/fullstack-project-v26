@@ -21,7 +21,7 @@ const props = withDefaults(
   }>(),
   {
     submitLabel: 'Submit Deviation',
-    footerText: 'All PDF fields are included and saved as a structured deviation summary.',
+    footerText: 'The form saves a structured deviation summary for the incident and follow-up.',
     showInternalTracking: true,
     useExternalSubmit: false,
     isSubmitting: undefined,
@@ -164,10 +164,6 @@ function handleSubmit() {
           rows="4"
           placeholder="Document the first actions taken to contain or reduce the issue."
         />
-        <label>
-          <span>Signature</span>
-          <input v-model="store.form.immediateActionSignature" placeholder="Name / initials" />
-        </label>
       </section>
 
       <section class="section-card">
@@ -198,10 +194,6 @@ function handleSubmit() {
           rows="4"
           placeholder="Describe the corrective action and prevention plan."
         />
-        <label>
-          <span>Signature</span>
-          <input v-model="store.form.correctiveActionSignature" placeholder="Name / initials" />
-        </label>
       </section>
 
       <section class="section-card">
@@ -217,10 +209,6 @@ function handleSubmit() {
           rows="3"
           placeholder="Confirm what has been completed and any remaining follow-up."
         />
-        <label>
-          <span>Signature</span>
-          <input v-model="store.form.completionSignature" placeholder="Name / initials" />
-        </label>
       </section>
 
       <section v-if="showInternalTracking" class="system-section">

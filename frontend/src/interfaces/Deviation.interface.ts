@@ -48,13 +48,10 @@ export interface DeviationFormInput {
   issueDescription: string
   immediateActionDate: string
   immediateAction: string
-  immediateActionSignature: string
   causeDate: string
   rootCause: string
   correctiveActionDate: string
   correctiveAction: string
-  correctiveActionSignature: string
   completionDate: string
   completionNotes: string
-  completionSignature: string
 }

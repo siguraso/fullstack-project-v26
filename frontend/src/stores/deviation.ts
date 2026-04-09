@@ -19,15 +19,12 @@ function createEmptyForm(): DeviationFormInput {
     issueDescription: '',
     immediateActionDate: '',
     immediateAction: '',
-    immediateActionSignature: '',
     causeDate: '',
     rootCause: '',
     correctiveActionDate: '',
     correctiveAction: '',
-    correctiveActionSignature: '',
     completionDate: '',
     completionNotes: '',
-    completionSignature: '',
   }
 }
 
@@ -47,15 +44,12 @@ function buildDeviationDescription(form: DeviationFormInput) {
     buildSection('Describe the error / what went wrong', form.issueDescription),
     buildSection('Immediate action date', form.immediateActionDate),
     buildSection('Immediate action taken', form.immediateAction),
-    buildSection('Immediate action signature', form.immediateActionSignature),
     buildSection('Cause analysis date', form.causeDate),
     buildSection('Possible cause', form.rootCause),
     buildSection('Corrective action date', form.correctiveActionDate),
     buildSection('Corrective action / prevention', form.correctiveAction),
-    buildSection('Corrective action signature', form.correctiveActionSignature),
     buildSection('Completion date', form.completionDate),
     buildSection('Corrective action completed', form.completionNotes),
-    buildSection('Completion signature', form.completionSignature),
   ]
     .filter((section): section is string => section !== null)
     .join('\n\n')
