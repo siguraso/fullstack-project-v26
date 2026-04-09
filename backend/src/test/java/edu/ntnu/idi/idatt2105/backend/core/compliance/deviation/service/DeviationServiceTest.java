@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
+import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistItemTemplate;
@@ -41,7 +42,6 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
-import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DeviationServiceTest {
@@ -51,9 +51,6 @@ class DeviationServiceTest {
 
 	@Mock
 	private TenantRepository tenantRepo;
-
-	@Mock
-	private UserRepository userRepo;
 
 	@Mock
 	private DeviationMapper mapper;
@@ -156,7 +153,11 @@ class DeviationServiceTest {
 	void testUpdateResolvedSetsStatusAndResolvedAt() {
 		Long deviationId = 10L;
 
+		Tenant tenant = new Tenant();
+		tenant.setId(1L);
+
 		Deviation existing = new Deviation();
+		existing.setTenant(tenant);
 		existing.setStatus(DeviationStatus.OPEN);
 
 		UpdateDeviationRequest request = new UpdateDeviationRequest();
@@ -180,6 +181,28 @@ class DeviationServiceTest {
 
 		assertEquals(DeviationStatus.RESOLVED, saved.getStatus());
 		assertNotNull(saved.getResolvedAt());
+	}
+
+	@Test
+	void testUpdateThrowsWhenDeviationBelongsToAnotherTenant() {
+		Long deviationId = 11L;
+
+		Tenant otherTenant = new Tenant();
+		otherTenant.setId(2L);
+
+		Deviation existing = new Deviation();
+		existing.setTenant(otherTenant);
+		existing.setStatus(DeviationStatus.OPEN);
+
+		UpdateDeviationRequest request = new UpdateDeviationRequest();
+		request.setStatus(DeviationStatus.RESOLVED);
+
+		when(deviationRepo.findById(deviationId)).thenReturn(Optional.of(existing));
+
+		UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+				() -> deviationService.update(deviationId, request));
+
+		assertEquals("Deviation does not belong to current organization", exception.getMessage());
 	}
 
 	@Test
