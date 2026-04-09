@@ -23,6 +23,11 @@ function closeDetails() {
   isDetailsOpen.value = false
   selectedDeviation.value = null
 }
+
+async function handleResolved() {
+  await store.fetchDeviations()
+  closeDetails()
+}
 </script>
 
 <template>
@@ -41,6 +46,7 @@ function closeDetails() {
       :deviation="selectedDeviation"
       :isOpen="isDetailsOpen"
       @close="closeDetails"
+      @resolved="handleResolved"
     />
   </div>
 </template>
