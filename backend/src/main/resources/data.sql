@@ -53,7 +53,6 @@ VALUES
 -- Temperature logs (tenant 1)
 INSERT INTO temperature_compliance_logs (tenant_id, recorded_by, module, title, description, log_status, recorded_at, temperature_zone_id, temperature_celsius)
 VALUES
-<<<<<<< HEAD
     (1, 2, 'IK_FOOD', 'Temperature reading - Cold room 1',    'Opening shift check',              'OK',       DATEADD('DAY', -7, CURRENT_TIMESTAMP), 1,  3.1),
     (1, 3, 'IK_FOOD', 'Temperature reading - Display fridge', 'Slightly above target',             'WARNING',  DATEADD('DAY', -6, CURRENT_TIMESTAMP), 3,  7.2),
     (1, 4, 'IK_FOOD', 'Temperature reading - Cold room 1',    'Midday check',                      'OK',       DATEADD('DAY', -5, CURRENT_TIMESTAMP), 1,  3.8),
@@ -72,15 +71,9 @@ VALUES
     (2, 8, 'IK_FOOD', 'Temperature reading - Fish storage', 'Afternoon check', 'WARNING', DATEADD('DAY', -2, CURRENT_TIMESTAMP), 6,  3.8),
     (2, 7, 'IK_FOOD', 'Temperature reading - Rice warmer',  'Lunch service',   'OK',      DATEADD('DAY', -1, CURRENT_TIMESTAMP), 8,  65.0),
     (2, 8, 'IK_FOOD', 'Temperature reading - Freezer 1',    'Closing check',   'OK',      CURRENT_TIMESTAMP,                     7, -20.1);
-=======
     (1, 2, 'IK_FOOD', 'Temperature reading - Cold room 1', 'Opening shift check', 'OK', CURRENT_TIMESTAMP, 1, 3.1),
     (1, 3, 'IK_FOOD', 'Temperature reading - Display fridge', 'Slightly above target', 'WARNING', CURRENT_TIMESTAMP, 3, 7.2);
 
--- ============================================================
--- CHECKLIST TEST DATA
--- Two templates with instances for today so the UI is populated
--- on first run without needing to create anything manually.
--- ============================================================
 
 -- Library items (tenant 1)
 INSERT INTO checklist_item_library (tenant_id, title, description, category, priority) VALUES
@@ -275,4 +268,3 @@ INSERT INTO checklist_presets (title, description, category, priority, tab, grou
     ('Staff HACCP Training Log',
      'Confirm all food-handling staff have completed required HACCP awareness training. Update the training log.',
      'IK_FOOD', 'LOW', 'HACCP', 'Record Keeping', 10);
->>>>>>> origin/dev
