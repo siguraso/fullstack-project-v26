@@ -10,6 +10,8 @@ const loading = ref(true)
 async function loadLogs() {
   try {
     logs.value = await getInspectionLogs()
+  } catch {
+    logs.value = []
   } finally {
     loading.value = false
   }

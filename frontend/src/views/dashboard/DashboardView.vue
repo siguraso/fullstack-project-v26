@@ -14,6 +14,8 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     dashboard.value = await getDashboardOverview()
+  } catch {
+    dashboard.value = null
   } finally {
     loading.value = false
   }
@@ -21,7 +23,11 @@ onMounted(async () => {
 
 async function reloadDashboard() {
   setTimeout(async () => {
-    dashboard.value = await getDashboardOverview()
+    try {
+      dashboard.value = await getDashboardOverview()
+    } catch {
+      dashboard.value = null
+    }
   }, 250)
 }
 </script>

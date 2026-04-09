@@ -62,3 +62,12 @@ export function unwrapMaybeEnvelope<T>(payload: unknown): T {
 
   return payload as T
 }
+
+export async function assertOk(response: Response, fallback: string): Promise<void> {
+  if (response.ok) {
+    return
+  }
+
+  const payload = await parseResponseBody(response)
+  throw new Error(readErrorMessage(payload, fallback))
+}
