@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Inspection Report</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      color: #1a1a1a;
+      padding: 32px 40px;
+    }
+
+    /* HEADER */
+    .report-header {
+      border-bottom: 2px solid #1a1a2e;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .report-header h1 {
+      font-size: 22px;
+      color: #1a1a2e;
+      letter-spacing: 0.5px;
+    }
+
+    .report-header .meta {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #666;
+    }
+
+    /* FILTER SUMMARY */
+    .filter-summary {
+      background: #f4f6fa;
+      border: 1px solid #dde3ef;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      font-size: 10px;
+      color: #444;
+    }
+
+    .filter-summary strong {
+      color: #1a1a2e;
+    }
+
+    .filter-summary .filter-tags {
+      margin-top: 4px;
+      display: inline;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e0e7f4;
+      color: #2b4a8a;
+      border-radius: 3px;
+      padding: 1px 6px;
+      margin-right: 4px;
+      font-size: 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    thead tr {
+      background: #1a1a2e;
+      color: #fff;
+    }
+
+    thead th {
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8f9fb;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e8eaf0;
+    }
+
+    tbody td {
+      padding: 7px 10px;
+      vertical-align: top;
+    }
+
+    .cell-title {
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .cell-desc {
+      font-size: 9px;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .badge-type-deviation  { background: #fef3e2; color: #b45309; }
+    .badge-type-temperature { background: #e0f2fe; color: #0369a1; }
+    .badge-type-alcohol    { background: #f3e8ff; color: #7c3aed; }
+
+    .badge-status-ok       { background: #dcfce7; color: #166534; }
+    .badge-status-open     { background: #fee2e2; color: #991b1b; }
+    .badge-status-warning  { background: #fef9c3; color: #854d0e; }
+    .badge-status-critical { background: #fee2e2; color: #991b1b; }
+    .badge-status-in_progress { background: #dbeafe; color: #1e40af; }
+    .badge-status-resolved { background: #dcfce7; color: #166534; }
+
+    .badge-severity-critical { background: #fee2e2; color: #991b1b; }
+    .badge-severity-high     { background: #ffedd5; color: #9a3412; }
+    .badge-severity-medium   { background: #fef9c3; color: #854d0e; }
+    .badge-severity-low      { background: #dcfce7; color: #166534; }
+
+    /* FOOTER */
+    .report-footer {
+      border-top: 1px solid #dde3ef;
+      padding-top: 10px;
+      font-size: 9px;
+      color: #aaa;
+      text-align: right;
+    }
+
+    .no-records {
+      text-align: center;
+      padding: 24px;
+      color: #999;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-header">
+    <h1>Inspection Report</h1>
+    <div class="meta">
+      Generated: <span th:text="${generatedDate}">2024-01-01</span>
+      &nbsp;&bull;&nbsp;
+      Total records: <span th:text="${totalCount}">0</span>
+    </div>
+  </div>
+
+  <!-- Filter summary -->
+  <div class="filter-summary" th:if="${filter.types != null and !filter.types.empty}
+        or ${filter.severities != null and !filter.severities.empty}
+        or ${filter.statuses != null and !filter.statuses.empty}
+        or ${filter.dateFrom != null}
+        or ${filter.dateTo != null}">
+    <strong>Applied Filters:</strong>
+    <div class="filter-tags">
+      <span th:each="t : ${filter.types}" class="tag" th:text="${t}">TYPE</span>
+      <span th:each="s : ${filter.severities}" class="tag" th:text="${s}">SEV</span>
+      <span th:each="s : ${filter.statuses}" class="tag" th:text="${s}">STATUS</span>
+      <span th:if="${filter.dateFrom != null}" class="tag" th:text="'From: ' + ${filter.dateFrom}">DATE</span>
+      <span th:if="${filter.dateTo != null}" class="tag" th:text="'To: ' + ${filter.dateTo}">DATE</span>
+    </div>
+  </div>
+
+  <!-- Logs table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Title / Description</th>
+        <th>Status</th>
+        <th>Severity</th>
+        <th>Actor</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:if="${logs.empty}">
+        <td colspan="6" class="no-records">No records match the selected filters.</td>
+      </tr>
+      <tr th:each="log : ${logs}">
+        <td>
+          <span class="badge"
+                th:classappend="'badge-type-' + ${#strings.toLowerCase(log.type)}"
+                th:text="${log.type}">TYPE</span>
+        </td>
+        <td>
+          <div class="cell-title" th:text="${log.title}">Title</div>
+          <div class="cell-desc" th:if="${log.description}" th:text="${log.description}">Description</div>
+        </td>
+        <td>
+          <span class="badge"
+                th:if="${log.status}"
+                th:classappend="'badge-status-' + ${#strings.toLowerCase(log.status)}"
+                th:text="${log.status}">STATUS</span>
+        </td>
+        <td>
+          <span class="badge"
+                th:if="${log.severity}"
+                th:classappend="'badge-severity-' + ${#strings.toLowerCase(log.severity)}"
+                th:text="${log.severity}">SEV</span>
+          <span th:unless="${log.severity}">—</span>
+        </td>
+        <td th:text="${log.actor}">Actor</td>
+        <td th:text="${#strings.substring(log.timestamp, 0, 10)}">Date</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="report-footer">
+    Inspection Report &bull; Confidential
+  </div>
+
+</body>
+</html>
