@@ -450,6 +450,7 @@ async function logout() {
     left: 0;
     bottom: 0;
     width: min(86vw, 320px);
+    max-width: none;
     min-width: 0;
     padding: 16px 14px 18px;
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
