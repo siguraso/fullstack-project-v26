@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistInstanceDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CompleteChecklistItemRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.CreateChecklistTemplateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.ChecklistItemLibrary;
@@ -27,8 +29,8 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistTemplate;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.enums.ChecklistFrequency;
+import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.enums.ChecklistStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistInstanceMapper;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistTemplateMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistInstanceRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemInstanceRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistItemLibraryRepository;
@@ -46,9 +48,6 @@ class ChecklistServiceTest {
     private ChecklistTemplateRepository templateRepo;
 
     @Mock
-    private ChecklistItemTemplateRepository itemTemplateRepo;
-
-    @Mock
     private ChecklistInstanceRepository instanceRepo;
 
     @Mock
@@ -59,9 +58,6 @@ class ChecklistServiceTest {
 
     @Mock
     private ChecklistInstanceMapper instanceMapper;
-
-    @Mock
-    private ChecklistTemplateMapper templateMapper;
 
     @Mock
     private ChecklistItemLibraryRepository libraryRepo;
@@ -82,7 +78,7 @@ class ChecklistServiceTest {
     @Test
     void createTemplateRejectsForeignLibraryItems() {
         when(tenantRepo.findById(1L)).thenReturn(Optional.of(tenant(1L)));
-        when(libraryRepo.findById(101L)).thenReturn(Optional.of(libraryItem(101L, 2L)));
+        when(libraryRepo.findById(101L)).thenReturn(Optional.of(foreignLibraryItem()));
 
         CreateChecklistTemplateRequest request = new CreateChecklistTemplateRequest();
         request.setName("Kitchen checklist");
@@ -129,7 +125,7 @@ class ChecklistServiceTest {
 
     @Test
     void completeItemRejectsForeignChecklistItem() {
-        ChecklistItemInstance item = checklistItemInstance(9L, 2L);
+        ChecklistItemInstance item = foreignChecklistItem();
         when(itemInstanceRepo.findById(9L)).thenReturn(Optional.of(item));
 
         CompleteChecklistItemRequest request = new CompleteChecklistItemRequest();
@@ -157,6 +153,25 @@ class ChecklistServiceTest {
     }
 
     @Test
+    void getTodayChecklistUsesFetchJoinQuery() {
+        ChecklistInstance checklist = new ChecklistInstance();
+        checklist.setId(11L);
+        checklist.setStatus(ChecklistStatus.PENDING);
+        checklist.setTemplate(template(21L, 1L));
+
+        ChecklistInstanceDTO dto = new ChecklistInstanceDTO();
+        dto.setId(11L);
+
+        when(instanceRepo.findTodayWithItems(anyLong(), any(LocalDate.class))).thenReturn(List.of(checklist));
+        when(instanceMapper.toDto(checklist)).thenReturn(dto);
+
+        List<ChecklistInstanceDTO> result = service.getTodayChecklist();
+
+        assertEquals(1, result.size());
+        assertEquals(11L, result.getFirst().getId());
+    }
+
+    @Test
     void toggleTemplateRejectsForeignTemplate() {
         ChecklistTemplate template = template(8L, 2L);
         when(templateRepo.findById(8L)).thenReturn(Optional.of(template));
@@ -181,10 +196,10 @@ class ChecklistServiceTest {
         return template;
     }
 
-    private ChecklistItemLibrary libraryItem(Long id, Long tenantId) {
+    private ChecklistItemLibrary foreignLibraryItem() {
         ChecklistItemLibrary item = new ChecklistItemLibrary();
-        item.setId(id);
-        item.setTenant(tenant(tenantId));
+        item.setId(101L);
+        item.setTenant(tenant(2L));
         item.setTitle("Item");
         item.setDescription("Desc");
         item.setCategory("Category");
@@ -192,12 +207,12 @@ class ChecklistServiceTest {
         return item;
     }
 
-    private ChecklistItemInstance checklistItemInstance(Long id, Long tenantId) {
+    private ChecklistItemInstance foreignChecklistItem() {
         ChecklistInstance checklist = new ChecklistInstance();
-        checklist.setTenant(tenant(tenantId));
+        checklist.setTenant(tenant(2L));
 
         ChecklistItemInstance item = new ChecklistItemInstance();
-        item.setId(id);
+        item.setId(9L);
         item.setChecklist(checklist);
         return item;
     }

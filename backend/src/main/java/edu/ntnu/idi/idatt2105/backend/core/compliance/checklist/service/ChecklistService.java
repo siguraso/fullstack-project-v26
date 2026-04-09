@@ -54,11 +54,13 @@ public class ChecklistService {
         Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
-        List<ChecklistItemLibrary> libraryItems = request.getItemIds().stream()
-                .map(itemId -> libraryRepo.findById(itemId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Library item not found")))
-                .peek(item -> ensureLibraryItemOwnedByTenant(item, tenantId))
-                .toList();
+        List<ChecklistItemLibrary> libraryItems = new java.util.ArrayList<>();
+        for (Long itemId : request.getItemIds()) {
+            ChecklistItemLibrary libraryItem = libraryRepo.findById(itemId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Library item not found"));
+            ensureLibraryItemOwnedByTenant(libraryItem, tenantId);
+            libraryItems.add(libraryItem);
+        }
 
         ChecklistTemplate template = new ChecklistTemplate();
         template.setTenant(tenant);
@@ -118,7 +120,7 @@ public class ChecklistService {
     public List<ChecklistInstanceDTO> getTodayChecklist() {
 
         Long tenantId = TenantContext.getCurrentOrg();
-        List<ChecklistInstance> instances = instanceRepo.findByTenantIdAndDate(tenantId, LocalDate.now());
+        List<ChecklistInstance> instances = instanceRepo.findTodayWithItems(tenantId, LocalDate.now());
 
         return instances.stream().map(instanceMapper::toDto).toList();
     }
