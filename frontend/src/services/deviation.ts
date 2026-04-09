@@ -1,4 +1,4 @@
-import type { Deviation } from '@/interfaces/Deviation.interface'
+import type { CreateDeviationInput, Deviation } from '@/interfaces/Deviation.interface'
 import { jsonApiFetch } from './util/apiHelper'
 import { assertOk, parseResponseBody, unwrapMaybeEnvelope } from './util/util'
 
@@ -53,7 +53,7 @@ export async function getDeviations(): Promise<Deviation[]> {
     .filter((item): item is Deviation => item !== null)
 }
 
-export async function createDeviation(data: Deviation): Promise<Deviation> {
+export async function createDeviation(data: CreateDeviationInput): Promise<Deviation> {
   const response = await jsonApiFetch(API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
