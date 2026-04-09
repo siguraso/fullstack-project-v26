@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import type {
   DocumentArea,
   DocumentSummary,
@@ -11,6 +11,7 @@ import {
   deleteDocument,
   downloadDocumentFile,
   fetchDocuments,
+  fetchDocumentFile,
   getDocumentById,
   updateDocument,
 } from '@/services/document'
@@ -52,6 +53,12 @@ const isDeletingId = ref<number | null>(null)
 const isLoadingDetail = ref(false)
 const formError = ref('')
 const activeDownloadId = ref<number | null>(null)
+const previewDocument = ref<DocumentSummary | null>(null)
+const isPreviewOpen = ref(false)
+const isPreviewLoading = ref(false)
+const previewError = ref('')
+const previewUrl = ref('')
+const previewTextContent = ref('')
 let searchDebounceHandle: number | null = null
 
 const form = reactive<FormState>({
@@ -72,6 +79,15 @@ const availableTags = computed(() =>
     left.localeCompare(right),
   ),
 )
+const previewMimeType = computed(() => previewDocument.value?.mimeType ?? '')
+const previewIsPdf = computed(() => previewMimeType.value === 'application/pdf')
+const previewIsImage = computed(() => previewMimeType.value.startsWith('image/'))
+const previewIsText = computed(
+  () => previewMimeType.value.startsWith('text/') || previewDocument.value?.originalFilename.endsWith('.txt'),
+)
+const canPreviewCurrentDocument = computed(
+  () => previewIsPdf.value || previewIsImage.value || previewIsText.value,
+)
 
 function resetForm() {
   form.title = ''
@@ -81,6 +97,15 @@ function resetForm() {
   form.file = null
   formError.value = ''
   formTagDraft.value = ''
+}
+
+function revokePreviewUrl() {
+  if (!previewUrl.value) {
+    return
+  }
+
+  window.URL.revokeObjectURL(previewUrl.value)
+  previewUrl.value = ''
 }
 
 function displayArea(area: DocumentArea) {
@@ -300,6 +325,50 @@ async function downloadDocument(document: DocumentSummary) {
   }
 }
 
+function canPreviewDocument(document: Pick<DocumentSummary, 'mimeType' | 'originalFilename'>) {
+  const mimeType = document.mimeType.toLowerCase()
+  const filename = document.originalFilename.toLowerCase()
+
+  return mimeType === 'application/pdf' || mimeType.startsWith('image/') || mimeType.startsWith('text/') || filename.endsWith('.txt')
+}
+
+async function openPreview(document: DocumentSummary) {
+  previewDocument.value = document
+  previewError.value = ''
+  previewTextContent.value = ''
+  revokePreviewUrl()
+  isPreviewOpen.value = true
+
+  if (!canPreviewDocument(document)) {
+    previewError.value = 'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
+    return
+  }
+
+  isPreviewLoading.value = true
+
+  try {
+    const file = await fetchDocumentFile(document)
+
+    if (file.mimeType.startsWith('text/') || document.originalFilename.toLowerCase().endsWith('.txt')) {
+      previewTextContent.value = await file.blob.text()
+    }
+
+    previewUrl.value = window.URL.createObjectURL(file.blob)
+  } catch (error) {
+    previewError.value = error instanceof Error ? error.message : 'Failed to load preview.'
+  } finally {
+    isPreviewLoading.value = false
+  }
+}
+
+function closePreview() {
+  isPreviewOpen.value = false
+  previewDocument.value = null
+  previewError.value = ''
+  previewTextContent.value = ''
+  revokePreviewUrl()
+}
+
 function handleFilterTagKeydown(event: KeyboardEvent) {
   if (event.key === 'Enter' || event.key === ',') {
     event.preventDefault()
@@ -321,6 +390,14 @@ function onFileSelected(event: Event) {
 
 watch([selectedArea, searchQuery, selectedTags], () => {
   scheduleReload()
+})
+
+onBeforeUnmount(() => {
+  if (searchDebounceHandle !== null) {
+    window.clearTimeout(searchDebounceHandle)
+  }
+
+  revokePreviewUrl()
 })
 
 onMounted(() => {
@@ -457,6 +534,14 @@ onMounted(() => {
                   <button
                     type="button"
                     class="secondary-action"
+                    :disabled="isPreviewLoading && previewDocument?.id === document.id"
+                    @click="openPreview(document)"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-action"
                     :disabled="activeDownloadId === document.id"
                     @click="downloadDocument(document)"
                   >
@@ -554,6 +639,44 @@ onMounted(() => {
             </button>
           </div>
         </form>
+      </section>
+    </div>
+
+    <div v-if="isPreviewOpen && previewDocument" class="overlay-backdrop" @click.self="closePreview">
+      <section class="preview-card">
+        <header class="document-form-header">
+          <div>
+            <h2>{{ previewDocument.title }}</h2>
+            <p>
+              {{ previewDocument.originalFilename }} · {{ formatBytes(previewDocument.sizeBytes) }}
+            </p>
+          </div>
+          <div class="preview-header-actions">
+            <button type="button" class="secondary-action" @click="downloadDocument(previewDocument)">
+              Download
+            </button>
+            <button type="button" class="close-button" @click="closePreview">Close</button>
+          </div>
+        </header>
+
+        <p v-if="previewError" class="status error">{{ previewError }}</p>
+        <p v-else-if="isPreviewLoading" class="status">Loading preview...</p>
+
+        <div v-else-if="canPreviewCurrentDocument" class="preview-body">
+          <iframe
+            v-if="previewIsPdf && previewUrl"
+            :src="previewUrl"
+            title="Document preview"
+            class="preview-frame"
+          ></iframe>
+          <img
+            v-else-if="previewIsImage && previewUrl"
+            :src="previewUrl"
+            :alt="previewDocument.title"
+            class="preview-image"
+          />
+          <pre v-else-if="previewIsText" class="preview-text">{{ previewTextContent }}</pre>
+        </div>
       </section>
     </div>
   </section>
@@ -823,6 +946,19 @@ onMounted(() => {
   padding: 24px;
 }
 
+.preview-card {
+  width: min(100%, 980px);
+  max-height: min(88vh, 920px);
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.99)),
+    radial-gradient(circle at top right, rgba(125, 211, 252, 0.2), transparent 30%);
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.16);
+}
+
 .document-form-header {
   display: flex;
   justify-content: space-between;
@@ -851,6 +987,48 @@ onMounted(() => {
   gap: 16px;
 }
 
+.preview-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.preview-body {
+  min-height: 420px;
+  max-height: calc(88vh - 140px);
+  overflow: auto;
+  border-radius: 16px;
+  background: #e2e8f0;
+}
+
+.preview-frame {
+  width: 100%;
+  min-height: 70vh;
+  border: 0;
+  background: #fff;
+}
+
+.preview-image {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  object-fit: contain;
+  background: #fff;
+}
+
+.preview-text {
+  margin: 0;
+  padding: 18px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
 .form-actions {
   justify-content: flex-end;
   margin-top: 8px;
@@ -869,7 +1047,8 @@ onMounted(() => {
 @media (max-width: 640px) {
   .toolbar-card,
   .results-card,
-  .document-form-card {
+  .document-form-card,
+  .preview-card {
     padding: 16px;
     border-radius: 16px;
   }

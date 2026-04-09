@@ -228,7 +228,15 @@ function parseFilenameFromDisposition(headerValue: string | null) {
   return asciiMatch?.[1] ?? null
 }
 
-export async function downloadDocumentFile(document: Pick<DocumentSummary, 'id' | 'originalFilename'>) {
+export interface DocumentFileData {
+  blob: Blob
+  filename: string
+  mimeType: string
+}
+
+export async function fetchDocumentFile(
+  document: Pick<DocumentSummary, 'id' | 'originalFilename'>,
+): Promise<DocumentFileData> {
   const response = await jsonApiFetch(`${API_URL}/${document.id}/download`, {
     credentials: 'include',
   })
@@ -239,14 +247,24 @@ export async function downloadDocumentFile(document: Pick<DocumentSummary, 'id' 
   }
 
   const blob = await response.blob()
-  const url = window.URL.createObjectURL(blob)
-  const anchor = window.document.createElement('a')
   const filename =
     parseFilenameFromDisposition(response.headers.get('content-disposition')) ??
     document.originalFilename
 
+  return {
+    blob,
+    filename,
+    mimeType: response.headers.get('content-type') ?? blob.type,
+  }
+}
+
+export async function downloadDocumentFile(document: Pick<DocumentSummary, 'id' | 'originalFilename'>) {
+  const file = await fetchDocumentFile(document)
+  const url = window.URL.createObjectURL(file.blob)
+  const anchor = window.document.createElement('a')
+
   anchor.href = url
-  anchor.download = filename
+  anchor.download = file.filename
   window.document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
