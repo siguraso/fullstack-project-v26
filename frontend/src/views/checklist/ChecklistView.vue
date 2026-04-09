@@ -280,4 +280,41 @@ const percentage = computed(() => {
 .list-leave-active {
   position: absolute;
 }
+
+@media (max-width: 960px) {
+  .top,
+  .title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .top {
+    padding: 24px 20px;
+    gap: 20px;
+  }
+
+  .top-right {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .percentage-box {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .top {
+    padding: 18px 16px;
+  }
+
+  .stats {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .complete-btn {
+    width: 100%;
+  }
+}
 </style>
