@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
+import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.CreateDeviationRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO;
@@ -21,7 +22,6 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceL
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
-import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,7 +30,6 @@ public class DeviationService {
 
     private final DeviationRepository deviationRepo;
     private final TenantRepository tenantRepo;
-    private final UserRepository userRepo;
     private final DeviationMapper mapper;
 
     public DeviationDTO create(CreateDeviationRequest request) {
@@ -64,8 +63,10 @@ public class DeviationService {
     }
 
     public DeviationDTO update(Long id, UpdateDeviationRequest request) {
+        Long tenantId = TenantContext.getCurrentOrg();
         Deviation deviation = deviationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Deviation not found"));
+        ensureDeviationOwnedByTenant(deviation, tenantId);
 
         if (request.getStatus() != null) {
             deviation.setStatus(request.getStatus());
@@ -124,5 +125,11 @@ public class DeviationService {
             return DeviationCategory.ALCOHOL;
         }
         return DeviationCategory.TEMPERATURE;
+    }
+
+    private void ensureDeviationOwnedByTenant(Deviation deviation, Long tenantId) {
+        if (deviation.getTenant() == null || deviation.getTenant().getId() == null || !deviation.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("Deviation does not belong to current organization");
+        }
     }
 }
