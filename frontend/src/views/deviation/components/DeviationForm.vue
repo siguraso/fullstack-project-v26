@@ -268,10 +268,9 @@ label > span,
 .assessment-card,
 .section-card,
 .system-section {
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 12px;
-  background: linear-gradient(180deg, #fdfdfd 0%, #f8fafc 100%);
-  padding: 16px;
+  background: var(--bg-secondary);
 }
 
 .severity {
