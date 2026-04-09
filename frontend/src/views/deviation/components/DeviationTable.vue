@@ -213,7 +213,6 @@ watch(totalPages, (nextTotalPages) => {
       </div>
     </template>
 
-
     <div class="table-scroll">
       <table class="log-table">
         <thead class="log-table-header">
@@ -326,7 +325,6 @@ watch(totalPages, (nextTotalPages) => {
 .table-scroll {
   overflow-x: auto;
 }
-
 
 .log-table {
   width: 100%;

@@ -3,7 +3,11 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
 import { useDeviationStore } from '@/stores/deviation'
-import type { Deviation, DeviationModule, DeviationSeverity } from '@/interfaces/Deviation.interface'
+import type {
+  Deviation,
+  DeviationModule,
+  DeviationSeverity,
+} from '@/interfaces/Deviation.interface'
 
 const store = useDeviationStore()
 
@@ -376,10 +380,8 @@ small {
     align-items: stretch;
   }
 
-
   .severity {
     grid-template-columns: 1fr;
   }
 }
-
 </style>

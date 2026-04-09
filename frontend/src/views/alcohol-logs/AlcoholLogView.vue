@@ -95,17 +95,9 @@ function closeDetails() {
       <AlcoholLogGuide class="guide-panel" />
     </div>
 
-    <AlcoholLogTable
-      :logs="logs"
-      :isLoading="isLoadingLogs"
-      @view-requested="openDetails"
-    />
+    <AlcoholLogTable :logs="logs" :isLoading="isLoadingLogs" @view-requested="openDetails" />
 
-    <AlcoholLogDetailsDialog
-      :log="selectedLog"
-      :isOpen="isDetailsOpen"
-      @close="closeDetails"
-    />
+    <AlcoholLogDetailsDialog :log="selectedLog" :isOpen="isDetailsOpen" @close="closeDetails" />
   </div>
 </template>
 
@@ -168,6 +160,3 @@ function closeDetails() {
   }
 }
 </style>
-
-
-

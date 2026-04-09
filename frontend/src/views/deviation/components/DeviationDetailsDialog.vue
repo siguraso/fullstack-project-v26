@@ -91,8 +91,14 @@ const summaryFields = [
 ]
 
 const detailFields = [
-  { label: 'Reported Date', getValue: (deviation: Deviation) => formatShortDate(deviation.reportedDate) },
-  { label: 'Discovered By', getValue: (deviation: Deviation) => formatText(deviation.discoveredBy) },
+  {
+    label: 'Reported Date',
+    getValue: (deviation: Deviation) => formatShortDate(deviation.reportedDate),
+  },
+  {
+    label: 'Discovered By',
+    getValue: (deviation: Deviation) => formatText(deviation.discoveredBy),
+  },
   { label: 'Reported To', getValue: (deviation: Deviation) => formatText(deviation.reportedTo) },
   { label: 'Assigned To', getValue: (deviation: Deviation) => formatText(deviation.assignedTo) },
   {

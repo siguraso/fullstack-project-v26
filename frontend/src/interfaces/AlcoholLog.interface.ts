@@ -1,4 +1,10 @@
-export type AlcoholLogType = 'AGE_VERIFICATION' | 'SERVICE_REFUSAL' | 'CLOSING_STOCK' | 'TRAINING' | 'INCIDENT' | 'OTHER'
+export type AlcoholLogType =
+  | 'AGE_VERIFICATION'
+  | 'SERVICE_REFUSAL'
+  | 'CLOSING_STOCK'
+  | 'TRAINING'
+  | 'INCIDENT'
+  | 'OTHER'
 export type LogStatus = 'OK' | 'WARNING' | 'CRITICAL'
 
 export interface AlcoholLog {
@@ -27,7 +33,3 @@ export interface AlcoholLogInput {
   serviceRefused?: boolean | null
   estimatedAge?: number | null
 }
-
-
-
-

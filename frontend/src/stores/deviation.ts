@@ -2,7 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as api from '@/services/deviation'
 import { getAuthSession } from '@/services/auth'
-import type { CreateDeviationInput, Deviation, DeviationFormInput } from '@/interfaces/Deviation.interface'
+import type {
+  CreateDeviationInput,
+  Deviation,
+  DeviationFormInput,
+} from '@/interfaces/Deviation.interface'
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10)
