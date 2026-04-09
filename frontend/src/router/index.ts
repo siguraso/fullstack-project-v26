@@ -12,6 +12,7 @@ import SettingsView from '@/views/settings/SettingsView.vue'
 import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
 import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
 import AlcoholLogView from '@/views/alcohol-logs/AlcoholLogView.vue'
+import DocumentsView from '@/views/documents/DocumentsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +57,11 @@ const router = createRouter({
           name: 'settings',
           component: SettingsView,
           meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
+        },
+        {
+          path: '/documents',
+          name: 'documents',
+          component: DocumentsView,
         },
         {
           path: '/checklist-builder',
