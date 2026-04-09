@@ -79,34 +79,118 @@ VALUES
 -- ============================================================
 
 -- Deviations (tenant 1)
-INSERT INTO deviations (tenant_id, module, title, description, severity, category, status, created_by, created_at, resolved_at)
+INSERT INTO deviations (
+    tenant_id, module, title, reported_date,
+    discovered_by, reported_to, assigned_to,
+    issue_description, immediate_action, root_cause, corrective_action, completion_notes,
+    severity, category, status, created_by, created_at, resolved_at
+)
 VALUES
-    (1, 'IK_FOOD',    'Freezer temperature exceeded limit',       'Freezer room reached -10°C after door was left ajar. Food discarded per protocol.',           'CRITICAL', 'TEMPERATURE',    'RESOLVED',     3, DATEADD('DAY', -14, CURRENT_TIMESTAMP), DATEADD('DAY', -12, CURRENT_TIMESTAMP)),
-    (1, 'IK_FOOD',    'Expired dairy products found',             'Three packs of cream cheese past best-before date discovered during expiry check.',            'HIGH',     'HYGIENE',        'RESOLVED',     4, DATEADD('DAY', -10, CURRENT_TIMESTAMP), DATEADD('DAY',  -9, CURRENT_TIMESTAMP)),
-    (1, 'IK_FOOD',    'Display fridge above 6°C',                 'Display fridge recorded at 7.2°C during morning check. Refrigeration engineer called.',        'HIGH',     'TEMPERATURE',    'IN_PROGRESS',  3, DATEADD('DAY',  -6, CURRENT_TIMESTAMP), NULL),
-    (1, 'IK_FOOD',    'Cutting board cross-contamination risk',   'Raw meat residue found on fish cutting board. Boards re-labelled and staff re-briefed.',       'MEDIUM',   'HYGIENE',        'RESOLVED',     5, DATEADD('DAY',  -5, CURRENT_TIMESTAMP), DATEADD('DAY',  -4, CURRENT_TIMESTAMP)),
-    (1, 'IK_FOOD',    'Missing allergen information on menu',     'Nut allergen not listed for the chef''s special. Menu corrected and staff informed.',          'HIGH',     'DOCUMENTATION',  'RESOLVED',     2, DATEADD('DAY',  -4, CURRENT_TIMESTAMP), DATEADD('DAY',  -3, CURRENT_TIMESTAMP)),
-    (1, 'IK_FOOD',    'Hot holding below 60°C',                   'Soup held at 58°C during lunch service. Discarded and batch restarted.',                       'CRITICAL', 'TEMPERATURE',    'RESOLVED',     4, DATEADD('DAY',  -3, CURRENT_TIMESTAMP), DATEADD('DAY',  -3, CURRENT_TIMESTAMP)),
-    (1, 'IK_ALCOHOL', 'Age verification not performed',           'Staff member served customer without checking ID. Customer appeared under 25. Formal warning.', 'CRITICAL', 'ALCOHOL',        'IN_PROGRESS',  2, DATEADD('DAY',  -2, CURRENT_TIMESTAMP), NULL),
-    (1, 'IK_FOOD',    'Hand washing station out of soap',         'Soap dispenser empty at kitchen entrance for approximately 2 hours.',                          'MEDIUM',   'HYGIENE',        'RESOLVED',     5, DATEADD('DAY',  -2, CURRENT_TIMESTAMP), DATEADD('DAY',  -2, CURRENT_TIMESTAMP)),
-    (1, 'IK_ALCOHOL', 'Alcohol served outside licensed hours',    'One beer served 10 minutes after end of skjenketid. Incident documented.',                     'HIGH',     'ALCOHOL',        'OPEN',         3, DATEADD('DAY',  -1, CURRENT_TIMESTAMP), NULL),
-    (1, 'IK_FOOD',    'Pest activity observed near dry storage',  'Mouse droppings found behind dry goods shelf. Pest control notified.',                         'HIGH',     'SAFETY',         'OPEN',         2, CURRENT_TIMESTAMP,                       NULL),
-    (1, 'IK_FOOD',    'Thermometer calibration overdue',          'Probe thermometer not calibrated within required 6-month window.',                             'LOW',      'DOCUMENTATION',  'OPEN',         4, CURRENT_TIMESTAMP,                       NULL),
-    (1, 'IK_FOOD',    'Delivery accepted with damaged packaging', 'Two boxes of frozen goods received with torn outer packaging. Goods quarantined pending check.','MEDIUM',   'HYGIENE',        'IN_PROGRESS',  5, CURRENT_TIMESTAMP,                       NULL);
+(1, 'IK_FOOD', 'Freezer temperature exceeded limit', DATEADD('DAY', -14, CURRENT_DATE),
+ 'Jane Smith', 'John Doe', 'Ole Hansen',
+ 'Freezer room reached -10°C after door was left ajar.',
+ 'Discarded affected food immediately.',
+ 'Door not properly closed during shift change.',
+ 'Staff retrained on closing procedures.',
+ 'Temperature stable and procedures followed.',
+ 'CRITICAL', 'TEMPERATURE', 'RESOLVED', 3, DATEADD('DAY', -14, CURRENT_TIMESTAMP), DATEADD('DAY', -12, CURRENT_TIMESTAMP)),
+
+(1, 'IK_FOOD', 'Expired dairy products found', DATEADD('DAY', -10, CURRENT_DATE),
+ 'Ole Hansen', 'John Doe', 'Kari Nordmann',
+ 'Expired dairy products found in fridge.',
+ 'Items removed and discarded.',
+ 'Routine expiry check missed.',
+ 'Checklist reinforced and reminders added.',
+ 'All items verified fresh.',
+ 'HIGH', 'HYGIENE', 'RESOLVED', 4, DATEADD('DAY', -10, CURRENT_TIMESTAMP), DATEADD('DAY', -9, CURRENT_TIMESTAMP)),
+
+(1, 'IK_FOOD', 'Display fridge above 6°C', DATEADD('DAY', -6, CURRENT_DATE),
+ 'Jane Smith', 'John Doe', 'Ole Hansen',
+ 'Display fridge recorded at 7.2°C.',
+ 'Moved sensitive goods to backup fridge.',
+ 'Cooling unit degraded.',
+ 'Technician scheduled for repair.',
+ NULL,
+ 'HIGH', 'TEMPERATURE', 'IN_PROGRESS', 3, DATEADD('DAY', -6, CURRENT_TIMESTAMP), NULL),
+
+(1, 'IK_ALCOHOL', 'Age verification not performed', DATEADD('DAY', -2, CURRENT_DATE),
+ 'Sigurd Sigurdsson', 'John Doe', 'Jane Smith',
+ 'Customer served without ID check.',
+ 'Service stopped immediately.',
+ 'Staff skipped ID check under pressure.',
+ 'Refresher training scheduled.',
+ NULL,
+ 'CRITICAL', 'ALCOHOL', 'IN_PROGRESS', 2, DATEADD('DAY', -2, CURRENT_TIMESTAMP), NULL),
+
+(1, 'IK_ALCOHOL', 'Alcohol served outside licensed hours', DATEADD('DAY', -1, CURRENT_DATE),
+ 'Jane Smith', 'John Doe', 'Ole Hansen',
+ 'Alcohol served after closing time.',
+ 'Service stopped and logged.',
+ 'Miscommunication on closing time.',
+ 'Closing checklist updated.',
+ NULL,
+ 'HIGH', 'ALCOHOL', 'OPEN', 3, DATEADD('DAY', -1, CURRENT_TIMESTAMP), NULL),
+
+(1, 'IK_FOOD', 'Pest activity observed', CURRENT_DATE,
+ 'John Doe', 'Sigurd Sigurdsson', 'Kari Nordmann',
+ 'Mouse droppings found in storage.',
+ 'Area sealed and cleaned.',
+ 'Gaps in wall allowed entry.',
+ 'Pest control engaged.',
+ NULL,
+ 'HIGH', 'SAFETY', 'OPEN', 2, CURRENT_TIMESTAMP, NULL);
 
 -- Deviations (tenant 2)
-INSERT INTO deviations (tenant_id, module, title, description, severity, category, status, created_by, created_at, resolved_at)
+INSERT INTO deviations (
+    tenant_id, module, title, reported_date,
+    discovered_by, reported_to, assigned_to,
+    issue_description, immediate_action, root_cause, corrective_action, completion_notes,
+    severity, category, status, created_by, created_at, resolved_at
+)
 VALUES
-    (2, 'IK_FOOD',    'Fish storage above 2°C',                   'Fish storage recorded at 3.8°C. Stock assessed and partly discarded.',                        'CRITICAL', 'TEMPERATURE',    'RESOLVED',     7, DATEADD('DAY',  -2, CURRENT_TIMESTAMP), DATEADD('DAY',  -1, CURRENT_TIMESTAMP)),
-    (2, 'IK_FOOD',    'Rice warmer temperature not logged',        'Afternoon rice warmer check was not recorded in compliance log.',                             'LOW',      'DOCUMENTATION',  'RESOLVED',     8, DATEADD('DAY',  -1, CURRENT_TIMESTAMP), DATEADD('DAY',  -1, CURRENT_TIMESTAMP)),
-    (2, 'IK_FOOD',    'Allergen cross-contact with nut sauce',     'Nut-based sauce stored adjacent to nut-free dishes without barrier. Corrected immediately.',  'HIGH',     'HYGIENE',        'OPEN',         7, CURRENT_TIMESTAMP,                       NULL);
+(2, 'IK_FOOD', 'Fish storage above limit', DATEADD('DAY', -2, CURRENT_DATE),
+ 'Priya Sharma', 'Raj Patel', 'Anita Kumar',
+ 'Fish storage recorded above safe temperature.',
+ 'Stock inspected and unsafe items discarded.',
+ 'Door left open during delivery.',
+ 'Procedure updated for deliveries.',
+ 'Temperature stabilized.',
+ 'CRITICAL', 'TEMPERATURE', 'RESOLVED', 7, DATEADD('DAY', -2, CURRENT_TIMESTAMP), DATEADD('DAY', -1, CURRENT_TIMESTAMP)),
+
+(2, 'IK_FOOD', 'Allergen cross-contact risk', CURRENT_DATE,
+ 'Raj Patel', 'Priya Sharma', 'Anita Kumar',
+ 'Nut sauce stored near allergen-free food.',
+ 'Items separated immediately.',
+ 'Improper storage labeling.',
+ 'Storage zones reorganized.',
+ NULL,
+ 'HIGH', 'HYGIENE', 'OPEN', 7, CURRENT_TIMESTAMP, NULL);
 
 -- Deviations (tenant 3)
-INSERT INTO deviations (tenant_id, module, title, description, severity, category, status, created_by, created_at, resolved_at)
+INSERT INTO deviations (
+    tenant_id, module, title, reported_date,
+    discovered_by, reported_to, assigned_to,
+    issue_description, immediate_action, root_cause, corrective_action, completion_notes,
+    severity, category, status, created_by, created_at, resolved_at
+)
 VALUES
-    (3, 'IK_ALCOHOL', 'Underage customer served alcohol',         'Customer aged 17 served beer. Staff immediately removed drink. Formal investigation opened.', 'CRITICAL', 'ALCOHOL',        'IN_PROGRESS',  10, DATEADD('DAY', -5, CURRENT_TIMESTAMP), NULL),
-    (3, 'IK_ALCOHOL', 'Liquor license not displayed',             'Skjenkebevilling was not visible at the bar. Repositioned and confirmed.',                    'MEDIUM',   'DOCUMENTATION',  'RESOLVED',     11, DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP)),
-    (3, 'IK_ALCOHOL', 'Intoxicated customer served',              'Visibly intoxicated guest served two drinks before staff intervened.',                        'CRITICAL', 'ALCOHOL',        'OPEN',         10, DATEADD('DAY', -1, CURRENT_TIMESTAMP), NULL);
+(3, 'IK_ALCOHOL', 'Underage customer served', DATEADD('DAY', -5, CURRENT_DATE),
+ 'Lars Berg', 'Nina Dahl', 'Morten Lie',
+ 'Underage customer was served alcohol.',
+ 'Drink removed immediately.',
+ 'ID check not performed.',
+ 'Strict ID enforcement implemented.',
+ NULL,
+ 'CRITICAL', 'ALCOHOL', 'IN_PROGRESS', 10, DATEADD('DAY', -5, CURRENT_TIMESTAMP), NULL),
+
+(3, 'IK_ALCOHOL', 'Intoxicated customer served', DATEADD('DAY', -1, CURRENT_DATE),
+ 'Nina Dahl', 'Lars Berg', 'Morten Lie',
+ 'Customer visibly intoxicated was served.',
+ 'Service stopped immediately.',
+ 'Staff failed to assess intoxication.',
+ 'Training scheduled for staff.',
+ NULL,
+ 'CRITICAL', 'ALCOHOL', 'OPEN', 10, DATEADD('DAY', -1, CURRENT_TIMESTAMP), NULL);
 
 -- ============================================================
 -- ALCOHOL LOG TEST DATA
