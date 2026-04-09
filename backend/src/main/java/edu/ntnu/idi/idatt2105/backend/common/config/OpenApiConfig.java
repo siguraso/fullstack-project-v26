@@ -6,6 +6,12 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * OpenAPI/Swagger configuration for the Regula backend.
+ * <p>
+ * Defines global API metadata and the HTTP bearer security scheme used for
+ * JWT-based authentication in the generated documentation.
+ */
 @Configuration
 @OpenAPIDefinition(
     info = @Info(

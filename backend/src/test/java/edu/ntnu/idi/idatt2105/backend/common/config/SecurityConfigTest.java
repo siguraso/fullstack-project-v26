@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.common.config;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -58,11 +59,18 @@ class SecurityConfigTest {
 
     @Test
     void swaggerEndpointsArePublic() throws Exception {
+        // Swagger is disabled in tests, so these endpoints may not return 200.
+        // What we care about here is that security does not block anonymous access.
         mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isOk());
+                .andExpect(result -> assertStatusIsNotAuthRelated(result.getResponse().getStatus()));
 
         mockMvc.perform(get("/swagger-ui/index.html"))
-                .andExpect(status().isOk());
+                .andExpect(result -> assertStatusIsNotAuthRelated(result.getResponse().getStatus()));
+    }
+
+    private static void assertStatusIsNotAuthRelated(int status) {
+        assertTrue(status != 401 && status != 403,
+                () -> "Expected endpoint to be publicly accessible, but got auth-related status: " + status);
     }
 
     @Test
