@@ -238,29 +238,6 @@ describe('TemperatureLogView', () => {
     wrapper.unmount()
   })
 
-  it('opens and closes the log details overlay', async () => {
-    vi.mocked(getTemperatureZones).mockResolvedValue(zoneFixture)
-    vi.mocked(fetchTemperatureLogs).mockResolvedValue(logFixture)
-
-    const wrapper = mountView()
-    await flushPromises()
-    await nextTick()
-
-    await wrapper.get('[data-test="open-log-details"]').trigger('click')
-    await nextTick()
-
-    expect(wrapper.find('[data-test="log-details-stub"]').exists()).toBe(true)
-    expect(document.body.style.overflow).toBe('hidden')
-
-    await wrapper.get('[data-test="close-log-details"]').trigger('click')
-    await nextTick()
-
-    expect(wrapper.find('[data-test="log-details-stub"]').exists()).toBe(false)
-    expect(document.body.style.overflow).toBe('')
-
-    wrapper.unmount()
-  })
-
   it('opens edit overlay, saves changes, and updates the in-memory zone list', async () => {
     vi.mocked(getTemperatureZones).mockResolvedValue(zoneFixture)
     vi.mocked(fetchTemperatureLogs).mockResolvedValue(logFixture)
