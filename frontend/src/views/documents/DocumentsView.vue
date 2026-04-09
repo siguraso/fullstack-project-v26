@@ -83,7 +83,9 @@ const previewMimeType = computed(() => previewDocument.value?.mimeType ?? '')
 const previewIsPdf = computed(() => previewMimeType.value === 'application/pdf')
 const previewIsImage = computed(() => previewMimeType.value.startsWith('image/'))
 const previewIsText = computed(
-  () => previewMimeType.value.startsWith('text/') || previewDocument.value?.originalFilename.endsWith('.txt'),
+  () =>
+    previewMimeType.value.startsWith('text/') ||
+    previewDocument.value?.originalFilename.endsWith('.txt'),
 )
 const canPreviewCurrentDocument = computed(
   () => previewIsPdf.value || previewIsImage.value || previewIsText.value,
@@ -329,7 +331,12 @@ function canPreviewDocument(document: Pick<DocumentSummary, 'mimeType' | 'origin
   const mimeType = document.mimeType.toLowerCase()
   const filename = document.originalFilename.toLowerCase()
 
-  return mimeType === 'application/pdf' || mimeType.startsWith('image/') || mimeType.startsWith('text/') || filename.endsWith('.txt')
+  return (
+    mimeType === 'application/pdf' ||
+    mimeType.startsWith('image/') ||
+    mimeType.startsWith('text/') ||
+    filename.endsWith('.txt')
+  )
 }
 
 async function openPreview(document: DocumentSummary) {
@@ -340,7 +347,8 @@ async function openPreview(document: DocumentSummary) {
   isPreviewOpen.value = true
 
   if (!canPreviewDocument(document)) {
-    previewError.value = 'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
+    previewError.value =
+      'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
     return
   }
 
@@ -349,7 +357,10 @@ async function openPreview(document: DocumentSummary) {
   try {
     const file = await fetchDocumentFile(document)
 
-    if (file.mimeType.startsWith('text/') || document.originalFilename.toLowerCase().endsWith('.txt')) {
+    if (
+      file.mimeType.startsWith('text/') ||
+      document.originalFilename.toLowerCase().endsWith('.txt')
+    ) {
       previewTextContent.value = await file.blob.text()
     }
 
@@ -577,7 +588,11 @@ onMounted(() => {
         <header class="document-form-header">
           <div>
             <h2>{{ isEditing ? 'Edit document' : 'Upload document' }}</h2>
-            <p>{{ isEditing ? 'Replace the file only if needed.' : 'Add a new file to the library.' }}</p>
+            <p>
+              {{
+                isEditing ? 'Replace the file only if needed.' : 'Add a new file to the library.'
+              }}
+            </p>
           </div>
           <button type="button" class="close-button" @click="closeForm">Close</button>
         </header>
@@ -642,7 +657,11 @@ onMounted(() => {
       </section>
     </div>
 
-    <div v-if="isPreviewOpen && previewDocument" class="overlay-backdrop" @click.self="closePreview">
+    <div
+      v-if="isPreviewOpen && previewDocument"
+      class="overlay-backdrop"
+      @click.self="closePreview"
+    >
       <section class="preview-card">
         <header class="document-form-header">
           <div>
@@ -652,7 +671,11 @@ onMounted(() => {
             </p>
           </div>
           <div class="preview-header-actions">
-            <button type="button" class="secondary-action" @click="downloadDocument(previewDocument)">
+            <button
+              type="button"
+              class="secondary-action"
+              @click="downloadDocument(previewDocument)"
+            >
               Download
             </button>
             <button type="button" class="close-button" @click="closePreview">Close</button>
@@ -737,6 +760,7 @@ onMounted(() => {
     transform 140ms ease,
     background-color 140ms ease,
     border-color 140ms ease;
+  color: black;
 }
 
 .area-button {
