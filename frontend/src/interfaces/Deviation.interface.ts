@@ -44,14 +44,9 @@ export interface DeviationFormInput {
   discoveredBy: string
   reportedTo: string
   assignedTo: string
-  issueDate: string
   issueDescription: string
-  immediateActionDate: string
   immediateAction: string
-  causeDate: string
   rootCause: string
-  correctiveActionDate: string
   correctiveAction: string
-  completionDate: string
   completionNotes: string
 }

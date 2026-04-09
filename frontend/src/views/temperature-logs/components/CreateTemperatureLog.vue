@@ -74,9 +74,7 @@ function seedDeviationForm(zone: TemperatureZone, measuredTemperature: number, n
     module: 'IK_FOOD',
     status: 'OPEN',
     reportedDate: today,
-    issueDate: today,
     issueDescription: `Recorded ${measuredTemperature}°C in ${zone.name}. Allowed range is ${zone.lowerLimitCelsius}°C to ${zone.upperLimitCelsius}°C.${noteLine}`,
-    immediateActionDate: today,
   })
 }
 

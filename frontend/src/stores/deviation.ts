@@ -3,6 +3,10 @@ import { ref, computed } from 'vue'
 import * as api from '@/services/deviation'
 import type { CreateDeviationInput, Deviation, DeviationFormInput } from '@/interfaces/Deviation.interface'
 
+function getTodayDate() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 function createEmptyForm(): DeviationFormInput {
   return {
     title: '',
@@ -11,19 +15,14 @@ function createEmptyForm(): DeviationFormInput {
     severity: 'LOW',
     module: 'IK_FOOD',
     status: 'OPEN',
-    reportedDate: '',
+    reportedDate: getTodayDate(),
     discoveredBy: '',
     reportedTo: '',
     assignedTo: '',
-    issueDate: '',
     issueDescription: '',
-    immediateActionDate: '',
     immediateAction: '',
-    causeDate: '',
     rootCause: '',
-    correctiveActionDate: '',
     correctiveAction: '',
-    completionDate: '',
     completionNotes: '',
   }
 }
@@ -40,15 +39,10 @@ function buildDeviationDescription(form: DeviationFormInput) {
     buildSection('Discovered by', form.discoveredBy),
     buildSection('Reported to', form.reportedTo),
     buildSection('Assigned to', form.assignedTo),
-    buildSection('Issue date', form.issueDate),
     buildSection('Describe the error / what went wrong', form.issueDescription),
-    buildSection('Immediate action date', form.immediateActionDate),
     buildSection('Immediate action taken', form.immediateAction),
-    buildSection('Cause analysis date', form.causeDate),
     buildSection('Possible cause', form.rootCause),
-    buildSection('Corrective action date', form.correctiveActionDate),
     buildSection('Corrective action / prevention', form.correctiveAction),
-    buildSection('Completion date', form.completionDate),
     buildSection('Corrective action completed', form.completionNotes),
   ]
     .filter((section): section is string => section !== null)

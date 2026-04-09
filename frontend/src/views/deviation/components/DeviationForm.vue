@@ -139,10 +139,6 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Describe the issue / what went wrong</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.issueDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.issueDescription"
@@ -154,10 +150,6 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Immediate handling / what did you do right away</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.immediateActionDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.immediateAction"
@@ -169,10 +161,6 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>What could be the reason / cause of the issue</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.causeDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.rootCause"
@@ -184,10 +172,6 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Corrective action / how to prevent the same issue from happening again</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.correctiveActionDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.correctiveAction"
@@ -199,10 +183,6 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Corrective action has been completed</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.completionDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.completionNotes"
@@ -284,8 +264,7 @@ label,
 }
 
 label > span,
-.assessment-card > span,
-.section-date > span {
+.assessment-card > span {
   font-size: 0.9em;
   color: var(--text-secondary);
   margin-bottom: 2px;
@@ -352,10 +331,6 @@ label > span,
   color: var(--text);
 }
 
-.section-date {
-  min-width: 168px;
-}
-
 textarea {
   width: 100%;
   resize: vertical;
@@ -407,9 +382,6 @@ small {
     align-items: stretch;
   }
 
-  .section-date {
-    min-width: 0;
-  }
 
   .severity {
     grid-template-columns: 1fr;

@@ -125,9 +125,7 @@ function seedDeviationForm(payload: AlcoholLogInput) {
     module: 'IK_ALCOHOL',
     status: 'OPEN',
     reportedDate: today,
-    issueDate: today,
     issueDescription: details,
-    immediateActionDate: today,
   })
 }
 
