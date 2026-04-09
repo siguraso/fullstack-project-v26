@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AlcoholLogForm from './components/AlcoholLogForm.vue'
 import AlcoholLogGuide from './components/AlcoholLogGuide.vue'
 import AlcoholLogTable from './components/AlcoholLogTable.vue'
@@ -7,12 +8,16 @@ import AlcoholLogDetailsDialog from './components/AlcoholLogDetailsDialog.vue'
 import { fetchAlcoholLogs } from '@/services/alcoholLog'
 import type { AlcoholLog } from '@/interfaces/AlcoholLog.interface'
 
+const route = useRoute()
 const logs = ref<AlcoholLog[]>([])
 const isLoadingLogs = ref(false)
 const error = ref('')
 
 const isDetailsOpen = ref(false)
 const selectedLog = ref<AlcoholLog | null>(null)
+const formPreset = computed(() =>
+  typeof route.query.preset === 'string' ? route.query.preset : null,
+)
 
 async function loadLogs() {
   isLoadingLogs.value = true
@@ -91,7 +96,11 @@ function closeDetails() {
     <p v-if="error" class="error-banner">{{ error }}</p>
 
     <div class="top-row">
-      <AlcoholLogForm class="form-panel" @created="handleAlcoholLogCreated" />
+      <AlcoholLogForm
+        class="form-panel"
+        :preset="formPreset"
+        @created="handleAlcoholLogCreated"
+      />
       <AlcoholLogGuide class="guide-panel" />
     </div>
 

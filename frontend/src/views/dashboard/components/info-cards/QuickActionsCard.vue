@@ -30,7 +30,7 @@ const quickActions = [
   },
   {
     label: 'Log ID Verification',
-    route: { name: 'logs' },
+    route: { name: 'alcohol-logs', query: { preset: 'id-verification' } },
     icon: BadgeCheck,
   },
 ]

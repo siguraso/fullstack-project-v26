@@ -12,6 +12,10 @@ import { computed, ref, watch } from 'vue'
 import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
 import { useDeviationStore } from '@/stores/deviation'
 
+const props = defineProps<{
+  preset?: string | null
+}>()
+
 const emit = defineEmits<{
   (event: 'created', log: AlcoholLog): void
 }>()
@@ -64,6 +68,17 @@ watch(logType, () => {
     estimatedAge.value = null
   }
 })
+
+function applyPreset(preset?: string | null) {
+  if (preset !== 'id-verification') {
+    return
+  }
+
+  logType.value = 'AGE_VERIFICATION'
+  idChecked.value = true
+}
+
+watch(() => props.preset, applyPreset, { immediate: true })
 
 function resetAlcoholForm() {
   title.value = ''
