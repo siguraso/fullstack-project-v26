@@ -67,7 +67,7 @@ function confirmDelete() {
 
 <style scoped>
 .card {
-  width: 50%;
+  width: min(480px, 92vw);
   max-width: 480px;
   max-height: calc(100vh - 3rem);
   overflow: auto;
@@ -116,5 +116,11 @@ function confirmDelete() {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .buttons {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

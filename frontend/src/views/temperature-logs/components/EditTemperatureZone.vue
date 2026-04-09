@@ -63,7 +63,7 @@ const upperLimit = ref(props.zone.upperLimitCelsius)
 
 <style scoped>
 .card {
-  width: 50%;
+  width: min(480px, 92vw);
   max-width: 480px;
   max-height: calc(100vh - 3rem);
   overflow: auto;
@@ -118,5 +118,20 @@ const upperLimit = ref(props.zone.upperLimitCelsius)
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .header-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .delete-button {
+    width: 100%;
+  }
+
+  .buttons {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -113,6 +113,7 @@ function formatDate(date?: string): string {
   display: grid;
   place-items: center;
   z-index: 1000;
+  padding: 16px;
 }
 
 .dialog-content {
@@ -178,6 +179,12 @@ function formatDate(date?: string): string {
 }
 
 @media (max-width: 740px) {
+  .dialog-overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
   .details-grid {
     grid-template-columns: 1fr;
   }

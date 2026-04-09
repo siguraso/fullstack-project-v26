@@ -212,6 +212,7 @@ function requestView(log: AlcoholLog) {
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 14px;
+  min-width: 860px;
 }
 
 .col-title {
@@ -435,5 +436,11 @@ tbody tr:hover {
 th.actions,
 td.actions-cell {
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    flex-wrap: wrap;
+  }
 }
 </style>

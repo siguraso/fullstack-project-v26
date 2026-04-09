@@ -188,6 +188,11 @@ button:disabled {
   }
 
   .tenant-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tenant-form-actions {
     justify-content: flex-start;
   }
 }

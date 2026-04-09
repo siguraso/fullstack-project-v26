@@ -259,4 +259,18 @@ function closeCreateZoneOverlay() {
   padding: 1rem;
   background-color: rgba(0, 0, 0, 0.5);
 }
+
+@media (max-width: 960px) {
+  .top-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .overlay-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 12px;
+  }
+}
 </style>

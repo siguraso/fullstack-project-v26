@@ -118,7 +118,8 @@ function exportJson() {
 /* TABLE */
 .table {
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--border);
 }
 
@@ -128,6 +129,7 @@ function exportJson() {
   grid-template-columns: 120px 2fr 120px 150px 180px;
   gap: 12px;
   padding: 14px 16px;
+  min-width: 760px;
 }
 
 .table-head {
@@ -185,5 +187,13 @@ function exportJson() {
 .row-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+@media (max-width: 640px) {
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 </style>
