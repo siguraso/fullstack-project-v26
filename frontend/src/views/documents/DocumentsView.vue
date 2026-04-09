@@ -199,46 +199,9 @@ async function downloadDocument(document: DocumentSummary) {
   }
 }
 
-function canPreviewDocument(document: Pick<DocumentSummary, 'mimeType' | 'originalFilename'>) {
-  const mimeType = document.mimeType.toLowerCase()
-  const filename = document.originalFilename.toLowerCase()
-
-  return (
-    mimeType === 'application/pdf' ||
-    mimeType.startsWith('image/') ||
-    mimeType.startsWith('text/') ||
-    filename.endsWith('.txt')
-  )
-}
-
-async function openPreview(document: DocumentSummary) {
+function openPreview(document: DocumentSummary) {
   previewDocument.value = document
   isPreviewOpen.value = true
-
-  if (!canPreviewDocument(document)) {
-    previewError.value =
-      'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
-    return
-  }
-
-  isPreviewLoading.value = true
-
-  try {
-    const file = await fetchDocumentFile(document)
-
-    if (
-      file.mimeType.startsWith('text/') ||
-      document.originalFilename.toLowerCase().endsWith('.txt')
-    ) {
-      previewTextContent.value = await file.blob.text()
-    }
-
-    previewUrl.value = window.URL.createObjectURL(file.blob)
-  } catch (error) {
-    previewError.value = error instanceof Error ? error.message : 'Failed to load preview.'
-  } finally {
-    isPreviewLoading.value = false
-  }
 }
 
 function closePreview() {
