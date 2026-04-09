@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { isAuthenticated } from '../services/auth'
 import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
 import InviteAcceptView from '../views/InviteAcceptView.vue'
 import DeviationView from '../views/deviation/DeviationView.vue'
 import InspectionsView from '@/views/inspections/InspectionsView.vue'
@@ -20,11 +19,6 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
     },
     {
       path: '/invite/accept',

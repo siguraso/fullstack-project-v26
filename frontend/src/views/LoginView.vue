@@ -16,10 +16,6 @@ const isSubmitting = ref(false)
 const feedbackMessage = ref('')
 const feedbackTone = ref<'info' | 'error'>('info')
 
-function goToRegister() {
-  void router.push('/register')
-}
-
 async function handleSubmit() {
   if (isSubmitting.value) {
     return
@@ -125,7 +121,6 @@ async function handleSubmit() {
               <input v-model="form.remember" type="checkbox" :disabled="isSubmitting" />
               <span>Remember me</span>
             </label>
-            <button type="button" class="link-button">Forgot password?</button>
           </div>
 
           <button class="submit-button" type="submit" :disabled="isSubmitting">
@@ -136,11 +131,6 @@ async function handleSubmit() {
             {{ feedbackMessage }}
           </p>
         </form>
-
-        <p class="footer">
-          No account yet?
-          <button type="button" class="footer-link" @click="goToRegister">Create one free →</button>
-        </p>
 
         <div class="accents" aria-hidden="true">
           <span class="accent accent-primary"></span>
@@ -394,20 +384,6 @@ input:focus {
   accent-color: var(--primary);
 }
 
-.link-button,
-.footer-link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--primary);
-  cursor: pointer;
-}
-
-.link-button {
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
 .submit-button {
   width: 100%;
   border: 0;
@@ -446,17 +422,6 @@ input:focus {
 .status-error {
   border-left-color: #d64545;
   color: #b42318;
-}
-
-.footer {
-  margin: 22px 0 0;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 12.5px;
-}
-
-.footer-link {
-  font-weight: 600;
 }
 
 .accents {
