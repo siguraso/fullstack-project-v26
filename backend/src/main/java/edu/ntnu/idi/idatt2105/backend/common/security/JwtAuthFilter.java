@@ -2,9 +2,11 @@ package edu.ntnu.idi.idatt2105.backend.common.security;
 
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +29,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain) {
+      @NonNull FilterChain filterChain) throws ServletException, IOException {
     try {
       authenticateIfPossible(request);
-      filterChain.doFilter(request, response);
     } catch (JwtException e) {
       logger.error("JWT validation failed: " + e.getMessage());
-    } catch (Exception e) {
-      logger.error("Authentication error: " + e.getMessage());
+      SecurityContextHolder.clearContext();
+    }
+
+    try {
+      filterChain.doFilter(request, response);
     } finally {
       TenantContext.clear();
     }
