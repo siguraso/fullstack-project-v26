@@ -67,7 +67,7 @@ const complianceGroups: NavGroup[] = [
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
-const canAccessSettings = session?.role === 'ADMIN' || session?.role === 'MANAGER'
+const canAccessSettings = session?.role === 'ADMIN'
 
 const footerItems: NavItem[] = canAccessSettings
   ? [{ label: 'Settings', icon: Settings, to: '/settings' }]
@@ -211,11 +211,6 @@ async function logout() {
         </ul>
       </section>
     </nav>
-
-    <div class="user-info">
-      <p>{{ userEmail }}</p>
-      <button type="button" class="logout-button" @click="logout">Logout</button>
-    </div>
   </aside>
 </template>
 
