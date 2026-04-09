@@ -106,7 +106,7 @@ describe('TemperatureLogView', () => {
       cy.contains('td', '0°C').should('be.visible')
       cy.contains('td', '5°C').should('be.visible')
       cy.contains('td', 'Freezer').should('be.visible')
-      cy.contains('button', 'Edit').should('be.visible')
+      cy.get('button[aria-label="Edit zone"]').should('have.length', 2)
     })
 
     cy.contains('.card', 'Temperature Log History').within(() => {
@@ -117,7 +117,7 @@ describe('TemperatureLogView', () => {
       cy.contains('td', 'Freezer').should('be.visible')
       cy.contains('td', '-15 °C').should('be.visible')
       cy.contains('td', 'Abnormal').should('be.visible')
-      cy.contains('button', 'Delete').should('be.visible')
+      cy.get('button').filter(':contains("View")').should('have.length', 2)
     })
   })
 
@@ -162,7 +162,7 @@ describe('TemperatureLogView', () => {
     visitTemperatureLogs()
 
     cy.contains('.card', 'Create Temperature Log').within(() => {
-      cy.get('select[aria-label="Filter deviations"]').select('Fridge')
+      cy.get('select[aria-label="Select storage unit"]').select('Fridge')
       cy.get('input[placeholder="Enter temperature"]').type('4')
       cy.get('input[placeholder="Additional notes"]').type('After delivery')
       cy.contains('button', 'Create Log').click()
@@ -179,29 +179,23 @@ describe('TemperatureLogView', () => {
     })
   })
 
-  it('deletes a temperature log after confirmation', () => {
-    cy.intercept('DELETE', '/api/ikfood/temperature-logs/101', {
-      statusCode: 204,
-    }).as('deleteTemperatureLog')
-
+  it('opens the details dialog for a temperature log', () => {
     stubTemperatureData()
     visitTemperatureLogs()
 
     cy.contains('.card', 'Temperature Log History').within(() => {
       cy.contains('tr', '2 °C').within(() => {
-        cy.contains('button', 'Delete').click()
+        cy.contains('button', 'View').click()
       })
     })
 
-    cy.contains('h3', 'Delete Temperature Log').should('be.visible')
-    cy.contains('p', 'Temperature: 2 °C').should('be.visible')
-    cy.contains('button', 'Delete Log').click()
-    cy.wait('@deleteTemperatureLog')
-
-    cy.contains('.card', 'Temperature Log History').within(() => {
-      cy.contains('td', '2 °C').should('not.exist')
-      cy.contains('td', '-15 °C').should('be.visible')
-    })
+    cy.contains('.dialog-content', 'Temperature Log Details').should('be.visible')
+    cy.contains('.detail-item', 'Temperature Zone:').should('contain', 'Fridge')
+    cy.contains('.detail-item', 'Temperature (°C):').should('contain', '2')
+    cy.contains('.details-grid', 'Ada Admin').should('be.visible')
+    cy.contains('.description', 'Morning check').should('be.visible')
+    cy.contains('button', 'Close').click()
+    cy.contains('.dialog-content', 'Temperature Log Details').should('not.exist')
   })
 
   it('shows load errors from the temperature APIs', () => {
