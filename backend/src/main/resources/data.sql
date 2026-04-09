@@ -70,7 +70,7 @@ VALUES
     (2, 7, 'IK_FOOD', 'Temperature reading - Fish storage', 'Opening check',   'OK',      DATEADD('DAY', -3, CURRENT_TIMESTAMP), 6,  1.5),
     (2, 8, 'IK_FOOD', 'Temperature reading - Fish storage', 'Afternoon check', 'WARNING', DATEADD('DAY', -2, CURRENT_TIMESTAMP), 6,  3.8),
     (2, 7, 'IK_FOOD', 'Temperature reading - Rice warmer',  'Lunch service',   'OK',      DATEADD('DAY', -1, CURRENT_TIMESTAMP), 8,  65.0),
-    (2, 8, 'IK_FOOD', 'Temperature reading - Freezer 1',    'Closing check',   'OK',      CURRENT_TIMESTAMP,                     7, -20.1);
+    (2, 8, 'IK_FOOD', 'Temperature reading - Freezer 1',    'Closing check',   'OK',      CURRENT_TIMESTAMP,                     7, -20.1),
     (1, 2, 'IK_FOOD', 'Temperature reading - Cold room 1', 'Opening shift check', 'OK', CURRENT_TIMESTAMP, 1, 3.1),
     (1, 3, 'IK_FOOD', 'Temperature reading - Display fridge', 'Slightly above target', 'WARNING', CURRENT_TIMESTAMP, 3, 7.2);
 
