@@ -63,9 +63,9 @@ function openCreateOverlay() {
     :addToHeader="true"
   >
     <template #extra-header-content>
-      <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">+</button>
+      <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">Add Zone</button>
     </template>
-    <div class="table-scroll">
+    <div v-if="props.zones.length > 0" class="table-scroll">
       <table class="log-table">
         <thead class="log-table-header">
           <tr>
@@ -89,25 +89,42 @@ function openCreateOverlay() {
         </tbody>
       </table>
     </div>
-    <div class="paging">
+    <div v-if="props.zones.length > 0" class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
       <p>Page {{ currentPage }} of {{ zonesSplit.length || 1 }}</p>
       <button class="page-button" @click="pageRight">
         <ChevronLeft style="transform: rotate(180deg)" />
       </button>
     </div>
+    <p v-else class="status-message">No temperature zones defined yet.</p>
   </InfoCard>
 </template>
 
 <style scoped>
+.info-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.status-message {
+  margin: 0.75rem 0 1rem;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .add-button {
   margin-left: auto;
-  width: 32px;
+  padding: 6px 12px;
   font-size: 15px;
 }
 
 .table-scroll {
   overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .log-table {
@@ -202,6 +219,15 @@ function openCreateOverlay() {
 }
 
 @media (max-width: 640px) {
+  .log-table {
+    min-width: 460px;
+  }
+
+  .add-button {
+    margin-left: 0;
+    width: 100%;
+  }
+
   .paging {
     flex-wrap: wrap;
     align-items: center;
