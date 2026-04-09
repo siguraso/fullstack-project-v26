@@ -768,4 +768,68 @@ async function createCustomItem() {
 .primary:hover {
   background: #1e293b;
 }
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .top,
+  .builder-header,
+  .section-header,
+  .library-row,
+  .modal-header,
+  .modal-footer,
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .top {
+    gap: 16px;
+  }
+
+  .builder-card,
+  .library-card {
+    padding: 18px 16px;
+  }
+
+  .actions,
+  .add-remove {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .actions button,
+  .library-row button,
+  .primary-btn {
+    width: 100%;
+  }
+
+  .item-row,
+  .library-row {
+    flex-wrap: wrap;
+  }
+
+  .remove {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .modal-overlay {
+    padding: 16px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .modal {
+    width: min(640px, 92vw);
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    padding: 20px 16px;
+    margin: 16px 0;
+  }
+}
 </style>
