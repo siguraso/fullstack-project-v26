@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistInstanceDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistTemplateDTO;
@@ -53,6 +54,12 @@ public class ChecklistService {
         Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
+        List<ChecklistItemLibrary> libraryItems = request.getItemIds().stream()
+                .map(itemId -> libraryRepo.findById(itemId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Library item not found")))
+                .peek(item -> ensureLibraryItemOwnedByTenant(item, tenantId))
+                .toList();
+
         ChecklistTemplate template = new ChecklistTemplate();
         template.setTenant(tenant);
         template.setName(request.getName());
@@ -63,9 +70,7 @@ public class ChecklistService {
 
         int order = 0;
 
-        for (Long itemId : request.getItemIds()) {
-            ChecklistItemLibrary libItem = libraryRepo.findById(itemId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Library item not found"));
+        for (ChecklistItemLibrary libItem : libraryItems) {
 
             ChecklistItemTemplate item = new ChecklistItemTemplate();
             item.setChecklistTemplate(savedTemplate);
@@ -84,8 +89,11 @@ public class ChecklistService {
 
     public ChecklistInstanceDTO generateInstance(Long templateId) {
 
+        Long tenantId = TenantContext.getCurrentOrg();
         ChecklistTemplate template = templateRepo.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        ensureTemplateOwnedByTenant(template, tenantId);
+
         ChecklistInstance instance = new ChecklistInstance();
         instance.setTemplate(template);
         instance.setDate(LocalDate.now());
@@ -117,11 +125,13 @@ public class ChecklistService {
 
     public void completeItem(Long itemId, CompleteChecklistItemRequest request) {
 
+        Long tenantId = TenantContext.getCurrentOrg();
         ChecklistItemInstance item = itemInstanceRepo.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Checklist item not found"));
+        ensureChecklistItemOwnedByTenant(item, tenantId);
 
-        item.setCompleted(request.isCompleted());
-        if (request.isCompleted()) {
+        item.setCompleted(Boolean.TRUE.equals(request.getCompleted()));
+        if (Boolean.TRUE.equals(request.getCompleted())) {
             item.setCompletedAt(LocalDate.now());
         } else {
             item.setCompletedAt(null);
@@ -143,8 +153,10 @@ public class ChecklistService {
 
     public ChecklistTemplateDTO updateTemplate(Long id, CreateChecklistTemplateRequest request) {
 
+        Long tenantId = TenantContext.getCurrentOrg();
         ChecklistTemplate template = templateRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        ensureTemplateOwnedByTenant(template, tenantId);
 
         template.setName(request.getName());
         template.setFrequency(request.getFrequency());
@@ -175,6 +187,7 @@ public class ChecklistService {
         for (Long itemId : requestedItemIds) {
             ChecklistItemLibrary libItem = libraryRepo.findById(itemId)
                     .orElseThrow(() -> new ResourceNotFoundException("Library item not found"));
+            ensureLibraryItemOwnedByTenant(libItem, tenantId);
 
             ChecklistItemTemplate item = existingByLibraryId.get(itemId);
             if (item == null) {
@@ -193,8 +206,10 @@ public class ChecklistService {
     }
 
     public void deleteTemplate(Long id) {
+        Long tenantId = TenantContext.getCurrentOrg();
         ChecklistTemplate template = templateRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        ensureTemplateOwnedByTenant(template, tenantId);
 
         instanceRepo.deleteByTemplate_id(id);
 
@@ -222,11 +237,32 @@ public class ChecklistService {
     }
 
     public void toggleTemplate(Long id) {
+        Long tenantId = TenantContext.getCurrentOrg();
         ChecklistTemplate template = templateRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        ensureTemplateOwnedByTenant(template, tenantId);
 
         template.setActive(!template.isActive());
 
         templateRepo.save(template);
+    }
+
+    private void ensureTemplateOwnedByTenant(ChecklistTemplate template, Long tenantId) {
+        if (template.getTenant() == null || template.getTenant().getId() == null || !template.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("Template does not belong to current organization");
+        }
+    }
+
+    private void ensureLibraryItemOwnedByTenant(ChecklistItemLibrary libraryItem, Long tenantId) {
+        if (libraryItem.getTenant() == null || libraryItem.getTenant().getId() == null || !libraryItem.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("Library item does not belong to current organization");
+        }
+    }
+
+    private void ensureChecklistItemOwnedByTenant(ChecklistItemInstance item, Long tenantId) {
+        if (item.getChecklist() == null || item.getChecklist().getTenant() == null || item.getChecklist().getTenant().getId() == null
+                || !item.getChecklist().getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("Checklist item does not belong to current organization");
+        }
     }
 }
