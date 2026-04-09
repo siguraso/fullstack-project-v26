@@ -19,6 +19,7 @@
     "@lucide/vue": "^1.7.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.29",
+    "vue-eslint-parser": "^8.3.0",
     "vue-router": "^5.0.3",
     "vuedraggable": "^4.1.0"
   },
