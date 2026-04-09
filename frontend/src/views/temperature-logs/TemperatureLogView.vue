@@ -168,10 +168,8 @@ function closeCreateZoneOverlay() {
       <h1>Temperature Logs</h1>
     </header>
 
-    <p v-if="isLoadingZones" class="status-message">Loading temperature zones...</p>
-    <p v-else-if="zoneLoadError" class="status-message error">{{ zoneLoadError }}</p>
-    <p v-if="isLoadingLogs" class="status-message">Loading temperature logs...</p>
-    <p v-else-if="logLoadError" class="status-message error">{{ logLoadError }}</p>
+    <p v-if="zoneLoadError" class="error-container">{{ zoneLoadError }}</p>
+    <p v-if="zoneLoadError" class="error-container">{{ logLoadError }}</p>
 
     <div class="top-row">
       <CreateTemperatureLog
@@ -226,14 +224,6 @@ function closeCreateZoneOverlay() {
   position: relative;
 }
 
-.status-message {
-  margin: 0.75rem 0 1rem;
-}
-
-.status-message.error {
-  color: #b42222;
-}
-
 .top-row {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -258,6 +248,16 @@ function closeCreateZoneOverlay() {
   justify-content: center;
   padding: 1rem;
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+.error-container {
+  margin: 0 0 14px;
+  border: 1px solid var(--cta-red);
+  background: #fff0f0;
+  color: var(--cta-red);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
 }
 
 @media (max-width: 960px) {

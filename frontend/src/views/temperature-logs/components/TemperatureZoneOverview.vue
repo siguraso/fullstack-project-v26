@@ -65,7 +65,7 @@ function openCreateOverlay() {
     <template #extra-header-content>
       <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">+</button>
     </template>
-    <div class="table-scroll">
+    <div v-if="props.zones.length > 0" class="table-scroll">
       <table class="log-table">
         <thead class="log-table-header">
           <tr>
@@ -89,17 +89,27 @@ function openCreateOverlay() {
         </tbody>
       </table>
     </div>
-    <div class="paging">
+    <div v-if="props.zones.length > 0" class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
       <p>Page {{ currentPage }} of {{ zonesSplit.length || 1 }}</p>
       <button class="page-button" @click="pageRight">
         <ChevronLeft style="transform: rotate(180deg)" />
       </button>
     </div>
+    <p v-else class="status-message">No temperature zones defined yet.</p>
   </InfoCard>
 </template>
 
 <style scoped>
+.status-message {
+  margin: 0.75rem 0 1rem;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .add-button {
   margin-left: auto;
   width: 32px;

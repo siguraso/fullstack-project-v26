@@ -127,7 +127,7 @@ function deleteLog(logId: number) {
         </select>
       </div>
     </template>
-    <div class="table-scroll">
+    <div v-if="props.temperatureLogs.length > 0" class="table-scroll">
       <table class="log-table">
         <thead class="log-table-header">
           <tr>
@@ -172,13 +172,15 @@ function deleteLog(logId: number) {
       </table>
     </div>
 
-    <div class="paging">
+    <div v-if="props.temperatureLogs.length > 0" class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
       <p>Page {{ currentPage }} of {{ temperatureLogsSplit.length || 1 }}</p>
       <button class="page-button" @click="pageRight">
         <ChevronLeft style="transform: rotate(180deg)" />
       </button>
     </div>
+
+    <p v-else class="status-message">No temperature logs recorded yet.</p>
   </InfoCard>
 </template>
 
@@ -188,6 +190,15 @@ function deleteLog(logId: number) {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.status-message {
+  margin: 0.75rem 0 1rem;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .zone-filter-icon {
