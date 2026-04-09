@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@SpringBootApplication
+@SpringBootApplication(excludeName = "org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration")
 @EnableJpaAuditing
 public class BackendApplication {
 

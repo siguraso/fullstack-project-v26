@@ -35,6 +35,14 @@ public class JwtService {
 
   @PostConstruct
   void logConfiguredExpirations() {
+    if (jwtSecret == null || jwtSecret.isBlank()) {
+      throw new IllegalStateException("security.jwt.secret must be configured");
+    }
+
+    if (jwtSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
+      throw new IllegalStateException("security.jwt.secret must be at least 32 bytes long");
+    }
+
     logExpiration("security.jwt.expiration-ms", jwtExpiration);
     logExpiration("jwt.refresh-expiration", refreshExpiration);
     logExpiration("security.jwt.invite-expiration-ms", inviteExpiration);

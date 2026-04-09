@@ -42,27 +42,43 @@ class SecurityConfigTest {
     }
 
     @Test
-    void authEndpointIsPublic() throws Exception {
+    void authEndpointsArePublic() throws Exception {
         mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void invitationValidationEndpointIsPublic() throws Exception {
+    void invitationValidationEndpointRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/invitations/validate")
                         .param("token", "invalid-token"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
     @Test
-    void swaggerEndpointsArePublic() throws Exception {
+    void swaggerAndH2EndpointsRequireAuthentication() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
 
         mockMvc.perform(get("/swagger-ui/index.html"))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+
+        mockMvc.perform(get("/h2-console"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
     @Test
