@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -123,7 +124,8 @@ class DeviationRepositoryTest {
         deviation.setTenant(tenant);
         deviation.setModule(ComplianceModule.IK_FOOD);
         deviation.setTitle("Deviation " + createdAt.toString());
-        deviation.setDescription("Test deviation");
+        deviation.setReportedDate(LocalDate.now());
+        deviation.setIssueDescription("Test deviation");
         deviation.setStatus(status);
         deviation.setSeverity(severity);
         deviation.setCategory(DeviationCategory.HYGIENE);

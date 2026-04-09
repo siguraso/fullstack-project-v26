@@ -1,5 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto;
 
+import java.time.LocalDate;
+
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationCategory;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationSeverity;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
@@ -16,7 +18,15 @@ public class CreateDeviationRequest {
 
     @NotBlank
     private String title;
-    private String description;
+    private LocalDate reportedDate;
+    private String discoveredBy;
+    private String reportedTo;
+    private String assignedTo;
+    private String issueDescription;
+    private String immediateAction;
+    private String rootCause;
+    private String correctiveAction;
+    private String completionNotes;
 
     @NotNull
     private DeviationSeverity severity;
@@ -27,6 +37,5 @@ public class CreateDeviationRequest {
     @NotNull
     private DeviationStatus status;
 
-    private Long checklistItemId;
     private Long logId;
 }

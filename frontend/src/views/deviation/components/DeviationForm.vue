@@ -21,7 +21,7 @@ const props = withDefaults(
   }>(),
   {
     submitLabel: 'Submit Deviation',
-    footerText: 'All PDF fields are included and saved as a structured deviation summary.',
+    footerText: 'The form saves each deviation field separately for incident follow-up.',
     showInternalTracking: true,
     useExternalSubmit: false,
     isSubmitting: undefined,
@@ -91,11 +91,6 @@ function handleSubmit() {
           />
         </label>
 
-        <label>
-          <span>Reference No.</span>
-          <input v-model="store.form.referenceNumber" placeholder="Optional reference number" />
-        </label>
-
         <div class="field-wide assessment-card">
           <span>This deviation is assessed as</span>
           <div class="severity">
@@ -139,10 +134,6 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Describe the issue / what went wrong</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.issueDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.issueDescription"
@@ -154,29 +145,17 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Immediate handling / what did you do right away</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.immediateActionDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.immediateAction"
           rows="4"
           placeholder="Document the first actions taken to contain or reduce the issue."
         />
-        <label>
-          <span>Signature</span>
-          <input v-model="store.form.immediateActionSignature" placeholder="Name / initials" />
-        </label>
       </section>
 
       <section class="section-card">
         <div class="section-header">
           <h3>What could be the reason / cause of the issue</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.causeDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.rootCause"
@@ -188,39 +167,23 @@ function handleSubmit() {
       <section class="section-card">
         <div class="section-header">
           <h3>Corrective action / how to prevent the same issue from happening again</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.correctiveActionDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.correctiveAction"
           rows="4"
           placeholder="Describe the corrective action and prevention plan."
         />
-        <label>
-          <span>Signature</span>
-          <input v-model="store.form.correctiveActionSignature" placeholder="Name / initials" />
-        </label>
       </section>
 
       <section class="section-card">
         <div class="section-header">
           <h3>Corrective action has been completed</h3>
-          <label class="section-date">
-            <span>Date</span>
-            <input v-model="store.form.completionDate" type="date" />
-          </label>
         </div>
         <textarea
           v-model="store.form.completionNotes"
           rows="3"
           placeholder="Confirm what has been completed and any remaining follow-up."
         />
-        <label>
-          <span>Signature</span>
-          <input v-model="store.form.completionSignature" placeholder="Name / initials" />
-        </label>
       </section>
 
       <section v-if="showInternalTracking" class="system-section">
@@ -296,8 +259,7 @@ label,
 }
 
 label > span,
-.assessment-card > span,
-.section-date > span {
+.assessment-card > span {
   font-size: 0.9em;
   color: var(--text-secondary);
   margin-bottom: 2px;
@@ -306,10 +268,9 @@ label > span,
 .assessment-card,
 .section-card,
 .system-section {
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 12px;
-  background: linear-gradient(180deg, #fdfdfd 0%, #f8fafc 100%);
-  padding: 16px;
+  background: var(--bg-secondary);
 }
 
 .severity {
@@ -364,10 +325,6 @@ label > span,
   color: var(--text);
 }
 
-.section-date {
-  min-width: 168px;
-}
-
 textarea {
   width: 100%;
   resize: vertical;
@@ -419,9 +376,6 @@ small {
     align-items: stretch;
   }
 
-  .section-date {
-    min-width: 0;
-  }
 
   .severity {
     grid-template-columns: 1fr;

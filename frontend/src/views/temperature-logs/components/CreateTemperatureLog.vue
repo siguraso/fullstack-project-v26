@@ -68,15 +68,12 @@ function seedDeviationForm(zone: TemperatureZone, measuredTemperature: number, n
   deviationStore.resetForm()
   deviationStore.patchForm({
     title: `${zone.name} temperature deviation`,
-    referenceNumber: '',
     category: 'TEMPERATURE',
     severity: 'HIGH',
     module: 'IK_FOOD',
     status: 'OPEN',
     reportedDate: today,
-    issueDate: today,
     issueDescription: `Recorded ${measuredTemperature}°C in ${zone.name}. Allowed range is ${zone.lowerLimitCelsius}°C to ${zone.upperLimitCelsius}°C.${noteLine}`,
-    immediateActionDate: today,
   })
 }
 

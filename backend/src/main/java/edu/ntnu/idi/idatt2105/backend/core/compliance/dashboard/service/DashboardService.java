@@ -158,7 +158,7 @@ public class DashboardService {
                         DashboardActivityDTO dto = new DashboardActivityDTO();
                         dto.setType("DEVIATION_CREATED");
                         dto.setTitle(deviation.getTitle());
-                        dto.setDescription(deviation.getDescription());
+                        dto.setDescription(summarizeDeviation(deviation));
                         dto.setActor(resolveActorName(deviation.getCreatedBy()));
                         dto.setOccurredAt(deviation.getCreatedAt().toString());
                         dto.setReferenceId(deviation.getId());
@@ -191,6 +191,18 @@ public class DashboardService {
                 }
 
                 return "System";
+        }
+
+        private String summarizeDeviation(Deviation deviation) {
+                if (deviation.getIssueDescription() != null && !deviation.getIssueDescription().isBlank()) {
+                        return deviation.getIssueDescription();
+                }
+
+                if (deviation.getImmediateAction() != null && !deviation.getImmediateAction().isBlank()) {
+                        return deviation.getImmediateAction();
+                }
+
+                return "Deviation recorded";
         }
 
         private record ActivityItem(LocalDateTime occurredAt, DashboardActivityDTO dto) {

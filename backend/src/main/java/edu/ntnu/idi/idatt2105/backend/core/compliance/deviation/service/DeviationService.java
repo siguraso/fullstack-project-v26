@@ -1,13 +1,15 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.CreateDeviationRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.UpdateDeviationRequest;
@@ -22,6 +24,8 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceL
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
+import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
+import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +36,7 @@ public class DeviationService {
 
     private final DeviationRepository deviationRepo;
     private final TenantRepository tenantRepo;
+    private final UserRepository userRepository;
     private final DeviationMapper mapper;
 
     public DeviationDTO create(CreateDeviationRequest request) {
@@ -44,15 +49,23 @@ public class DeviationService {
         Deviation deviation = new Deviation();
         deviation.setTenant(tenant);
         deviation.setModule(request.getModule());
+        deviation.setCreatedBy(resolveAuthenticatedUser(tenantId));
 
         deviation.setTitle(request.getTitle());
-        deviation.setDescription(request.getDescription());
+        deviation.setReportedDate(request.getReportedDate());
+        deviation.setDiscoveredBy(request.getDiscoveredBy());
+        deviation.setReportedTo(request.getReportedTo());
+        deviation.setAssignedTo(request.getAssignedTo());
+        deviation.setIssueDescription(request.getIssueDescription());
+        deviation.setImmediateAction(request.getImmediateAction());
+        deviation.setRootCause(request.getRootCause());
+        deviation.setCorrectiveAction(request.getCorrectiveAction());
+        deviation.setCompletionNotes(request.getCompletionNotes());
 
         deviation.setSeverity(request.getSeverity());
         deviation.setCategory(request.getCategory());
 
         deviation.setStatus(request.getStatus());
-        deviation.setChecklistItemId(request.getChecklistItemId());
         deviation.setLogId(request.getLogId());
         deviation.setCreatedAt(LocalDateTime.now());
 
@@ -92,28 +105,6 @@ public class DeviationService {
         return mapper.toDTO(savedDeviation);
     }
 
-    public void createFromChecklist(ChecklistItemInstance item) {
-        log.info("Creating deviation from checklist item id={} checklistId={}", item.getId(), item.getChecklist().getId());
-
-        Deviation deviation = new Deviation();
-        deviation.setTenant(item.getChecklist().getTenant());
-        deviation.setModule(item.getChecklist().getTemplate().getModule());
-
-        deviation.setTitle("Checklist item not completed");
-        deviation.setDescription(item.getTemplateItem().getDescription());
-
-        deviation.setSeverity(DeviationSeverity.MEDIUM);
-        deviation.setCategory(DeviationCategory.HYGIENE);
-
-        deviation.setStatus(DeviationStatus.OPEN);
-        deviation.setChecklistItemId(item.getId());
-
-        deviation.setCreatedAt(LocalDateTime.now());
-
-        Deviation savedDeviation = deviationRepo.save(deviation);
-        log.info("Created checklist-derived deviation id={} from itemId={}", savedDeviation.getId(), item.getId());
-    }
-
     public void createFromLog(BaseComplianceLog complianceLog) {
         log.info("Creating deviation from compliance log id={} module={} status={}",
                 complianceLog.getId(), complianceLog.getModule(), complianceLog.getStatus());
@@ -123,7 +114,8 @@ public class DeviationService {
         deviation.setModule(complianceLog.getModule());
 
         deviation.setTitle("Critical log detected");
-        deviation.setDescription(complianceLog.getDescription() != null ? complianceLog.getDescription() : complianceLog.getTitle());
+        deviation.setReportedDate(LocalDate.now());
+        deviation.setIssueDescription(complianceLog.getDescription() != null ? complianceLog.getDescription() : complianceLog.getTitle());
 
         deviation.setSeverity(DeviationSeverity.CRITICAL);
         deviation.setCategory(resolveCategoryFromModule(complianceLog.getModule()));
@@ -150,5 +142,25 @@ public class DeviationService {
             log.warn("Access denied to deviation id={} for tenantId={}", deviation.getId(), tenantId);
             throw new UnauthorizedException("Deviation does not belong to current organization");
         }
+    }
+
+    private User resolveAuthenticatedUser(Long tenantId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            log.warn("Missing authentication principal while creating deviation for tenantId={}", tenantId);
+            throw new UnauthorizedException("Authenticated user is required");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String email = principal instanceof String string ? string : principal.toString();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("Authenticated user was not found"));
+
+        if (user.getTenant() == null || user.getTenant().getId() == null || !user.getTenant().getId().equals(tenantId)) {
+            log.warn("Authenticated user id={} does not belong to tenantId={}", user.getId(), tenantId);
+            throw new UnauthorizedException("Authenticated user does not belong to current organization");
+        }
+
+        return user;
     }
 }

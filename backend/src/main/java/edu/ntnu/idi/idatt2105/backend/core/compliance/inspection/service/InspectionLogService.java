@@ -39,7 +39,7 @@ public class InspectionLogService {
             dto.setType("DEVIATION");
             dto.setReferenceId(d.getId());
             dto.setTitle(d.getTitle());
-            dto.setDescription(d.getDescription());
+            dto.setDescription(summarizeDeviation(d));
             dto.setStatus(d.getStatus().name());
             dto.setSeverity(d.getSeverity().name());
             dto.setModule(d.getModule().name());
@@ -86,5 +86,17 @@ public class InspectionLogService {
         if (user == null)
             return "System";
         return (user.getFirstName() + " " + user.getLastName()).trim();
+    }
+
+    private String summarizeDeviation(Deviation deviation) {
+        if (deviation.getIssueDescription() != null && !deviation.getIssueDescription().isBlank()) {
+            return deviation.getIssueDescription();
+        }
+
+        if (deviation.getImmediateAction() != null && !deviation.getImmediateAction().isBlank()) {
+            return deviation.getImmediateAction();
+        }
+
+        return "Deviation recorded";
     }
 }

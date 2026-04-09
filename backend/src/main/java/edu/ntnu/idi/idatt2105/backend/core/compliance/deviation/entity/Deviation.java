@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationCategory;
@@ -40,8 +41,28 @@ public class Deviation {
     @Column(nullable = false)
     private String title;
 
+    private LocalDate reportedDate;
+
+    private String discoveredBy;
+
+    private String reportedTo;
+
+    private String assignedTo;
+
     @Column(length = 2000)
-    private String description;
+    private String issueDescription;
+
+    @Column(length = 2000)
+    private String immediateAction;
+
+    @Column(length = 2000)
+    private String rootCause;
+
+    @Column(length = 2000)
+    private String correctiveAction;
+
+    @Column(length = 2000)
+    private String completionNotes;
 
     @Enumerated(EnumType.STRING)
     private DeviationSeverity severity;
@@ -56,7 +77,6 @@ public class Deviation {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    private Long checklistItemId;
     private Long logId;
 
     private LocalDateTime createdAt;

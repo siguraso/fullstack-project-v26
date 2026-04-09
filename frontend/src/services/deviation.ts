@@ -19,6 +19,10 @@ function normalizeModule(value: unknown): DeviationModule | undefined {
   return undefined
 }
 
+function toStringOrEmpty(value: unknown) {
+  return typeof value === 'string' ? value : ''
+}
+
 function normalizeDeviation(raw: unknown, fallbackModule?: DeviationModule): Deviation | null {
   if (!raw || typeof raw !== 'object') {
     return null
@@ -34,6 +38,15 @@ function normalizeDeviation(raw: unknown, fallbackModule?: DeviationModule): Dev
   return {
     ...(record as unknown as Deviation),
     module,
+    reportedDate: toStringOrEmpty(record.reportedDate),
+    discoveredBy: toStringOrEmpty(record.discoveredBy),
+    reportedTo: toStringOrEmpty(record.reportedTo),
+    assignedTo: toStringOrEmpty(record.assignedTo),
+    issueDescription: toStringOrEmpty(record.issueDescription),
+    immediateAction: toStringOrEmpty(record.immediateAction),
+    rootCause: toStringOrEmpty(record.rootCause),
+    correctiveAction: toStringOrEmpty(record.correctiveAction),
+    completionNotes: toStringOrEmpty(record.completionNotes),
   }
 }
 
