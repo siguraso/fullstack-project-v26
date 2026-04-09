@@ -215,7 +215,11 @@ function closeCreateZoneOverlay() {
 
     <Teleport to="body">
       <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeViewLogOverlay">
-        <TemperatureLogDetailsDialog :log="overlayLog" :zones="zones" @close="closeViewLogOverlay" />
+        <TemperatureLogDetailsDialog
+          :log="overlayLog"
+          :zones="zones"
+          @close="closeViewLogOverlay"
+        />
       </div>
     </Teleport>
 

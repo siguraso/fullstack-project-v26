@@ -53,3 +53,11 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build-only
+
+      - name: Test Cypress e2e
+        working-directory: frontend
+        run: npm run test:e2e
+
+      - name: Test Vitest Unit testing
+        working-directory: frontend
+        run: npm run test:unit

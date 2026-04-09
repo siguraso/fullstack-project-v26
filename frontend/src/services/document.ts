@@ -258,7 +258,9 @@ export async function fetchDocumentFile(
   }
 }
 
-export async function downloadDocumentFile(document: Pick<DocumentSummary, 'id' | 'originalFilename'>) {
+export async function downloadDocumentFile(
+  document: Pick<DocumentSummary, 'id' | 'originalFilename'>,
+) {
   const file = await fetchDocumentFile(document)
   const url = window.URL.createObjectURL(file.blob)
   const anchor = window.document.createElement('a')

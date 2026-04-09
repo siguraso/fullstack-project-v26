@@ -1,9 +1,4 @@
-export type DeviationCategory =
-  | 'TEMPERATURE'
-  | 'HYGIENE'
-  | 'ALCOHOL'
-  | 'DOCUMENTATION'
-  | 'OTHER'
+export type DeviationCategory = 'TEMPERATURE' | 'HYGIENE' | 'ALCOHOL' | 'DOCUMENTATION' | 'OTHER'
 
 export type DeviationSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 

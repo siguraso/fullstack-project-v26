@@ -80,7 +80,9 @@ function buildPayload(): TemperatureLogInput | null {
 }
 
 function isOutsideAllowedRange(zone: TemperatureZone, measuredTemperature: number) {
-  return measuredTemperature < zone.lowerLimitCelsius || measuredTemperature > zone.upperLimitCelsius
+  return (
+    measuredTemperature < zone.lowerLimitCelsius || measuredTemperature > zone.upperLimitCelsius
+  )
 }
 
 function resetTemperatureForm() {
@@ -226,7 +228,11 @@ async function submitTemperatureDeviation() {
   >
     <div class="input-field">
       <p class="subtext">Storage Unit</p>
-      <select v-model.number="selectedZoneId" class="deviation-filter" aria-label="Select storage unit">
+      <select
+        v-model.number="selectedZoneId"
+        class="deviation-filter"
+        aria-label="Select storage unit"
+      >
         <option :value="null" selected disabled>Select Storage Unit</option>
         <option v-for="zone in temperatureZones" :key="zone.id" :value="zone.id">
           {{ zone.name }}
@@ -235,7 +241,8 @@ async function submitTemperatureDeviation() {
     </div>
 
     <div v-if="selectedZone" class="zone-range">
-      Allowed range: {{ selectedZone.lowerLimitCelsius }}°C to {{ selectedZone.upperLimitCelsius }}°C
+      Allowed range: {{ selectedZone.lowerLimitCelsius }}°C to
+      {{ selectedZone.upperLimitCelsius }}°C
     </div>
 
     <div class="input-field">
@@ -272,12 +279,17 @@ async function submitTemperatureDeviation() {
           </div>
           <h2>Complete the deviation before saving this temperature log</h2>
           <p>
-            This temperature is outside the configured range for the selected zone. Fill in the
-            rest of the deviation details to continue.
+            This temperature is outside the configured range for the selected zone. Fill in the rest
+            of the deviation details to continue.
           </p>
         </div>
 
-        <button class="close-btn" type="button" :disabled="isSubmitting" @click="closeDeviationModal">
+        <button
+          class="close-btn"
+          type="button"
+          :disabled="isSubmitting"
+          @click="closeDeviationModal"
+        >
           <X :size="18" aria-hidden="true" />
         </button>
       </div>
