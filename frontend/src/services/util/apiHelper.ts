@@ -117,6 +117,8 @@ function buildHeaders(options: RequestInit, token: string | null): Headers {
 }
 
 export async function jsonApiFetch(url: string, options: JsonApiFetchOptions = {}) {
+  console.log(url)
+
   const { skipAuthRefresh = false, ...requestOptions } = options
   const token = readStoredSession()?.session.token ?? null
 
