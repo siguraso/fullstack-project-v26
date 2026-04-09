@@ -19,6 +19,10 @@ const props = withDefaults(
   },
 )
 
+const emit = defineEmits<{
+  (event: 'view-requested', deviation: Deviation): void
+}>()
+
 const rows = computed(() =>
   store.filtered.filter((deviation) => !props.category || deviation.category === props.category),
 )
@@ -160,6 +164,10 @@ function sortStateFor(field: SortField): SortDirection {
   return sortDirection.value
 }
 
+function requestView(deviation: Deviation) {
+  emit('view-requested', deviation)
+}
+
 watch(
   () => [store.filters.status, store.filters.severity, props.category],
   () => {
@@ -274,7 +282,9 @@ watch(totalPages, (nextTotalPages) => {
             }}</span>
           </td>
           <td>{{ formatDate(d.createdAt) }}</td>
-          <td><button class="view" type="button">View</button></td>
+          <td>
+            <button class="view" type="button" @click="requestView(d)">View</button>
+          </td>
         </tr>
         <tr v-if="rows.length === 0">
           <td colspan="6" class="empty">{{ emptyMessage }}</td>
@@ -308,13 +318,9 @@ watch(totalPages, (nextTotalPages) => {
   color: var(--text-secondary);
 }
 
-.filters select {
-  min-height: 34px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  font-size: 11px;
-  color: var(--text-secondary);
+.filters {
+  display: flex;
+  gap: 12px;
 }
 
 .log-table {
@@ -439,20 +445,22 @@ watch(totalPages, (nextTotalPages) => {
 }
 
 .view {
-  border: 0;
-  min-height: 22px;
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
   text-transform: uppercase;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  padding: 0;
+  padding: 10px;
 }
 
 .view:hover {
-  text-decoration: underline;
-  background: transparent;
+  background: var(--bg);
+}
+
+.view:active {
+  background: var(--bg-hover);
 }
 
 .paging {

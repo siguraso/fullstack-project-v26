@@ -164,7 +164,7 @@ function requestView(log: AlcoholLog) {
             </td>
             <td class="date-cell">{{ formatDate(log.recordedAt ?? log.createdAt) }}</td>
             <td class="actions-cell">
-              <button class="action-btn view" @click="requestView(log)" title="View details">
+              <button class="view" @click="requestView(log)" title="View details">
                 <span>View</span>
               </button>
             </td>
@@ -236,6 +236,25 @@ function requestView(log: AlcoholLog) {
 
 .col-actions {
   width: 8%;
+}
+
+.view {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 10px;
+}
+
+.view:hover {
+  background: var(--bg);
+}
+
+.view:active {
+  background: var(--bg-hover);
 }
 
 thead {

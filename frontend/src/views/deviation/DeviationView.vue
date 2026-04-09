@@ -1,16 +1,29 @@
-
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import DeviationForm from './components/DeviationForm.vue'
 import DeviationGuide from './components/DeviationGuide.vue'
 import DeviationTable from './components/DeviationTable.vue'
+import DeviationDetailsDialog from './components/DeviationDetailsDialog.vue'
 import { useDeviationStore } from '@/stores/deviation'
+import type { Deviation } from '@/interfaces/Deviation.interface'
 
 const store = useDeviationStore()
+const isDetailsOpen = ref(false)
+const selectedDeviation = ref<Deviation | null>(null)
 
 onMounted(() => {
   store.fetchDeviations()
 })
+
+function openDetails(deviation: Deviation) {
+  selectedDeviation.value = deviation
+  isDetailsOpen.value = true
+}
+
+function closeDetails() {
+  isDetailsOpen.value = false
+  selectedDeviation.value = null
+}
 </script>
 
 <template>
@@ -26,7 +39,13 @@ onMounted(() => {
       <DeviationGuide class="guide-panel" />
     </div>
 
-    <DeviationTable />
+    <DeviationTable @view-requested="openDetails" />
+
+    <DeviationDetailsDialog
+      :deviation="selectedDeviation"
+      :isOpen="isDetailsOpen"
+      @close="closeDetails"
+    />
   </div>
 </template>
 
@@ -80,7 +99,6 @@ onMounted(() => {
 .guide-panel {
   height: 100%;
 }
-
 
 @media (max-width: 1250px) {
   .top-row {
