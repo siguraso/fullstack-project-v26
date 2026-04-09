@@ -8,16 +8,19 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Validated
 public class InvitationController {
   private final InvitationService invitationService;
 
@@ -37,7 +40,7 @@ public class InvitationController {
 
   @GetMapping("/invitations/validate")
   public ResponseEntity<ApiResponse<InviteValidationResponse>> validateToken(
-	  @RequestParam("token") String token) {
+    @RequestParam("token") @NotBlank(message = "Token is required") String token) {
 	InviteValidationResponse response = invitationService.validateInviteToken(token);
 	return ResponseEntity.ok(ApiResponse.ok(response));
   }
