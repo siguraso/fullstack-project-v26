@@ -421,9 +421,6 @@ onMounted(() => {
     <header class="page-header">
       <div>
         <h1>Document Library</h1>
-        <p class="page-subtitle">
-          Search documents across General, IK-food, and IK-Alcohol using keywords and tags.
-        </p>
       </div>
       <button v-if="canManage" type="button" class="primary-action" @click="openCreateForm">
         Upload document
