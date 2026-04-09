@@ -133,7 +133,7 @@ public class InspectionLogService {
         dto.setType("DEVIATION");
         dto.setReferenceId(d.getId());
         dto.setTitle(d.getTitle());
-        dto.setDescription(d.getDescription());
+        dto.setDescription(d.getIssueDescription());
         dto.setStatus(d.getStatus().name());
         dto.setSeverity(d.getSeverity() != null ? d.getSeverity().name() : null);
         dto.setModule(d.getModule().name());
@@ -193,20 +193,8 @@ public class InspectionLogService {
         return list.stream().filter(d -> severity == d.getSeverity()).count();
     }
 
-    private <T extends edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceLog>
-            long countLogByStatus(List<T> list, LogStatus status) {
+    private <T extends edu.ntnu.idi.idatt2105.backend.core.compliance.log.entity.BaseComplianceLog> long countLogByStatus(
+            List<T> list, LogStatus status) {
         return list.stream().filter(l -> status == l.getStatus()).count();
-    }
-}
-    private String summarizeDeviation(Deviation deviation) {
-        if (deviation.getIssueDescription() != null && !deviation.getIssueDescription().isBlank()) {
-            return deviation.getIssueDescription();
-        }
-
-        if (deviation.getImmediateAction() != null && !deviation.getImmediateAction().isBlank()) {
-            return deviation.getImmediateAction();
-        }
-
-        return "Deviation recorded";
     }
 }
