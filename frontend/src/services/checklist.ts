@@ -159,6 +159,13 @@ export async function isLibraryItemInUse(id: number) {
   return Boolean(data)
 }
 
+export async function getPresets() {
+  const res = await apiFetch('/api/checklist-presets')
+  const data = await readJson<unknown>(res, 'Failed to fetch presets')
+
+  return Array.isArray(data) ? data : []
+}
+
 export async function toggleTemplate(id: number) {
   if (!Number.isFinite(id)) {
     throw new Error('Invalid template id')
