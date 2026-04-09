@@ -8,30 +8,35 @@ interface Task {
   title: string
   description: string
   completed: boolean
-  priority?: 'high'
-  time?: string
 }
 
-const tasks = ref<any[]>([]) // DTO fra backend
+interface ChecklistGroup {
+  id: number
+  name: string
+  module: string
+  status: string
+  items: Task[]
+}
+
+const checklists = ref<ChecklistGroup[]>([])
 
 onMounted(async () => {
   const data = await getTodayChecklist()
-
-  tasks.value = data.flatMap((c: { items: any }) => c.items)
+  checklists.value = Array.isArray(data) ? data : []
 })
 
-async function handleToggle(id: number, completed: boolean) {
-  const task = tasks.value.find((t) => t.id === id)
-  if (!task) return
+const allTasks = computed(() => checklists.value.flatMap((c) => c.items))
 
-  task.completed = completed
+const completedCount = computed(() => allTasks.value.filter((t) => t.completed).length)
 
-  try {
-    await updateChecklistItem(id, completed)
-  } catch (e) {
-    task.completed = !completed
-  }
-}
+const percentage = computed(() => {
+  if (allTasks.value.length === 0) return 0
+  return Math.round((completedCount.value / allTasks.value.length) * 100)
+})
+
+const allCompleted = computed(
+  () => allTasks.value.length > 0 && allTasks.value.every((t) => t.completed),
+)
 
 const today = new Date().toLocaleDateString('en-GB', {
   weekday: 'long',
@@ -39,245 +44,514 @@ const today = new Date().toLocaleDateString('en-GB', {
   month: 'long',
 })
 
-const sortedTasks = computed(() => {
-  return [...tasks.value].sort((a, b) => {
-    if (a.completed === b.completed) return 0
-    return a.completed ? 1 : -1
+// Module display config
+type ModuleKey = 'IK_FOOD' | 'IK_ALCOHOL' | string
+
+const moduleConfig: Record<
+  string,
+  { label: string; accentColor: string; bgColor: string; abbr: string }
+> = {
+  IK_FOOD: {
+    label: 'IK-Food',
+    accentColor: '#16a34a',
+    bgColor: '#f0fdf4',
+    abbr: 'IKF',
+  },
+  IK_ALCOHOL: {
+    label: 'IK-Alcohol',
+    accentColor: '#dc2626',
+    bgColor: '#fff5f5',
+    abbr: 'IKA',
+  },
+}
+
+function getConfig(module: ModuleKey) {
+  return (
+    moduleConfig[module] ?? {
+      label: module.replace(/_/g, ' '),
+      accentColor: '#475569',
+      bgColor: '#f8fafc',
+      abbr: module.slice(0, 3),
+    }
+  )
+}
+
+// Group instances by module, preserving order IK_FOOD → IK_ALCOHOL → others
+const moduleOrder = ['IK_FOOD', 'IK_ALCOHOL']
+
+const groupedByModule = computed(() => {
+  const map = new Map<string, ChecklistGroup[]>()
+  for (const cl of checklists.value) {
+    const mod = cl.module ?? 'OTHER'
+    if (!map.has(mod)) map.set(mod, [])
+    map.get(mod)!.push(cl)
+  }
+  // Sort keys by moduleOrder, then alphabetically for unknown modules
+  const sortedKeys = [...map.keys()].sort((a, b) => {
+    const ai = moduleOrder.indexOf(a)
+    const bi = moduleOrder.indexOf(b)
+    if (ai !== -1 && bi !== -1) return ai - bi
+    if (ai !== -1) return -1
+    if (bi !== -1) return 1
+    return a.localeCompare(b)
   })
+  return sortedKeys.map((mod) => ({ module: mod, instances: map.get(mod)! }))
 })
 
-const completed = computed(() => tasks.value.filter((t) => t.completed).length)
+function groupCompleted(instances: ChecklistGroup[]) {
+  return instances.flatMap((c) => c.items).filter((t) => t.completed).length
+}
 
-const percentage = computed(() => {
-  if (tasks.value.length === 0) return 0
-  return Math.round((completed.value / tasks.value.length) * 100)
-})
+function groupTotal(instances: ChecklistGroup[]) {
+  return instances.flatMap((c) => c.items).length
+}
+
+function groupPercentage(instances: ChecklistGroup[]) {
+  const total = groupTotal(instances)
+  if (total === 0) return 0
+  return Math.round((groupCompleted(instances) / total) * 100)
+}
+
+function findTask(id: number): Task | undefined {
+  for (const group of checklists.value) {
+    const task = group.items.find((t) => t.id === id)
+    if (task) return task
+  }
+}
+
+async function handleToggle(id: number, completed: boolean) {
+  const task = findTask(id)
+  if (!task) return
+  task.completed = completed
+  try {
+    await updateChecklistItem(id, completed)
+  } catch {
+    task.completed = !completed
+  }
+}
+
+async function completeAll() {
+  const incomplete = allTasks.value.filter((t) => !t.completed)
+  incomplete.forEach((t) => (t.completed = true))
+  try {
+    await Promise.all(incomplete.map((t) => updateChecklistItem(t.id, true)))
+  } catch {
+    incomplete.forEach((t) => (t.completed = false))
+  }
+}
+
+async function unCompleteAll() {
+  const complete = allTasks.value.filter((t) => t.completed)
+  complete.forEach((t) => (t.completed = false))
+  try {
+    await Promise.all(complete.map((t) => updateChecklistItem(t.id, false)))
+  } catch {
+    complete.forEach((t) => (t.completed = true))
+  }
+}
 </script>
 
 <template>
-  <div>
+  <div class="checklist-page">
     <h1>Checklists</h1>
 
-    <!-- HEADER -->
-    <section class="top">
-      <!-- LEFT -->
-      <div class="top-left">
-        <div class="title-row">
-          <div>
-            <h2>Daily Operations</h2>
-            <p class="subtitle">{{ today }} • Kitchen Shift</p>
-          </div>
-
-          <div class="percentage-box">
-            <span class="percentage-number">{{ percentage }}%</span>
-            <span class="percentage-label">Completion</span>
-          </div>
+    <!-- OVERALL HEADER -->
+    <section class="summary-bar">
+      <div class="summary-left">
+        <div class="summary-date">
+          <h2>Daily Operations</h2>
+          <p class="subtitle">{{ today }}</p>
         </div>
-
-        <div class="progress">
-          <div class="fill" :style="{ width: percentage + '%' }" />
-        </div>
-
-        <div class="stats">
-          <span class="completed-dot" />
-          {{ completed }} completed
-
-          <span class="remaining-dot" />
-          {{ tasks.length - completed }} remaining
+        <div class="summary-progress">
+          <div class="progress-track">
+            <div class="progress-fill" :style="{ width: percentage + '%' }" />
+          </div>
+          <div class="progress-stats">
+            <span class="stat">
+              <span class="dot dot-done" />
+              {{ completedCount }} completed
+            </span>
+            <span class="stat">
+              <span class="dot dot-left" />
+              {{ allTasks.length - completedCount }} remaining
+            </span>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT -->
-      <div class="top-right">
-        <div class="focus-card">
-          <div class="focus-icon">IC</div>
-          <div>
-            <p class="focus-label">Current Focus</p>
-            <h3>Kitchen Hygiene</h3>
-          </div>
+      <div class="summary-right">
+        <div class="pct-box">
+          <span class="pct-num">{{ percentage }}%</span>
+          <span class="pct-label">Overall</span>
         </div>
-
-        <button class="complete-btn">✓ Complete All</button>
+        <button class="complete-btn" @click="allCompleted ? unCompleteAll() : completeAll()">
+          {{ allCompleted ? '↺ Reset All' : '✓ Complete All' }}
+        </button>
       </div>
     </section>
 
-    <!-- TASK LIST -->
-    <transition-group name="list" tag="div" class="task-list">
-      <ChecklistTaskItem
-        v-for="task in sortedTasks"
-        :key="task.id"
-        :task="{
-          id: task.id,
-          title: task.title,
-          description: task.description ?? '',
-          completed: task.completed,
-        }"
-        @toggle="handleToggle"
-      />
-    </transition-group>
+    <!-- EMPTY STATE -->
+    <div v-if="checklists.length === 0" class="empty">
+      <p>No checklists scheduled for today.</p>
+      <p class="empty-sub">Generate a checklist from the Checklist Builder to get started.</p>
+    </div>
+
+    <!-- MODULE SECTIONS -->
+    <div
+      v-for="moduleGroup in groupedByModule"
+      :key="moduleGroup.module"
+      class="module-section"
+      :style="{ '--accent': getConfig(moduleGroup.module).accentColor }"
+    >
+      <!-- MODULE HEADER -->
+      <div class="module-header" :style="{ background: getConfig(moduleGroup.module).bgColor }">
+        <div class="module-identity">
+          <div
+            class="module-abbr"
+            :style="{
+              background: getConfig(moduleGroup.module).accentColor,
+            }"
+          >
+            {{ getConfig(moduleGroup.module).abbr }}
+          </div>
+          <div>
+            <h2 class="module-name" :style="{ color: getConfig(moduleGroup.module).accentColor }">
+              {{ getConfig(moduleGroup.module).label }}
+            </h2>
+            <p class="module-meta">
+              {{ groupCompleted(moduleGroup.instances) }} /
+              {{ groupTotal(moduleGroup.instances) }} tasks completed
+            </p>
+          </div>
+        </div>
+
+        <div class="module-pct-wrap">
+          <svg class="ring" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="15.9" />
+            <circle
+              class="ring-fill"
+              cx="18"
+              cy="18"
+              r="15.9"
+              :style="{
+                strokeDasharray: `${groupPercentage(moduleGroup.instances)} 100`,
+                stroke: getConfig(moduleGroup.module).accentColor,
+              }"
+            />
+          </svg>
+          <span class="module-pct">{{ groupPercentage(moduleGroup.instances) }}%</span>
+        </div>
+      </div>
+
+      <!-- CHECKLIST INSTANCES WITHIN THIS MODULE -->
+      <div
+        v-for="instance in moduleGroup.instances"
+        :key="instance.id"
+        class="instance-block"
+      >
+        <div v-if="moduleGroup.instances.length > 1" class="instance-label">
+          {{ instance.name }}
+          <span
+            class="instance-status"
+            :class="instance.status.toLowerCase()"
+          >{{ instance.status.replace('_', ' ') }}</span>
+        </div>
+
+        <div class="task-list">
+          <ChecklistTaskItem
+            v-for="task in instance.items"
+            :key="task.id"
+            :task="{
+              id: task.id,
+              title: task.title,
+              description: task.description ?? '',
+              completed: task.completed,
+            }"
+            @toggle="handleToggle"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.top {
-  padding: 32px;
-  border-radius: 24px;
-  background-color: #f3f4f5;
+.checklist-page {
   display: flex;
-  justify-content: space-between;
-  gap: 32px;
-  margin-bottom: 24px;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* LEFT SIDE */
-.top-left {
+/* SUMMARY BAR */
+.summary-bar {
+  padding: 28px 32px;
+  border-radius: 20px;
+  background: #f3f4f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+}
+
+.summary-left {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.summary-date h2 {
+  margin: 0;
 }
 
 .subtitle {
+  margin: 4px 0 0;
   color: var(--text-secondary);
-  margin-top: 4px;
+  font-size: 14px;
 }
 
-/* percentage box */
-.percentage-box {
+.summary-progress {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  gap: 8px;
 }
 
-.percentage-number {
-  font-size: 32px;
-  font-weight: bold;
-}
-
-.percentage-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-}
-
-/* progress */
-.progress {
+.progress-track {
   height: 10px;
   background: #d1d5db;
   border-radius: 999px;
   overflow: hidden;
 }
 
-.fill {
+.progress-fill {
   height: 100%;
   background: #0f172a;
   border-radius: inherit;
+  transition: width 0.4s ease;
 }
 
-/* stats */
-.stats {
+.progress-stats {
   display: flex;
-  gap: 16px;
-  align-items: center;
-  font-size: 14px;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
-.completed-dot,
-.remaining-dot {
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 
-.completed-dot {
+.dot-done {
   background: #0f172a;
 }
 
-.remaining-dot {
+.dot-left {
   background: #9ca3af;
 }
 
-/* RIGHT SIDE */
-.top-right {
+/* SUMMARY RIGHT */
+.summary-right {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-width: 220px;
-}
-
-/* focus card */
-.focus-card {
-  background: white;
-  padding: 16px;
-  border-radius: 16px;
-  display: flex;
+  align-items: flex-end;
   gap: 12px;
+  min-width: 180px;
+}
+
+.pct-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.pct-num {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pct-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.complete-btn {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.complete-btn:hover {
+  opacity: 0.85;
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--text-secondary);
+}
+
+.empty-sub {
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* MODULE SECTION */
+.module-section {
+  border-radius: 20px;
+  border: 1.5px solid var(--stroke);
+  overflow: hidden;
+}
+
+/* MODULE HEADER */
+.module-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1.5px solid var(--stroke);
 }
 
-.focus-icon {
-  background: #e5e7eb;
-  padding: 10px;
-  border-radius: 10px;
+.module-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.focus-label {
+.module-abbr {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.module-name {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 2px;
+}
+
+.module-meta {
   font-size: 12px;
   color: var(--text-secondary);
   margin: 0;
 }
 
-.focus-card h3 {
-  margin: 0;
+/* RING CHART */
+.module-pct-wrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* button */
-.complete-btn {
-  background: #0f172a;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
+.ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
 }
 
-.complete-btn:hover {
-  opacity: 0.9;
+.ring-bg {
+  fill: none;
+  stroke: #e5e7eb;
+  stroke-width: 3.5;
 }
 
-.progress-wrapper {
-  width: 200px;
+.ring-fill {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray 0.5s ease;
 }
 
+.module-pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  position: relative;
+  z-index: 1;
+}
+
+/* INSTANCE BLOCK */
+.instance-block {
+  padding: 16px 24px;
+  background: white;
+}
+
+.instance-block + .instance-block {
+  border-top: 1px solid var(--stroke);
+}
+
+.instance-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.instance-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.instance-status.pending {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.instance-status.in_progress {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.instance-status.completed {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+/* TASK LIST */
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.4s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.list-leave-active {
-  position: absolute;
-}
 </style>
