@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AlcoholLogForm from './components/AlcoholLogForm.vue'
 import AlcoholLogGuide from './components/AlcoholLogGuide.vue'
 import AlcoholLogTable from './components/AlcoholLogTable.vue'
@@ -30,6 +30,41 @@ async function loadLogs() {
 
 onMounted(() => {
   void loadLogs()
+})
+
+function lockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = ''
+  document.body.style.overflow = ''
+}
+
+watch(
+  isDetailsOpen,
+  (isOpen) => {
+    if (isOpen) {
+      lockBodyScroll()
+      return
+    }
+
+    unlockBodyScroll()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  unlockBodyScroll()
 })
 
 function handleAlcoholLogCreated(log: AlcoholLog) {

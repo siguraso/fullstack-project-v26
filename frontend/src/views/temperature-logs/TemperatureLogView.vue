@@ -213,9 +213,11 @@ function closeCreateZoneOverlay() {
       @view-log="openTemperatureLogDetails"
     />
 
-    <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeViewLogOverlay">
-      <TemperatureLogDetailsDialog :log="overlayLog" :zones="zones" @close="closeViewLogOverlay" />
-    </div>
+    <Teleport to="body">
+      <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeViewLogOverlay">
+        <TemperatureLogDetailsDialog :log="overlayLog" :zones="zones" @close="closeViewLogOverlay" />
+      </div>
+    </Teleport>
 
     <div v-if="overlayZone" class="overlay-backdrop" @click.self="closeEditZoneOverlay">
       <EditTemperatureZone
@@ -267,10 +269,11 @@ function closeCreateZoneOverlay() {
   min-height: 100dvh;
   z-index: 1000;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 1rem;
   background-color: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
 }
 
 .error-container {
@@ -295,8 +298,6 @@ function closeCreateZoneOverlay() {
   }
 
   .overlay-backdrop {
-    align-items: flex-start;
-    overflow-y: auto;
     padding: 12px;
   }
 }

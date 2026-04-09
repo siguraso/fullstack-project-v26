@@ -33,76 +33,78 @@ function formatDate(date?: string): string {
 </script>
 
 <template>
-  <div v-if="isOpen && log" class="dialog-overlay" @click.self="emit('close')">
-    <InfoCard
-      class="dialog-content"
-      :title="log.title"
-      :icon="ScrollText"
-      iconBackgroundColor="var(--neutral)"
-      iconColor="white"
-      :addToHeader="true"
-    >
-      <template #extra-header-content>
-        <button type="button" class="close-btn" @click="emit('close')">Close</button>
-      </template>
+  <Teleport to="body">
+    <div v-if="isOpen && log" class="dialog-overlay" @click.self="emit('close')">
+      <InfoCard
+        class="dialog-content"
+        :title="log.title"
+        :icon="ScrollText"
+        iconBackgroundColor="var(--neutral)"
+        iconColor="white"
+        :addToHeader="true"
+      >
+        <template #extra-header-content>
+          <button type="button" class="close-btn" @click="emit('close')">Close</button>
+        </template>
 
-      <div class="details-grid">
-        <div class="detail-item">
-          <span class="label">Type</span>
-          <span class="value">{{ formatLogType(log.logType) }}</span>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="label">Type</span>
+            <span class="value">{{ formatLogType(log.logType) }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Status</span>
+            <span class="value">{{ log.status ?? 'Not set' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Recorded At</span>
+            <span class="value">{{ formatDate(log.recordedAt ?? log.createdAt) }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Recorded By</span>
+            <span class="value">{{
+              log.recordedByName ?? (log.recordedById ? `User #${log.recordedById}` : 'Unknown')
+            }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">ID Checked</span>
+            <span class="value">{{
+              log.idChecked === null || log.idChecked === undefined
+                ? 'Not set'
+                : log.idChecked
+                  ? 'Yes'
+                  : 'No'
+            }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Service Refused</span>
+            <span class="value">{{
+              log.serviceRefused === null || log.serviceRefused === undefined
+                ? 'Not set'
+                : log.serviceRefused
+                  ? 'Yes'
+                  : 'No'
+            }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Estimated Age</span>
+            <span class="value">{{ log.estimatedAge ?? 'Not set' }}</span>
+          </div>
         </div>
 
-        <div class="detail-item">
-          <span class="label">Status</span>
-          <span class="value">{{ log.status ?? 'Not set' }}</span>
+        <div class="description" v-if="log.description">
+          <h4>Description</h4>
+          <p>{{ log.description }}</p>
         </div>
-
-        <div class="detail-item">
-          <span class="label">Recorded At</span>
-          <span class="value">{{ formatDate(log.recordedAt ?? log.createdAt) }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="label">Recorded By</span>
-          <span class="value">{{
-            log.recordedByName ?? (log.recordedById ? `User #${log.recordedById}` : 'Unknown')
-          }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="label">ID Checked</span>
-          <span class="value">{{
-            log.idChecked === null || log.idChecked === undefined
-              ? 'Not set'
-              : log.idChecked
-                ? 'Yes'
-                : 'No'
-          }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="label">Service Refused</span>
-          <span class="value">{{
-            log.serviceRefused === null || log.serviceRefused === undefined
-              ? 'Not set'
-              : log.serviceRefused
-                ? 'Yes'
-                : 'No'
-          }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="label">Estimated Age</span>
-          <span class="value">{{ log.estimatedAge ?? 'Not set' }}</span>
-        </div>
-      </div>
-
-      <div class="description" v-if="log.description">
-        <h4>Description</h4>
-        <p>{{ log.description }}</p>
-      </div>
-    </InfoCard>
-  </div>
+      </InfoCard>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -114,6 +116,7 @@ function formatDate(date?: string): string {
   place-items: center;
   z-index: 1000;
   padding: 16px;
+  overflow-y: auto;
 }
 
 .dialog-content {
