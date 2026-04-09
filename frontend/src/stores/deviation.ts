@@ -1,10 +1,26 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as api from '@/services/deviation'
+import { getAuthSession } from '@/services/auth'
 import type { CreateDeviationInput, Deviation, DeviationFormInput } from '@/interfaces/Deviation.interface'
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10)
+}
+
+function resolveDiscoveredByDefault() {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  const session = getAuthSession()
+  const fullName = session?.fullName?.trim()
+
+  if (fullName) {
+    return fullName
+  }
+
+  return session?.email ?? ''
 }
 
 function createEmptyForm(): DeviationFormInput {
@@ -15,7 +31,7 @@ function createEmptyForm(): DeviationFormInput {
     module: 'IK_FOOD',
     status: 'OPEN',
     reportedDate: getTodayDate(),
-    discoveredBy: '',
+    discoveredBy: resolveDiscoveredByDefault(),
     reportedTo: '',
     assignedTo: '',
     issueDescription: '',

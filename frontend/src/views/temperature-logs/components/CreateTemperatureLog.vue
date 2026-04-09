@@ -3,7 +3,7 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import type { TemperatureLog, TemperatureLogInput } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { createTemperatureLog } from '@/services/temperatureLog'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { AlertTriangle, Edit2, X } from '@lucide/vue'
 import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
 import { useDeviationStore } from '@/stores/deviation'
@@ -31,6 +31,41 @@ const pendingCreatedLog = ref<TemperatureLog | null>(null)
 const selectedZone = computed(
   () => props.temperatureZones.find((zone) => zone.id === selectedZoneId.value) ?? null,
 )
+
+function lockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = ''
+  document.body.style.overflow = ''
+}
+
+watch(
+  isDeviationModalOpen,
+  (isOpen) => {
+    if (isOpen) {
+      lockBodyScroll()
+      return
+    }
+
+    unlockBodyScroll()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  unlockBodyScroll()
+})
 
 function buildPayload(): TemperatureLogInput | null {
   if (!selectedZoneId.value || temperature.value === null) {
@@ -315,9 +350,106 @@ async function submitTemperatureDeviation() {
   color: var(--cta-red);
 }
 
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.deviation-dialog {
+  width: min(960px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border-radius: 18px;
+  background: var(--bg);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+  padding: 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dialog-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.dialog-copy h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.dialog-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.dialog-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  border-radius: 999px;
+  background: #fff3d9;
+  color: #8a5d00;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.close-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #000000;
+}
+
+.close-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
   .info-card {
     max-width: 100%;
+  }
+
+  .overlay-backdrop {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .deviation-dialog {
+    max-height: none;
+    padding: 14px;
+  }
+
+  .dialog-header {
+    align-items: flex-start;
+  }
+
+  .dialog-copy h2 {
+    font-size: 20px;
   }
 }
 </style>

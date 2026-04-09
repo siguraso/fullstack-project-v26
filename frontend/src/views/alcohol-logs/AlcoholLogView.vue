@@ -112,28 +112,24 @@ function closeDetails() {
 
 .top-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
   margin-bottom: 16px;
 }
 
 .form-panel {
   width: 100%;
+  height: 100%;
 }
 
 .guide-panel {
-  position: sticky;
-  top: 24px;
+  height: 100%;
 }
 
 @media (max-width: 1250px) {
   .top-row {
     grid-template-columns: 1fr;
-  }
-
-  .guide-panel {
-    position: static;
   }
 }
 </style>
