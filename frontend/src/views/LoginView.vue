@@ -36,7 +36,6 @@ const cinematicStyle = computed(
     }) as CSSProperties,
 )
 
-
 function wait(durationMs: number) {
   return new Promise((resolve) => window.setTimeout(resolve, durationMs))
 }
@@ -60,7 +59,6 @@ function syncCinematicOrigin() {
         y: window.innerHeight / 2,
       }
 }
-
 
 async function handleSubmit() {
   if (authPhase.value !== 'idle') {
@@ -192,18 +190,6 @@ async function goToRegister() {
               {{ feedbackMessage }}
             </p>
           </form>
-
-          <p class="footer">
-            No account yet?
-            <button
-              type="button"
-              class="footer-link"
-              :disabled="isSubmitting"
-              @click="goToRegister"
-            >
-              Create one free →
-            </button>
-          </p>
 
           <div class="accents" aria-hidden="true">
             <span class="accent accent-primary"></span>

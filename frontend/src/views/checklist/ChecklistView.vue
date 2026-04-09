@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import ChecklistTaskItem from './components/ChecklistTaskItem.vue'
 import { getTodayChecklist, updateChecklistItem } from '@/services/checklist'
+import { useRouter } from 'vue-router'
 
 interface Task {
   id: number
@@ -24,6 +25,8 @@ onMounted(async () => {
   const data = await getTodayChecklist()
   checklists.value = Array.isArray(data) ? data : []
 })
+
+const router = useRouter()
 
 const allTasks = computed(() => checklists.value.flatMap((c) => c.items))
 
@@ -119,6 +122,10 @@ function findTask(id: number): Task | undefined {
   }
 }
 
+function goToBuilder() {
+  router.push('/checklist-builder')
+}
+
 async function handleToggle(id: number, completed: boolean) {
   const task = findTask(id)
   if (!task) return
@@ -153,7 +160,10 @@ async function unCompleteAll() {
 
 <template>
   <div class="checklist-page">
-    <h1>Checklists</h1>
+    <div class="page-header">
+      <h1>Checklists</h1>
+      <button class="create-btn" @click="goToBuilder">+ New Checklist</button>
+    </div>
 
     <!-- OVERALL HEADER -->
     <section class="summary-bar">
@@ -244,17 +254,12 @@ async function unCompleteAll() {
       </div>
 
       <!-- CHECKLIST INSTANCES WITHIN THIS MODULE -->
-      <div
-        v-for="instance in moduleGroup.instances"
-        :key="instance.id"
-        class="instance-block"
-      >
+      <div v-for="instance in moduleGroup.instances" :key="instance.id" class="instance-block">
         <div v-if="moduleGroup.instances.length > 1" class="instance-label">
           {{ instance.name }}
-          <span
-            class="instance-status"
-            :class="instance.status.toLowerCase()"
-          >{{ instance.status.replace('_', ' ') }}</span>
+          <span class="instance-status" :class="instance.status.toLowerCase()">{{
+            instance.status.replace('_', ' ')
+          }}</span>
         </div>
 
         <div class="task-list">
@@ -276,6 +281,28 @@ async function unCompleteAll() {
 </template>
 
 <style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.create-btn {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.create-btn:hover {
+  background: #1e293b;
+}
+
 .checklist-page {
   display: flex;
   flex-direction: column;
@@ -553,5 +580,4 @@ async function unCompleteAll() {
   flex-direction: column;
   gap: 10px;
 }
-
 </style>
