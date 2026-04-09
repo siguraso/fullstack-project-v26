@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.common.config;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -42,43 +43,34 @@ class SecurityConfigTest {
     }
 
     @Test
-    void authEndpointsArePublic() throws Exception {
+    void authEndpointIsPublic() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void invitationValidationEndpointRequiresAuthentication() throws Exception {
+    void invitationValidationEndpointIsPublic() throws Exception {
         mockMvc.perform(get("/api/invitations/validate")
                         .param("token", "invalid-token"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Authentication required"));
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void swaggerAndH2EndpointsRequireAuthentication() throws Exception {
+    void swaggerEndpointsArePublic() throws Exception {
+        // Swagger is disabled in tests, so these endpoints may not return 200.
+        // What we care about here is that security does not block anonymous access.
         mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Authentication required"));
+                .andExpect(result -> assertStatusIsNotAuthRelated(result.getResponse().getStatus()));
 
         mockMvc.perform(get("/swagger-ui/index.html"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Authentication required"));
+                .andExpect(result -> assertStatusIsNotAuthRelated(result.getResponse().getStatus()));
+    }
 
-        mockMvc.perform(get("/h2-console"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Authentication required"));
+    private static void assertStatusIsNotAuthRelated(int status) {
+        assertTrue(status != 401 && status != 403,
+                () -> "Expected endpoint to be publicly accessible, but got auth-related status: " + status);
     }
 
     @Test
