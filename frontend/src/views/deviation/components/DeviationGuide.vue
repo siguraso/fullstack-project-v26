@@ -12,24 +12,23 @@ import { TriangleAlert } from '@lucide/vue'
     iconColor="var(--icon-stroke-yellow)"
   >
     <p class="intro-copy">
-      Use specific titles and short factual descriptions. The faster a teammate understands impact
-      and urgency, the faster the issue gets resolved.
+      The form now follows the PDF structure. Capture each step in order so the incident, cause,
+      and follow-up stay together in one record.
     </p>
 
     <div class="hint-list">
       <article class="hint-card">
-        <h3>Recommended by category</h3>
-        <p><strong>Temperature:</strong> Include location, measured value, and threshold.</p>
-        <p><strong>Hygiene:</strong> Mention area, contamination risk, and immediate action.</p>
-        <p><strong>Documentation:</strong> Reference missing or outdated record.</p>
+        <h3>Sections to complete</h3>
+        <p><strong>Header:</strong> Title, reference number, severity, and who is involved.</p>
+        <p><strong>Middle:</strong> What happened, immediate action, cause, and prevention.</p>
+        <p><strong>Close-out:</strong> Completion date and signatures when the action is done.</p>
       </article>
 
       <article class="hint-card">
         <h3>Severity quick rule</h3>
-        <p><strong>Low/Medium:</strong> Minor process issue with low risk.</p>
-        <p>
-          <strong>High/Critical:</strong> Safety or compliance risk requiring immediate follow-up.
-        </p>
+        <p><strong>Minor:</strong> Limited deviation with low operational impact.</p>
+        <p><strong>Major:</strong> Significant issue that needs managed follow-up.</p>
+        <p><strong>Critical:</strong> Immediate safety or compliance risk.</p>
       </article>
     </div>
   </InfoCard>

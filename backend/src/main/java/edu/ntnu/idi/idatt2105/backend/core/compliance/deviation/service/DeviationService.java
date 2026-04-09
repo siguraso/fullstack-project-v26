@@ -52,6 +52,8 @@ public class DeviationService {
         deviation.setCategory(request.getCategory());
 
         deviation.setStatus(request.getStatus());
+        deviation.setChecklistItemId(request.getChecklistItemId());
+        deviation.setLogId(request.getLogId());
         deviation.setCreatedAt(LocalDateTime.now());
 
         if (request.getStatus() == DeviationStatus.RESOLVED) {

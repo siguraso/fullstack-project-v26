@@ -66,9 +66,9 @@ function isRowAbnormal(log: TemperatureLog) {
     return false
   }
 
-  if (log.temperatureCelsius >= zone.upperLimitCelsius) {
+  if (log.temperatureCelsius > zone.upperLimitCelsius) {
     return true
-  } else if (log.temperatureCelsius <= zone.lowerLimitCelsius) {
+  } else if (log.temperatureCelsius < zone.lowerLimitCelsius) {
     return true
   }
 

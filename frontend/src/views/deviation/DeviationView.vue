@@ -34,10 +34,9 @@ function closeDetails() {
 
     <p v-if="store.error" class="error-banner">{{ store.error }}</p>
 
-    <div class="top-row">
-      <DeviationForm class="form-panel" title="Report Deviation" />
-      <DeviationGuide class="guide-panel" />
-    </div>
+    
+    <DeviationForm class="form-panel" title="Report Deviation" />
+    
 
     <DeviationTable @view-requested="openDetails" />
 
@@ -87,9 +86,9 @@ function closeDetails() {
 
 .top-row {
   display: grid;
-  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .form-panel {
@@ -97,12 +96,17 @@ function closeDetails() {
 }
 
 .guide-panel {
-  height: 100%;
+  position: sticky;
+  top: 24px;
 }
 
 @media (max-width: 1250px) {
   .top-row {
     grid-template-columns: 1fr;
+  }
+
+  .guide-panel {
+    position: static;
   }
 }
 </style>
