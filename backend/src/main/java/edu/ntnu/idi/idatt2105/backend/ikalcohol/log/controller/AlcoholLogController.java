@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.ikalcohol.log.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,9 +18,11 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogDTO;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service.AlcoholLogService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/ikalcohol/logs")
+@Slf4j
 public class AlcoholLogController {
 
     private final AlcoholLogService service;
@@ -31,7 +34,7 @@ public class AlcoholLogController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<AlcoholLogDTO>> createLog(@Valid @RequestBody AlcoholLogCreateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(service.createLog(request)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.createLog(request)));
     }
 
     @GetMapping
@@ -48,8 +51,8 @@ public class AlcoholLogController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.ok(ApiResponse.ok("Alcohol compliance log deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }

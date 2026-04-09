@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,9 +19,11 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogDT
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.mapper.TemperatureLogMapper;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.service.TemperatureLogService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/ikfood/temperature-logs")
+@Slf4j
 public class TemperatureLogController {
 
     private final TemperatureLogService service;
@@ -35,7 +38,7 @@ public class TemperatureLogController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<TemperatureLogDTO>> createLog(
             @Valid @RequestBody TemperatureLogCreateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(service.createLog(request)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.createLog(request)));
     }
 
     @GetMapping
@@ -53,8 +56,8 @@ public class TemperatureLogController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.ok(ApiResponse.ok("Temperature log deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }

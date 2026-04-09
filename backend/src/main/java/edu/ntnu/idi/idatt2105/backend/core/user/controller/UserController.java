@@ -6,6 +6,7 @@ import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserResponse;
 import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserUpdateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.user.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @PreAuthorize("hasRole('ADMIN')")
+@Slf4j
 public class UserController {
 
     private final UserService userService;

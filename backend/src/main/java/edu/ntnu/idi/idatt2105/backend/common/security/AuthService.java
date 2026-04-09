@@ -27,12 +27,12 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
 
   public AuthDtos.LoginResponse login(AuthDtos.LoginRequest request) {
-    log.info("Authenticating user with email: {}", request.email());
+    log.info("Authenticating user {}", maskEmail(request.email()));
 
     // Find user by email
     Optional<User> optionalUser = userRepository.findByEmail(request.email());
     if (optionalUser.isEmpty()) {
-      log.warn("User not found with email: {}", request.email());
+      log.warn("Login failed: user not found for {}", maskEmail(request.email()));
       throw new UnauthorizedException("Invalid email or password");
     }
 
@@ -40,13 +40,13 @@ public class AuthService {
 
     // Check if user is active
     if (!user.isActive()) {
-      log.warn("User account is inactive: {}", request.email());
+      log.warn("Login failed: inactive account for {}", maskEmail(request.email()));
       throw new UnauthorizedException("User account is inactive");
     }
 
     // Verify password
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-      log.warn("Invalid password for user: {}", request.email());
+      log.warn("Login failed: invalid credentials for {}", maskEmail(request.email()));
       throw new UnauthorizedException("Invalid email or password");
     }
 
@@ -61,7 +61,7 @@ public class AuthService {
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-    log.info("User authenticated successfully: {}", request.email());
+    log.info("User authenticated successfully userId={} tenantId={}", user.getId(), user.getTenant().getId());
 
     return new AuthDtos.LoginResponse(
         accessToken,
@@ -73,11 +73,11 @@ public class AuthService {
   }
 
   public AuthDtos.LoginResponse register(AuthDtos.RegisterRequest request) {
-    log.info("Registering new user with email: {}", request.email());
+    log.info("Registering new user {}", maskEmail(request.email()));
 
     // Check if user already exists
     if (userRepository.findByEmail(request.email()).isPresent()) {
-      log.warn("User already exists with email: {}", request.email());
+      log.warn("Registration rejected: email already registered {}", maskEmail(request.email()));
       throw new UnauthorizedException("Email already registered");
     }
 
@@ -85,7 +85,7 @@ public class AuthService {
     String inviteToken = request.inviteToken();
     if (inviteToken != null && !inviteToken.isBlank()) {
       if (!jwtService.isInviteTokenValid(inviteToken, request.email())) {
-        log.warn("Invalid invite token used for email: {}", request.email());
+        log.warn("Registration rejected: invalid invite token for {}", maskEmail(request.email()));
         throw new UnauthorizedException("Invalid or expired invite token");
       }
 
@@ -103,7 +103,7 @@ public class AuthService {
 
       tenant = tenantRepository.findByOrgNumber(request.orgNumber());
       if (tenant == null) {
-        log.warn("Tenant with org: {} does not exist.", request.orgNumber());
+        log.warn("Registration rejected: tenant not found for orgNumber={}", request.orgNumber());
         throw new UnauthorizedException("Tenant does not exist");
       }
     }
@@ -148,7 +148,7 @@ public class AuthService {
 
     String refreshToken = request.refreshToken();
 
-    if (!jwtService.isTokenValid(refreshToken)) {
+    if (!jwtService.isRefreshToken(refreshToken)) {
       log.warn("Invalid refresh token");
       throw new UnauthorizedException("Invalid refresh token");
     }
@@ -157,14 +157,14 @@ public class AuthService {
 
     Optional<User> optionalUser = userRepository.findByEmail(email);
     if (optionalUser.isEmpty()) {
-      log.warn("User not found for refresh token: {}", email);
+      log.warn("Refresh rejected: user not found for {}", maskEmail(email));
       throw new ResourceNotFoundException("User not found");
     }
 
     User user = optionalUser.get();
 
     if (!user.isActive()) {
-      log.warn("Inactive user attempted token refresh: {}", email);
+      log.warn("Refresh rejected: inactive account for {}", maskEmail(email));
       throw new UnauthorizedException("User account is inactive");
     }
 
@@ -177,8 +177,21 @@ public class AuthService {
         "role", user.getRole().name());
 
     String accessToken = jwtService.generateToken(user.getEmail(), extraClaims);
-    log.info("Access token refreshed successfully for user: {}", email);
+    log.info("Access token refreshed successfully for userId={} tenantId={}", user.getId(), user.getTenant().getId());
 
     return new AuthDtos.RefreshResponse(accessToken);
+  }
+
+  private String maskEmail(String email) {
+    if (email == null || email.isBlank()) {
+      return "<unknown>";
+    }
+
+    int atIndex = email.indexOf('@');
+    if (atIndex <= 1) {
+      return "***";
+    }
+
+    return email.charAt(0) + "***" + email.substring(atIndex);
   }
 }

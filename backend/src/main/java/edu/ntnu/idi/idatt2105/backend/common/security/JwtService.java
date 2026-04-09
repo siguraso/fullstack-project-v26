@@ -17,6 +17,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class JwtService {
+  private static final String TOKEN_TYPE_ACCESS = "access";
+  private static final String TOKEN_TYPE_REFRESH = "refresh";
+  private static final String TOKEN_TYPE_INVITE = "invite";
+
   @Value("${security.jwt.secret}")
   private String jwtSecret;
 
@@ -48,16 +52,21 @@ public class JwtService {
   }
 
   public String generateToken(String email, Map<String, Object> extraClaims) {
-    return buildToken(extraClaims, email, resolveExpirationMillis("security.jwt.expiration-ms", jwtExpiration));
+    java.util.Map<String, Object> claims = new java.util.HashMap<>(extraClaims);
+    claims.put("tokenType", TOKEN_TYPE_ACCESS);
+    return buildToken(claims, email, resolveExpirationMillis("security.jwt.expiration-ms", jwtExpiration));
   }
 
   public String generateRefreshToken(String email) {
-    return buildToken(Map.of(), email, resolveExpirationMillis("jwt.refresh-expiration", refreshExpiration));
+    return buildToken(
+        Map.of("tokenType", TOKEN_TYPE_REFRESH),
+        email,
+        resolveExpirationMillis("jwt.refresh-expiration", refreshExpiration));
   }
 
   public String generateInviteToken(String email, Long organizationId) {
     return buildToken(
-        Map.of("invite", true, "organizationId", organizationId),
+        Map.of("invite", true, "organizationId", organizationId, "tokenType", TOKEN_TYPE_INVITE),
         email,
         resolveExpirationMillis("security.jwt.invite-expiration-ms", inviteExpiration));
   }
@@ -112,6 +121,10 @@ public class JwtService {
     return extractClaim(token, claims -> claims.get("role", String.class));
   }
 
+  public String extractTokenType(String token) {
+    return extractClaim(token, claims -> claims.get("tokenType", String.class));
+  }
+
   public Long extractOrganizationId(String token) {
     return extractClaim(token, claims -> claims.get("organizationId", Long.class));
   }
@@ -136,6 +149,14 @@ public class JwtService {
   public boolean isTokenValid(String token, String email) {
     final String tokenEmail = extractEmail(token);
     return (tokenEmail.equals(email)) && !isTokenExpired(token);
+  }
+
+  public boolean isRefreshToken(String token) {
+    if (!isTokenValid(token)) {
+      return false;
+    }
+
+    return TOKEN_TYPE_REFRESH.equals(extractTokenType(token));
   }
 
   private boolean isTokenExpired(String token) {

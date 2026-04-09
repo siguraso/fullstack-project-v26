@@ -21,11 +21,13 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantUpdateRequest;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.service.TenantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/tenants")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@Slf4j
 public class TenantController {
 
     private final TenantService tenantService;
@@ -70,4 +72,3 @@ public class TenantController {
         return ResponseEntity.noContent().build();
     }
 }
-
