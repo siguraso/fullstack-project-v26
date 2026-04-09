@@ -68,7 +68,6 @@ function seedDeviationForm(zone: TemperatureZone, measuredTemperature: number, n
   deviationStore.resetForm()
   deviationStore.patchForm({
     title: `${zone.name} temperature deviation`,
-    referenceNumber: '',
     category: 'TEMPERATURE',
     severity: 'HIGH',
     module: 'IK_FOOD',

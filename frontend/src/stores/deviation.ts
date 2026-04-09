@@ -10,7 +10,6 @@ function getTodayDate() {
 function createEmptyForm(): DeviationFormInput {
   return {
     title: '',
-    referenceNumber: '',
     category: 'TEMPERATURE',
     severity: 'LOW',
     module: 'IK_FOOD',
@@ -27,31 +26,9 @@ function createEmptyForm(): DeviationFormInput {
   }
 }
 
-function buildSection(label: string, value: string) {
-  const normalized = value.trim()
-  return normalized ? `${label}: ${normalized}` : null
-}
-
-function buildDeviationDescription(form: DeviationFormInput) {
-  return [
-    buildSection('Reference number', form.referenceNumber),
-    buildSection('Reported date', form.reportedDate),
-    buildSection('Discovered by', form.discoveredBy),
-    buildSection('Reported to', form.reportedTo),
-    buildSection('Assigned to', form.assignedTo),
-    buildSection('Describe the error / what went wrong', form.issueDescription),
-    buildSection('Immediate action taken', form.immediateAction),
-    buildSection('Possible cause', form.rootCause),
-    buildSection('Corrective action / prevention', form.correctiveAction),
-    buildSection('Corrective action completed', form.completionNotes),
-  ]
-    .filter((section): section is string => section !== null)
-    .join('\n\n')
-}
-
 function buildCreateDeviationPayload(
   form: DeviationFormInput,
-  links?: Pick<CreateDeviationInput, 'checklistItemId' | 'logId'>,
+  links?: Pick<CreateDeviationInput, 'logId'>,
 ): CreateDeviationInput {
   return {
     title: form.title.trim(),
@@ -59,8 +36,15 @@ function buildCreateDeviationPayload(
     severity: form.severity,
     module: form.module,
     status: form.status,
-    description: buildDeviationDescription(form),
-    checklistItemId: links?.checklistItemId,
+    reportedDate: form.reportedDate,
+    discoveredBy: form.discoveredBy.trim(),
+    reportedTo: form.reportedTo.trim(),
+    assignedTo: form.assignedTo.trim(),
+    issueDescription: form.issueDescription.trim(),
+    immediateAction: form.immediateAction.trim(),
+    rootCause: form.rootCause.trim(),
+    correctiveAction: form.correctiveAction.trim(),
+    completionNotes: form.completionNotes.trim(),
     logId: links?.logId,
   }
 }
@@ -129,7 +113,7 @@ export const useDeviationStore = defineStore('deviation', () => {
     }
   }
 
-  async function createDeviation(links?: Pick<CreateDeviationInput, 'checklistItemId' | 'logId'>) {
+  async function createDeviation(links?: Pick<CreateDeviationInput, 'logId'>) {
     if (!validateForm()) {
       return null
     }

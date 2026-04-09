@@ -44,6 +44,17 @@ function formatDate(date?: string): string {
     minute: '2-digit',
   })
 }
+
+function formatShortDate(date?: string): string {
+  if (!date) return 'Not available'
+
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) {
+    return date
+  }
+
+  return parsed.toLocaleDateString('en-GB')
+}
 </script>
 
 <template>
@@ -87,9 +98,25 @@ function formatDate(date?: string): string {
         </div>
       </div>
 
-      <div v-if="deviation.description" class="description">
-        <h4>Description</h4>
-        <p>{{ deviation.description }}</p>
+      <div class="description">
+        <h4>Details</h4>
+        <p><strong>Reported Date:</strong> {{ formatShortDate(deviation.reportedDate) }}</p>
+        <p v-if="deviation.discoveredBy"><strong>Discovered By:</strong> {{ deviation.discoveredBy }}</p>
+        <p v-if="deviation.reportedTo"><strong>Reported To:</strong> {{ deviation.reportedTo }}</p>
+        <p v-if="deviation.assignedTo"><strong>Assigned To:</strong> {{ deviation.assignedTo }}</p>
+        <p v-if="deviation.issueDescription">
+          <strong>Issue Description:</strong> {{ deviation.issueDescription }}
+        </p>
+        <p v-if="deviation.immediateAction">
+          <strong>Immediate Action:</strong> {{ deviation.immediateAction }}
+        </p>
+        <p v-if="deviation.rootCause"><strong>Root Cause:</strong> {{ deviation.rootCause }}</p>
+        <p v-if="deviation.correctiveAction">
+          <strong>Corrective Action:</strong> {{ deviation.correctiveAction }}
+        </p>
+        <p v-if="deviation.completionNotes">
+          <strong>Completion Notes:</strong> {{ deviation.completionNotes }}
+        </p>
       </div>
     </InfoCard>
   </div>

@@ -21,7 +21,7 @@ const props = withDefaults(
   }>(),
   {
     submitLabel: 'Submit Deviation',
-    footerText: 'The form saves a structured deviation summary for the incident and follow-up.',
+    footerText: 'The form saves each deviation field separately for incident follow-up.',
     showInternalTracking: true,
     useExternalSubmit: false,
     isSubmitting: undefined,
@@ -89,11 +89,6 @@ function handleSubmit() {
             v-model="store.form.title"
             placeholder="e.g., Cold storage, dishwashing area, bar service"
           />
-        </label>
-
-        <label>
-          <span>Reference No.</span>
-          <input v-model="store.form.referenceNumber" placeholder="Optional reference number" />
         </label>
 
         <div class="field-wide assessment-card">

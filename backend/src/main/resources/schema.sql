@@ -86,6 +86,31 @@ CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
     FOREIGN KEY (recorded_by) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS deviations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    module VARCHAR(20) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    reported_date DATE,
+    discovered_by VARCHAR(255),
+    reported_to VARCHAR(255),
+    assigned_to VARCHAR(255),
+    issue_description VARCHAR(2000),
+    immediate_action VARCHAR(2000),
+    root_cause VARCHAR(2000),
+    corrective_action VARCHAR(2000),
+    completion_notes VARCHAR(2000),
+    severity VARCHAR(20),
+    category VARCHAR(20),
+    status VARCHAR(20),
+    created_by BIGINT,
+    log_id BIGINT,
+    created_at TIMESTAMP,
+    resolved_at TIMESTAMP,
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
 CREATE TABLE IF NOT EXISTS documents (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
