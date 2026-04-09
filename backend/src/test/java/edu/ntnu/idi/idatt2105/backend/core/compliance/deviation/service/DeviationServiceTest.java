@@ -231,6 +231,8 @@ class DeviationServiceTest {
 		item.setChecklist(checklist);
 		item.setTemplateItem(templateItem);
 
+		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
 		deviationService.createFromChecklist(item);
 
 		ArgumentCaptor<Deviation> captor = ArgumentCaptor.forClass(Deviation.class);
@@ -264,6 +266,8 @@ class DeviationServiceTest {
 		log.setModule(ComplianceModule.IK_ALCOHOL);
 		log.setTitle("Missing alcohol report");
 		log.setDescription(null);
+
+		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		deviationService.createFromLog(log);
 
