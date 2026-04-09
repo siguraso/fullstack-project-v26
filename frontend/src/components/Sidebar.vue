@@ -6,6 +6,7 @@ import {
   ChevronDown,
   X,
   ClipboardCheck,
+  FolderOpen,
   LayoutDashboard,
   SearchCheck,
   Settings,
@@ -44,6 +45,7 @@ const emit = defineEmits<{
 
 const primaryItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
+  { label: 'Documents', icon: FolderOpen, to: '/documents' },
   { label: 'Deviations', icon: TriangleAlert, to: '/deviation' },
   { label: 'Inspections', icon: SearchCheck, to: '/inspections' },
 ]

@@ -48,6 +48,7 @@ const users = [
 
 const authenticatedRoutes = [
   { path: '/dashboard', heading: 'Dashboard' },
+  { path: '/documents', heading: 'Document Library' },
   { path: '/deviation', heading: 'Deviations' },
   { path: '/checklists', heading: 'Checklists' },
   { path: '/inspections', heading: 'Inspection Logs' },
@@ -99,6 +100,10 @@ function stubResponsiveApis() {
   cy.intercept('GET', '/api/inspection/logs', {
     body: { data: [] },
   }).as('getInspectionLogs')
+
+  cy.intercept('GET', '/api/documents*', {
+    body: { data: [] },
+  }).as('getDocuments')
 
   cy.intercept('GET', '/api/users', {
     body: { data: users },
