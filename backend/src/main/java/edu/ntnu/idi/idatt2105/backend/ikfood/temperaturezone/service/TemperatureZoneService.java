@@ -16,10 +16,12 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZ
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.mapper.TemperatureZoneMapper;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.repository.TemperatureZoneRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class TemperatureZoneService {
 
     private final TemperatureZoneRepository temperatureZoneRepository;
@@ -27,6 +29,7 @@ public class TemperatureZoneService {
     private final TemperatureZoneMapper temperatureZoneMapper;
 
     public TemperatureZoneDTO create(CreateTemperatureZoneRequest request) {
+        log.info("Creating temperature zone for current tenant: name={}", request.getName());
         validateLimits(request.getLowerLimitCelsius(), request.getUpperLimitCelsius());
 
         Long tenantId = TenantContext.getCurrentOrg();
@@ -34,6 +37,7 @@ public class TemperatureZoneService {
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
         if (temperatureZoneRepository.existsByTenantIdAndNameIgnoreCaseAndActiveTrue(tenantId, request.getName().trim())) {
+            log.warn("Rejecting temperature zone creation due to duplicate name in tenantId={}", tenantId);
             throw new ValidationException("Temperature zone already exists: " + request.getName());
         }
 
@@ -44,18 +48,23 @@ public class TemperatureZoneService {
         zone.setUpperLimitCelsius(request.getUpperLimitCelsius());
         zone.setActive(true);
 
-        return temperatureZoneMapper.toDTO(temperatureZoneRepository.save(zone));
+        TemperatureZone savedZone = temperatureZoneRepository.save(zone);
+        log.info("Created temperature zone id={} for tenantId={}", savedZone.getId(), tenantId);
+        return temperatureZoneMapper.toDTO(savedZone);
     }
 
     @Transactional(readOnly = true)
     public List<TemperatureZoneDTO> getForCurrentTenant() {
         Long tenantId = TenantContext.getCurrentOrg();
-        return temperatureZoneRepository.findByTenantIdAndActiveTrue(tenantId).stream()
+        List<TemperatureZoneDTO> zones = temperatureZoneRepository.findByTenantIdAndActiveTrue(tenantId).stream()
                 .map(temperatureZoneMapper::toDTO)
                 .toList();
+        log.debug("Fetched {} active temperature zones for tenantId={}", zones.size(), tenantId);
+        return zones;
     }
 
     public TemperatureZoneDTO update(Long id, CreateTemperatureZoneRequest request) {
+        log.info("Updating temperature zone id={}", id);
         validateLimits(request.getLowerLimitCelsius(), request.getUpperLimitCelsius());
 
         Long tenantId = TenantContext.getCurrentOrg();
@@ -66,6 +75,7 @@ public class TemperatureZoneService {
             tenantId,
             request.getName().trim(),
             id)) {
+            log.warn("Rejecting temperature zone update id={} due to duplicate name in tenantId={}", id, tenantId);
             throw new ValidationException("Temperature zone already exists: " + request.getName());
         }
 
@@ -73,20 +83,25 @@ public class TemperatureZoneService {
         zone.setLowerLimitCelsius(request.getLowerLimitCelsius());
         zone.setUpperLimitCelsius(request.getUpperLimitCelsius());
 
-        return temperatureZoneMapper.toDTO(temperatureZoneRepository.save(zone));
+        TemperatureZone savedZone = temperatureZoneRepository.save(zone);
+        log.info("Updated temperature zone id={} in tenantId={}", savedZone.getId(), tenantId);
+        return temperatureZoneMapper.toDTO(savedZone);
     }
 
     public void delete(Long id) {
         Long tenantId = TenantContext.getCurrentOrg();
+        log.info("Soft deleting temperature zone id={} for tenantId={}", id, tenantId);
 
         TemperatureZone zone = temperatureZoneRepository.findByIdAndTenantIdAndActiveTrue(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Temperature zone not found"));
         zone.setActive(false);
         temperatureZoneRepository.save(zone);
+        log.info("Soft deleted temperature zone id={}", id);
     }
 
     private void validateLimits(Double lowerLimit, Double upperLimit) {
         if (lowerLimit >= upperLimit) {
+            log.warn("Invalid temperature zone limits lower={} upper={}", lowerLimit, upperLimit);
             throw new ValidationException("Lower temperature limit must be less than upper limit");
         }
     }

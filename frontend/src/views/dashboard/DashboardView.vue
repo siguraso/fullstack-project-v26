@@ -121,4 +121,18 @@ async function reloadDashboard() {
 .dashboard-content > * {
   position: relative;
 }
+
+@media (max-width: 1100px) {
+  .info-cards,
+  .second-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .info-cards,
+  .second-row {
+    gap: 0.85rem;
+  }
+}
 </style>

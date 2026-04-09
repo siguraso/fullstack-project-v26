@@ -678,5 +678,22 @@ button:disabled {
   .modal-backdrop {
     padding: 12px;
   }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .user-editor-card {
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+  }
 }
 </style>

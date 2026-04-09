@@ -1,7 +1,9 @@
 package edu.ntnu.idi.idatt2105.backend.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
 
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
@@ -37,8 +39,4 @@ public class ApiResponse<T> {
     return new ApiResponse<>(false, message, data);
   }
 
-  // Getters
-  public boolean isSuccess() { return success; }
-  public String  getMessage() { return message; }
-  public T       getData()    { return data; }
 }

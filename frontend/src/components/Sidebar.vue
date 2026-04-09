@@ -4,6 +4,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ChevronDown,
+  X,
   ClipboardCheck,
   LayoutDashboard,
   SearchCheck,
@@ -25,6 +26,21 @@ interface NavGroup {
   label: string
   items: NavItem[]
 }
+
+const props = withDefaults(
+  defineProps<{
+    isMobile?: boolean
+    open?: boolean
+  }>(),
+  {
+    isMobile: false,
+    open: true,
+  },
+)
+
+const emit = defineEmits<{
+  close: []
+}>()
 
 const primaryItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
@@ -83,7 +99,11 @@ function groupIsActive(group: NavGroup) {
 }
 
 function navigate(destination: RouteLocationRaw) {
-  router.push(destination)
+  void router.push(destination)
+
+  if (props.isMobile) {
+    emit('close')
+  }
 }
 
 function toggleGroup(key: NavGroup['key']) {
@@ -92,12 +112,38 @@ function toggleGroup(key: NavGroup['key']) {
 
 async function logout() {
   clearAuthSession()
+  if (props.isMobile) {
+    emit('close')
+  }
   await router.push('/login')
 }
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside
+    class="sidebar"
+    :class="{
+      'sidebar-mobile': props.isMobile,
+      'sidebar-open': props.open,
+      'sidebar-closed': props.isMobile && !props.open,
+    }"
+    :aria-hidden="props.isMobile ? !props.open : undefined"
+  >
+    <div v-if="props.isMobile" class="mobile-header">
+      <div class="mobile-brand">
+        <span class="mobile-brand-title">Navigation</span>
+        <p>{{ userEmail }}</p>
+      </div>
+      <button
+        type="button"
+        class="mobile-close"
+        aria-label="Close navigation"
+        @click="emit('close')"
+      >
+        <X :size="18" aria-hidden="true" />
+      </button>
+    </div>
+
     <nav class="nav-shell" aria-label="Sidebar">
       <div class="nav-main">
         <section class="nav-section">
@@ -198,6 +244,7 @@ async function logout() {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  z-index: 1100;
 }
 
 .brand-block {
@@ -229,12 +276,17 @@ async function logout() {
   color: var(--text-secondary);
 }
 
+.mobile-header {
+  display: none;
+}
+
 .nav-shell {
   display: flex;
   flex-direction: column;
   gap: 18px;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .nav-main {
@@ -396,5 +448,69 @@ async function logout() {
 .subnav-button:active,
 .group-trigger:active {
   transform: scale(0.99);
+}
+
+@media (max-width: 960px) {
+  .sidebar-mobile {
+    top: var(--navbar-height, 54px);
+    bottom: 0;
+    width: min(86vw, 320px);
+    min-width: 0;
+    height: auto;
+    padding: 16px 14px 18px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
+    transform: translateX(-110%);
+    transition: transform 220ms ease;
+  }
+
+  .sidebar-mobile.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-mobile.sidebar-closed {
+    pointer-events: none;
+  }
+
+  .sidebar-mobile .mobile-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 4px 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobile-brand {
+    min-width: 0;
+  }
+
+  .mobile-brand-title {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .mobile-brand p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-close {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text);
+    flex-shrink: 0;
+  }
 }
 </style>

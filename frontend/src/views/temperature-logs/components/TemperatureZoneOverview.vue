@@ -65,28 +65,30 @@ function openCreateOverlay() {
     <template #extra-header-content>
       <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">+</button>
     </template>
-    <table class="log-table">
-      <thead class="log-table-header">
-        <tr>
-          <th>Zone Name</th>
-          <th>Lower limit</th>
-          <th>Upper limit</th>
-          <th v-if="role == 'ADMIN'">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="log-table-body">
-        <tr v-for="zone in currentPageZones" :key="zone.id">
-          <td>{{ zone.name }}</td>
-          <td>{{ zone.lowerLimitCelsius }}°C</td>
-          <td>{{ zone.upperLimitCelsius }}°C</td>
-          <td v-if="role == 'ADMIN'">
-            <button class="edit-btn" @click="openEditOverlay(zone)" aria-label="Edit zone">
-              <Pencil :size="16" aria-hidden="true" />
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="log-table">
+        <thead class="log-table-header">
+          <tr>
+            <th>Zone Name</th>
+            <th>Lower limit</th>
+            <th>Upper limit</th>
+            <th v-if="role == 'ADMIN'">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="log-table-body">
+          <tr v-for="zone in currentPageZones" :key="zone.id">
+            <td>{{ zone.name }}</td>
+            <td>{{ zone.lowerLimitCelsius }}°C</td>
+            <td>{{ zone.upperLimitCelsius }}°C</td>
+            <td v-if="role == 'ADMIN'">
+              <button class="edit-btn" @click="openEditOverlay(zone)" aria-label="Edit zone">
+                <Pencil :size="16" aria-hidden="true" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
       <p>Page {{ currentPage }} of {{ zonesSplit.length || 1 }}</p>
@@ -104,10 +106,15 @@ function openCreateOverlay() {
   font-size: 15px;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .log-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 520px;
 }
 
 .log-table-header th:nth-child(1) {
@@ -192,5 +199,12 @@ function openCreateOverlay() {
 
 .edit-btn:active {
   background-color: var(--bg-active);
+}
+
+@media (max-width: 640px) {
+  .paging {
+    flex-wrap: wrap;
+    align-items: center;
+  }
 }
 </style>
