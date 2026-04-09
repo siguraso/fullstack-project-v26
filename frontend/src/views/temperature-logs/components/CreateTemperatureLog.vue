@@ -122,6 +122,11 @@ function setSelectedZone() {
 </template>
 
 <style scoped>
+.info-card {
+  width: 100%;
+  min-width: 0;
+}
+
 .input-field {
   display: flex;
   flex-direction: column;
@@ -160,5 +165,11 @@ function setSelectedZone() {
 
 .status-message.error {
   color: var(--cta-red);
+}
+
+@media (max-width: 640px) {
+  .info-card {
+    max-width: 100%;
+  }
 }
 </style>

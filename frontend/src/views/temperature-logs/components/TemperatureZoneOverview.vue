@@ -63,7 +63,7 @@ function openCreateOverlay() {
     :addToHeader="true"
   >
     <template #extra-header-content>
-      <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">+</button>
+      <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">Add Zone</button>
     </template>
     <div v-if="props.zones.length > 0" class="table-scroll">
       <table class="log-table">
@@ -101,6 +101,11 @@ function openCreateOverlay() {
 </template>
 
 <style scoped>
+.info-card {
+  width: 100%;
+  min-width: 0;
+}
+
 .status-message {
   margin: 0.75rem 0 1rem;
   width: 100%;
@@ -112,12 +117,14 @@ function openCreateOverlay() {
 
 .add-button {
   margin-left: auto;
-  width: 32px;
+  padding: 6px 12px;
   font-size: 15px;
 }
 
 .table-scroll {
   overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .log-table {
@@ -212,6 +219,15 @@ function openCreateOverlay() {
 }
 
 @media (max-width: 640px) {
+  .log-table {
+    min-width: 460px;
+  }
+
+  .add-button {
+    margin-left: 0;
+    width: 100%;
+  }
+
   .paging {
     flex-wrap: wrap;
     align-items: center;

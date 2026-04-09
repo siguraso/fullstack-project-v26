@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
-import { getAuthSession } from '@/services/auth'
 import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { History, Check, TriangleAlert, ChevronLeft, Filter, Trash2 } from '@lucide/vue'
-import { computed, onMounted, ref } from 'vue'
+import { History, Check, TriangleAlert, ChevronLeft, Filter, Eye } from '@lucide/vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   temperatureLogs: TemperatureLog[]
@@ -12,7 +11,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (event: 'delete-log', logId: number): void
+  (event: 'view-log', log: TemperatureLog): void
 }>()
 
 const pageSize = 4
@@ -20,23 +19,18 @@ const pageSize = 4
 const currentPage = ref(1)
 const filteredtemperatureZoneId = ref<number | null>(null)
 const filteredTemperatureZone = ref<string>('')
-const role = ref<string | null>(null)
-
-onMounted(() => {
-  const session = getAuthSession()
-  role.value = session?.role ?? null
-})
-
-const canDeleteLogs = computed(() => role.value === 'ADMIN' || role.value === 'MANAGER')
 
 const filteredTemperatureLogs = computed(() => {
+  const sortedLogs = [...props.temperatureLogs].sort(
+    (firstLog, secondLog) =>
+      new Date(secondLog.timestamp).getTime() - new Date(firstLog.timestamp).getTime(),
+  )
+
   if (!filteredtemperatureZoneId.value) {
-    return props.temperatureLogs
+    return sortedLogs
   }
 
-  return props.temperatureLogs.filter(
-    (log) => log.temperatureZoneId === filteredtemperatureZoneId.value,
-  )
+  return sortedLogs.filter((log) => log.temperatureZoneId === filteredtemperatureZoneId.value)
 })
 
 const temperatureLogsSplit = computed(() =>
@@ -103,8 +97,8 @@ function formatTimestamp(timestamp: string) {
   }).format(parsedDate)
 }
 
-function deleteLog(logId: number) {
-  emit('delete-log', logId)
+function viewLog(log: TemperatureLog) {
+  emit('view-log', log)
 }
 </script>
 
@@ -136,7 +130,7 @@ function deleteLog(logId: number) {
             <th>Temperature (°C)</th>
             <th>Status</th>
             <th>Logged By</th>
-            <th v-if="canDeleteLogs">Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody class="log-table-body">
@@ -162,10 +156,8 @@ function deleteLog(logId: number) {
               </div>
             </td>
             <td>{{ log.recordedByName ?? 'Unknown user' }}</td>
-            <td v-if="canDeleteLogs">
-              <button class="delete-btn" @click="deleteLog(log.id)">
-                <Trash2 :size="16" aria-hidden="true" />
-              </button>
+            <td>
+              <button class="view-btn" @click="viewLog(log)">View</button>
             </td>
           </tr>
         </tbody>
@@ -207,6 +199,7 @@ function deleteLog(logId: number) {
 
 .table-scroll {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .log-table {
@@ -322,11 +315,20 @@ function deleteLog(logId: number) {
   gap: 8px;
 }
 
-.delete-btn {
-  background-color: var(--cta-red-btn);
-  color: white;
+.view-btn {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  min-width: 72px;
   height: 36px;
-  width: 36px;
+}
+
+.view-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.view-btn:active {
+  background-color: var(--bg-secondary);
 }
 
 @media (max-width: 640px) {
@@ -342,6 +344,31 @@ function deleteLog(logId: number) {
   .paging {
     flex-wrap: wrap;
     align-items: center;
+  }
+
+  .log-table {
+    min-width: 660px;
+  }
+
+  .log-table-header th {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .log-table-body td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .status-content {
+    gap: 6px;
+  }
+
+  .view-btn {
+    min-width: 64px;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
   }
 }
 </style>

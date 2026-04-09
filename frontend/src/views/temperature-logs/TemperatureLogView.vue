@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import CreateTemperatureLog from './components/CreateTemperatureLog.vue'
 import CreateTemperatureZone from './components/CreateTemperatureZone.vue'
 import TemperatureZoneOverview from './components/TemperatureZoneOverview.vue'
 import TemperatureLogHistory from './components/TemperatureLogHistory.vue'
 import EditTemperatureZone from './components/EditTemperatureZone.vue'
-import DeleteTemperatureLogDialog from './components/DeleteTemperatureLogDialog.vue'
-import { deleteTemperatureLog, fetchTemperatureLogs } from '@/services/temperatureLog'
+import TemperatureLogDetailsDialog from './components/TemperatureLogDetailsDialog.vue'
+import { fetchTemperatureLogs } from '@/services/temperatureLog'
 import {
   deleteTemperatureZone,
   editTemperatureZone,
@@ -59,40 +59,62 @@ onMounted(() => {
 
 const isEditZoneOverlayOpen = ref(false)
 const isCreateZoneOverlayOpen = ref(false)
-const isDeleteLogOverlayOpen = ref(false)
+const isViewLogOverlayOpen = ref(false)
 const selectedZone = ref<TemperatureZone | null>(null)
 const selectedLog = ref<TemperatureLog | null>(null)
 const overlayZone = computed(() => (isEditZoneOverlayOpen.value ? selectedZone.value : null))
-const overlayLog = computed(() => (isDeleteLogOverlayOpen.value ? selectedLog.value : null))
+const overlayLog = computed(() => (isViewLogOverlayOpen.value ? selectedLog.value : null))
+const isAnyOverlayOpen = computed(
+  () => isEditZoneOverlayOpen.value || isCreateZoneOverlayOpen.value || isViewLogOverlayOpen.value,
+)
+
+function lockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = ''
+  document.body.style.overflow = ''
+}
+
+watch(
+  isAnyOverlayOpen,
+  (isOpen) => {
+    if (isOpen) {
+      lockBodyScroll()
+      return
+    }
+
+    unlockBodyScroll()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  unlockBodyScroll()
+})
 
 function handleTemperatureLogCreated(log: TemperatureLog) {
   logs.value = [log, ...logs.value]
 }
 
-function requestTemperatureLogDelete(logId: number) {
-  const targetLog = logs.value.find((log) => log.id === logId)
-
-  if (!targetLog) {
-    return
-  }
-
-  selectedLog.value = targetLog
-  isDeleteLogOverlayOpen.value = true
+function openTemperatureLogDetails(log: TemperatureLog) {
+  selectedLog.value = log
+  isViewLogOverlayOpen.value = true
 }
 
-function closeDeleteLogOverlay() {
-  isDeleteLogOverlayOpen.value = false
+function closeViewLogOverlay() {
+  isViewLogOverlayOpen.value = false
   selectedLog.value = null
-}
-
-async function handleTemperatureLogDeleted(logId: number) {
-  try {
-    await deleteTemperatureLog(logId)
-    logs.value = logs.value.filter((log) => log.id !== logId)
-    closeDeleteLogOverlay()
-  } catch (error) {
-    console.error('Failed to delete temperature log', error)
-  }
 }
 
 function openEditZoneOverlay(zone: TemperatureZone) {
@@ -169,7 +191,7 @@ function closeCreateZoneOverlay() {
     </header>
 
     <p v-if="zoneLoadError" class="error-container">{{ zoneLoadError }}</p>
-    <p v-if="zoneLoadError" class="error-container">{{ logLoadError }}</p>
+    <p v-if="logLoadError" class="error-container">{{ logLoadError }}</p>
 
     <div class="top-row">
       <CreateTemperatureLog
@@ -188,16 +210,11 @@ function closeCreateZoneOverlay() {
     <TemperatureLogHistory
       :temperatureZones="zones"
       :temperatureLogs="logs"
-      @delete-log="requestTemperatureLogDelete"
+      @view-log="openTemperatureLogDetails"
     />
 
-    <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeDeleteLogOverlay">
-      <DeleteTemperatureLogDialog
-        :log="overlayLog"
-        :zones="zones"
-        @close="closeDeleteLogOverlay"
-        @confirm="handleTemperatureLogDeleted"
-      />
+    <div v-if="overlayLog" class="overlay-backdrop" @click.self="closeViewLogOverlay">
+      <TemperatureLogDetailsDialog :log="overlayLog" :zones="zones" @close="closeViewLogOverlay" />
     </div>
 
     <div v-if="overlayZone" class="overlay-backdrop" @click.self="closeEditZoneOverlay">
@@ -231,6 +248,11 @@ function closeCreateZoneOverlay() {
   margin-bottom: 2rem;
 }
 
+.top-row > * {
+  min-width: 0;
+  width: 100%;
+}
+
 .temperature-zone-overview {
   align-self: start;
 }
@@ -242,9 +264,10 @@ function closeCreateZoneOverlay() {
 .overlay-backdrop {
   position: fixed;
   inset: 0;
+  min-height: 100dvh;
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 1rem;
   background-color: rgba(0, 0, 0, 0.5);
@@ -267,6 +290,10 @@ function closeCreateZoneOverlay() {
 }
 
 @media (max-width: 640px) {
+  .temperature-log-content {
+    overflow-x: hidden;
+  }
+
   .overlay-backdrop {
     align-items: flex-start;
     overflow-y: auto;
