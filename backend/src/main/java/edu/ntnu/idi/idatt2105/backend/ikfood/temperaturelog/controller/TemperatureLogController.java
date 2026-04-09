@@ -19,9 +19,11 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogDT
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.mapper.TemperatureLogMapper;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.service.TemperatureLogService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/ikfood/temperature-logs")
+@Slf4j
 public class TemperatureLogController {
 
     private final TemperatureLogService service;

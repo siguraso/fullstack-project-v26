@@ -20,10 +20,12 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.dto.TemperatureZone
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.service.TemperatureZoneService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/ikfood/temperature-zones")
 @RequiredArgsConstructor
+@Slf4j
 public class TemperatureZoneController {
 
     private final TemperatureZoneService temperatureZoneService;

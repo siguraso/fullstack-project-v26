@@ -10,10 +10,12 @@ import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.DashboardOverviewDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.service.DashboardService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
+@Slf4j
 public class DashboardController {
 
     private final DashboardService dashboardService;
@@ -24,4 +26,3 @@ public class DashboardController {
         return ResponseEntity.ok(ApiResponse.ok(dashboardService.getOverview()));
     }
 }
-

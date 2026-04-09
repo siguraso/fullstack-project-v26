@@ -19,10 +19,12 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistIte
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.service.ChecklistItemLibraryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/checklist-library")
 @RequiredArgsConstructor
+@Slf4j
 public class ChecklistItemLibraryController {
 
     private final ChecklistItemLibraryService service;

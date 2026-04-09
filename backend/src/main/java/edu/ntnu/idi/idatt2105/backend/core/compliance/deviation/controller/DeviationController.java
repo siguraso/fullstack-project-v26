@@ -20,10 +20,12 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.UpdateDeviat
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/deviations")
 @RequiredArgsConstructor
+@Slf4j
 public class DeviationController {
 
     private final DeviationService service;

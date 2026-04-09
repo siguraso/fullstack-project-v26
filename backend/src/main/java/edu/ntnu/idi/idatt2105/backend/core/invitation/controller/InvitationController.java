@@ -6,6 +6,7 @@ import edu.ntnu.idi.idatt2105.backend.core.invitation.dto.InviteValidationRespon
 import edu.ntnu.idi.idatt2105.backend.core.invitation.service.InvitationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -21,19 +22,13 @@ import jakarta.validation.constraints.NotBlank;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 @Validated
+@Slf4j
 public class InvitationController {
   private final InvitationService invitationService;
 
-  @PostMapping("/invitations")
+  @PostMapping({"/invitations", "/users/invite"})
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<ApiResponse<Void>> sendInvite(@Valid @RequestBody InviteRequest request) {
-	invitationService.sendStaffInvite(request.email());
-	return ResponseEntity.ok(ApiResponse.ok("Invitation sent"));
-  }
-
-  @PostMapping("/users/invite")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<ApiResponse<Void>> sendInviteFromUsersEndpoint(@Valid @RequestBody InviteRequest request) {
 	invitationService.sendStaffInvite(request.email());
 	return ResponseEntity.ok(ApiResponse.ok("Invitation sent"));
   }

@@ -18,9 +18,11 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogDTO;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service.AlcoholLogService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/ikalcohol/logs")
+@Slf4j
 public class AlcoholLogController {
 
     private final AlcoholLogService service;
