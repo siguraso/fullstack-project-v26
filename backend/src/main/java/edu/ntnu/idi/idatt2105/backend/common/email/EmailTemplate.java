@@ -1,9 +1,22 @@
 package edu.ntnu.idi.idatt2105.backend.common.email;
 
+/**
+ * Utility class providing HTML templates for system emails.
+ */
 public class EmailTemplate {
+
   private EmailTemplate() {
     // Private constructor to prevent instantiation
   }
+
+  /**
+   * Builds the HTML body for an invitation email used when a user is invited
+   * to join an organization.
+   *
+   * @param orgName   the name of the inviting organization
+   * @param inviteUrl the URL the user should follow to accept the invitation
+   * @return an HTML string that can be used as the email body
+   */
   public static String invitationEmail(String orgName, String inviteUrl) {
     return """
         <html>

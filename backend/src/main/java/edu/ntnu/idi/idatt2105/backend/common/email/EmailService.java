@@ -12,6 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Service responsible for sending transactional emails using the Resend API.
+ * <p>
+ * The service can be toggled on or off via configuration properties and
+ * supports both plain text and HTML email bodies.
+ */
 @Slf4j
 @Service
 public class EmailService {
@@ -21,6 +27,14 @@ public class EmailService {
   private final String resendFromEmail;
   private final String resendBaseUrl;
 
+  /**
+   * Creates a new {@code EmailService} configured from Spring properties.
+   *
+   * @param resendEnabled  whether integration with Resend is enabled
+   * @param resendApiKey   API key used to authenticate with Resend
+   * @param resendFromEmail the default sender address used for outgoing emails
+   * @param resendBaseUrl  base URL of the Resend API
+   */
   public EmailService(
       @Value("${email.resend.enabled:false}") boolean resendEnabled,
       @Value("${email.resend.api-key:}") String resendApiKey,
@@ -32,10 +46,24 @@ public class EmailService {
     this.resendBaseUrl = resendBaseUrl;
   }
 
+  /**
+   * Sends a plain text email using the configured Resend integration.
+   *
+   * @param to      recipient email address
+   * @param subject subject of the email
+   * @param body    plain text body of the email
+   */
   public void sendEmail(String to, String subject, String body) {
     sendResendEmail(to, subject, body, null);
   }
 
+  /**
+   * Sends an HTML email using the configured Resend integration.
+   *
+   * @param to       recipient email address
+   * @param subject  subject of the email
+   * @param htmlBody HTML-formatted body of the email
+   */
   public void sendHtmlEmail(String to, String subject, String htmlBody) {
     sendResendEmail(to, subject, null, htmlBody);
   }

@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Centralized exception handler that maps common backend exceptions to
+ * structured {@link ApiResponse} instances and appropriate HTTP status codes.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -74,8 +78,8 @@ public class GlobalExceptionHandler {
   }
 
   /**
-   * Handles @Valid failures on request bodies.
-   * Returns a map of field → error message so the frontend
+   * Handles {@code @Valid} failures on request bodies.
+   * Returns a map of {@code field -> error message} so the frontend
    * can highlight the exact fields that failed.
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)

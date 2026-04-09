@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller exposing authentication-related endpoints such as login,
+ * registration and token refresh.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -22,6 +26,13 @@ public class AuthController {
 
   private final AuthService authService;
 
+  /**
+   * Authenticates a user with email and password and returns access and refresh
+   * tokens on success.
+   *
+   * @param request the login request payload
+   * @return a 200 OK response containing tokens and basic user information
+   */
   @PostMapping("/login")
   @Operation(summary = "Log in", description = "Authenticates a user and returns access/refresh tokens")
   public ResponseEntity<ApiResponse<AuthDtos.LoginResponse>> login(
@@ -30,6 +41,13 @@ public class AuthController {
     return ResponseEntity.ok(ApiResponse.ok(response));
   }
 
+  /**
+   * Creates a new user account for an existing tenant and returns initial
+   * authentication tokens.
+   *
+   * @param request the registration request payload
+   * @return a 201 Created response containing tokens for the registered user
+   */
   @PostMapping("/register")
   @Operation(summary = "Register user", description = "Creates a user account and returns tokens")
   public ResponseEntity<ApiResponse<AuthDtos.LoginResponse>> register(
@@ -38,6 +56,12 @@ public class AuthController {
     return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("User registered successfully", response));
   }
 
+  /**
+   * Exchanges a valid refresh token for a new access token.
+   *
+   * @param request the refresh request payload containing the refresh token
+   * @return a 200 OK response with a new access token
+   */
   @PostMapping("/refresh")
   @Operation(summary = "Refresh access token", description = "Issues a new access token from a valid refresh token")
   public ResponseEntity<ApiResponse<AuthDtos.RefreshResponse>> refresh(

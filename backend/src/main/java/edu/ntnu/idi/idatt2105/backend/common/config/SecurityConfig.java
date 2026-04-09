@@ -24,6 +24,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import edu.ntnu.idi.idatt2105.backend.common.security.JwtAuthFilter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Spring Security configuration for the backend application.
+ * <p>
+ * Configures CORS, stateless JWT-based authentication, exception handling and
+ * exposes required security-related beans such as the password encoder.
+ */
 @Configuration
 @EnableMethodSecurity
 @Slf4j
@@ -31,15 +37,32 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
+    /**
+     * Creates a new {@code SecurityConfig} with the JWT authentication filter
+     * that will be placed in the security filter chain.
+     *
+     * @param jwtAuthFilter filter responsible for processing JWT tokens
+     */
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
+    /**
+     * Password encoder bean used for hashing and verifying user passwords.
+     *
+     * @return a {@link BCryptPasswordEncoder} instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * CORS configuration allowing cross-origin requests from the frontend.
+     *
+     * @return a {@link CorsConfigurationSource} describing allowed origins,
+     *         headers and HTTP methods
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -54,6 +77,13 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Builds the application {@link SecurityFilterChain} configuring CORS, CSRF,
+     * public endpoints, authentication requirements and JWT filtering.
+     *
+     * @param http the {@link HttpSecurity} to configure
+     * @return the constructed security filter chain
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
@@ -83,6 +113,15 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Writes a minimal JSON error response with the given HTTP status and
+     * message. Used by authentication and access-denied handlers.
+     *
+     * @param response HTTP servlet response to write to
+     * @param status   HTTP status to set on the response
+     * @param message  human-readable error message
+     * @throws IOException if the response cannot be written
+     */
     private void writeErrorResponse(jakarta.servlet.http.HttpServletResponse response, HttpStatus status, String message)
             throws IOException {
         response.setStatus(status.value());

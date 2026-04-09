@@ -20,6 +20,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.jspecify.annotations.NonNull;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 
+/**
+ * Servlet filter that authenticates incoming HTTP requests based on a JWT
+ * found in the {@code Authorization} header.
+ * <p>
+ * When a valid token is present, the filter loads the corresponding user,
+ * populates the Spring SecurityContext with an authentication token and sets
+ * the current tenant/organization in {@link TenantContext}. The context is
+ * always cleared after the request has been processed.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +36,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserRepository userRepository;
 
+  /**
+   * Attempts to authenticate the current request using a bearer token before
+   * delegating to the rest of the filter chain. Tenant context is cleared in a
+   * {@code finally} block to avoid leaking state between requests.
+   */
   @Override
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,
@@ -46,6 +60,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * Performs JWT-based authentication if a valid bearer token is present in
+   * the {@code Authorization} header.
+   * <p>
+   * If authentication succeeds, a {@link UsernamePasswordAuthenticationToken}
+   * with the user's email and role authorities is stored in the
+   * {@link SecurityContextHolder}. If anything fails, the method returns
+   * without modifying the security context.
+   *
+   * @param request the current HTTP request
+   */
   private void authenticateIfPossible(HttpServletRequest request) {
     String authHeader = request.getHeader("Authorization");
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {

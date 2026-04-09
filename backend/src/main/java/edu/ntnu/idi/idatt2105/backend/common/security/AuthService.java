@@ -15,6 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service responsible for authenticating users, registering new accounts and
+ * issuing or refreshing JWT-based access tokens.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,14 @@ public class AuthService {
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
 
+  /**
+   * Authenticates a user using the supplied credentials and returns a pair of
+   * access and refresh tokens when successful.
+   *
+   * @param request the login request containing email and password
+   * @return a {@link AuthDtos.LoginResponse} with tokens and basic user details
+   * @throws UnauthorizedException if the credentials are invalid or the account is inactive
+   */
   public AuthDtos.LoginResponse login(AuthDtos.LoginRequest request) {
     log.info("Authenticating user {}", maskEmail(request.email()));
 
@@ -72,6 +84,15 @@ public class AuthService {
         user.getRole().name());
   }
 
+  /**
+   * Registers a new user account for an existing tenant, optionally validated by
+   * an invitation token, and returns initial authentication tokens.
+   *
+   * @param request the registration request with user profile and tenant details
+   * @return a {@link AuthDtos.LoginResponse} containing tokens for the created user
+   * @throws UnauthorizedException if the email is already registered, the invite token is
+   *                               invalid, or the tenant context cannot be resolved
+   */
   public AuthDtos.LoginResponse register(AuthDtos.RegisterRequest request) {
     log.info("Registering new user {}", maskEmail(request.email()));
 
@@ -143,6 +164,14 @@ public class AuthService {
         user.getRole().name());
   }
 
+  /**
+   * Issues a new access token based on a valid refresh token.
+   *
+   * @param request the refresh request containing a previously issued refresh token
+   * @return a {@link AuthDtos.RefreshResponse} with a new access token
+   * @throws UnauthorizedException      if the refresh token is invalid or the account is inactive
+   * @throws ResourceNotFoundException if the user referenced by the token no longer exists
+   */
   public AuthDtos.RefreshResponse refresh(AuthDtos.RefreshRequest request) {
     log.info("Refreshing access token");
 
@@ -182,6 +211,13 @@ public class AuthService {
     return new AuthDtos.RefreshResponse(accessToken);
   }
 
+  /**
+   * Obfuscates an email address for safe logging by masking the local part while
+   * retaining the domain.
+   *
+   * @param email the email address to mask
+   * @return a masked representation of the email, or a fallback value when the input is blank
+   */
   private String maskEmail(String email) {
     if (email == null || email.isBlank()) {
       return "<unknown>";
