@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { Bell, Key, Menu } from '@lucide/vue'
-import { clearAuthSession, getAuthSession } from '@/services/auth'
+import { getAuthSession } from '@/services/auth'
 import { useTenantStore } from '@/stores/tenant'
 import Avatar from './ui/Avatar.vue'
 
@@ -21,16 +20,10 @@ const emit = defineEmits<{
   'toggle-sidebar': []
 }>()
 
-const router = useRouter()
 const session = getAuthSession()
-const userEmail = computed(() => session?.email ?? 'Signed in user')
+const fullName = computed(() => session?.fullName ?? 'Signed in user')
 const tenantStore = useTenantStore()
 const storeName = computed(() => tenantStore.tenantName)
-
-async function logout() {
-  clearAuthSession()
-  await router.push('/login')
-}
 
 onMounted(() => {
   tenantStore.fetchTenant()
@@ -64,9 +57,9 @@ onMounted(() => {
         <component :is="Bell" :size="20" aria-hidden="true" class="notification-bell" />
       </div>
       <div>
-        <Avatar :name="userEmail" :size="30" />
+        <Avatar :name="fullName" :size="30" />
       </div>
-      <p class="user-label">{{ userEmail }}</p>
+      <p class="user-label">{{ fullName }}</p>
     </div>
   </nav>
 </template>

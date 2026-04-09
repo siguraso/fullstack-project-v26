@@ -37,6 +37,7 @@ function parseSession(value: string | null): AuthSession | null {
 
     return {
       email: parsed.email ?? '',
+      fullName: parsed.fullName ?? null,
       remember: parsed.remember ?? false,
       token: parsed.token ?? null,
       refreshToken: parsed.refreshToken ?? null,
@@ -109,6 +110,7 @@ function createSession(email: string, remember: boolean, responseBody: unknown):
 
   return {
     email,
+    fullName: data?.fullName ?? null,
     remember,
     token: data?.accessToken ?? readToken(responseBody),
     refreshToken: data?.refreshToken ?? null,

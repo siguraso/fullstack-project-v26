@@ -17,6 +17,7 @@ export interface RegisterPayload {
 
 export interface AuthSession {
   email: string
+  fullName: string | null
   remember: boolean
   token: string | null
   refreshToken: string | null

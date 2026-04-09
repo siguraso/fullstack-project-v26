@@ -8,6 +8,12 @@ const props = withDefaults(
     size: 42,
   },
 )
+
+function getInitials(name: string): string {
+  const names = name.split(' ')
+  const initials = names.map((n) => n.charAt(0).toUpperCase())
+  return initials.join('')
+}
 </script>
 
 <template>
@@ -19,7 +25,7 @@ const props = withDefaults(
       fontSize: props.size / 2.5 + 'px',
     }"
   >
-    {{ props.name.charAt(0).toUpperCase() }}
+    {{ getInitials(props.name) }}
   </div>
 </template>
 
