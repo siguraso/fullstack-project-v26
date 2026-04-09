@@ -1,4 +1,4 @@
-import { apiFetch } from './apiHelper'
+import { apiFetch } from './util/apiHelper'
 
 import type { InspectionLog } from '../interfaces/Inspection.interface'
 

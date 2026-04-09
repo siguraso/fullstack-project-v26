@@ -1,23 +1,20 @@
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { getAuthSession } from '@/services/auth'
 import { parseJsonSafely, unwrap } from './util/util'
 import type { ApiEnvelope } from './util/util'
+import { apiFetch } from './util/apiHelper'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API_URL = `${API_BASE_URL}/ikfood/temperature-zones`
 const REQUEST_TIMEOUT_MS = 10000
 
 export async function getTemperatureZones(): Promise<Array<TemperatureZone>> {
-  const token = getAuthSession()?.token
-
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
   let response: Response
 
   try {
-    response = await fetch(API_URL, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    response = await apiFetch(API_URL, {
       credentials: 'include',
       signal: controller.signal,
     })
@@ -53,14 +50,8 @@ export async function getTemperatureZones(): Promise<Array<TemperatureZone>> {
 export async function addTemperatureZone(
   data: Omit<TemperatureZone, 'id'>,
 ): Promise<TemperatureZone> {
-  const token = getAuthSession()?.token
-
-  const response = await fetch(API_URL, {
+  const response = await apiFetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
     credentials: 'include',
     body: JSON.stringify(data),
   })
@@ -92,14 +83,8 @@ export async function editTemperatureZone(
   id: number,
   data: Omit<TemperatureZone, 'id'>,
 ): Promise<TemperatureZone> {
-  const token = getAuthSession()?.token
-
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await apiFetch(`${API_URL}/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
     credentials: 'include',
     body: JSON.stringify(data),
   })
@@ -128,11 +113,8 @@ export async function editTemperatureZone(
 }
 
 export async function deleteTemperatureZone(id: number): Promise<void> {
-  const token = getAuthSession()?.token
-
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await apiFetch(`${API_URL}/${id}`, {
     method: 'DELETE',
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     credentials: 'include',
   })
 

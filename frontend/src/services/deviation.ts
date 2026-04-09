@@ -1,8 +1,7 @@
-import type { Deviation } from '@/stores/deviation'
-import { apiFetch } from './apiHelper'
+import type { Deviation } from '@/interfaces/Deviation.interface'
+import { apiFetch } from './util/apiHelper'
 import { unwrap, parseJsonSafely } from './util/util'
 import type { ApiEnvelope } from './util/util'
-
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API = `${API_BASE_URL}/deviations`

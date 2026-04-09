@@ -1,3 +1,5 @@
+import { apiFetch } from './util/apiHelper'
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
 type ApiEnvelope<T> = {
@@ -50,7 +52,7 @@ async function parseResponseBody(response: Response): Promise<unknown> {
 }
 
 export async function validateInviteToken(token: string): Promise<InviteValidationResponseData> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/invitations/validate?token=${encodeURIComponent(token)}`,
     {
       credentials: 'include',

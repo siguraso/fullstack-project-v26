@@ -1,38 +1,19 @@
-import { getAuthSession } from '@/services/auth'
 import type { Tenant, TenantUpdatePayload } from '@/interfaces/Tenant.interface'
 import type { User, UserUpdatePayload } from '@/interfaces/User.interface'
+import { apiFetch } from './util/apiHelper'
+import { unwrap } from './util/util'
+import type { ApiEnvelope } from './util/util'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
-type ApiEnvelope<T> = {
-  success?: boolean
-  message?: string | null
-  error?: string | null
-  detail?: string | null
-  data?: T
-}
-
 function buildHeaders(contentType = false): HeadersInit {
-  const session = getAuthSession()
   const headers: Record<string, string> = {}
 
   if (contentType) {
     headers['Content-Type'] = 'application/json'
   }
 
-  if (session?.token) {
-    headers.Authorization = `Bearer ${session.token}`
-  }
-
   return headers
-}
-
-function unwrap<T>(payload: T | ApiEnvelope<T>): T {
-  if (payload && typeof payload === 'object' && 'data' in payload) {
-    return (payload as ApiEnvelope<T>).data as T
-  }
-
-  return payload as T
 }
 
 async function parseResponseBody(response: Response): Promise<unknown> {
@@ -63,7 +44,7 @@ function readErrorMessage(payload: unknown, fallback: string): string {
 }
 
 async function request<T>(path: string, init?: RequestInit, fallbackError?: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await apiFetch(`${API_BASE_URL}${path}`, {
     credentials: 'include',
     ...init,
   })

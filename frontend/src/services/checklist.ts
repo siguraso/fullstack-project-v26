@@ -1,4 +1,4 @@
-import { apiFetch } from './apiHelper'
+import { apiFetch } from './util/apiHelper'
 import type { ApiEnvelope } from './util/util'
 import { parseJsonSafely, unwrap } from './util/util'
 

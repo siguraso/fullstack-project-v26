@@ -4,6 +4,7 @@ import type {
   RegisterPayload,
   UserRole,
 } from '@/interfaces/Auth.interface'
+import { apiFetch } from './util/apiHelper'
 
 export type { AuthSession, LoginPayload, RegisterPayload, UserRole }
 
@@ -168,11 +169,8 @@ export function clearAuthSession() {
 }
 
 export async function login(payload: LoginPayload, remember: boolean): Promise<AuthSession> {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     credentials: 'include',
     body: JSON.stringify(payload),
   })
@@ -193,11 +191,8 @@ export async function login(payload: LoginPayload, remember: boolean): Promise<A
 }
 
 export async function register(payload: RegisterPayload, remember: boolean): Promise<AuthSession> {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     credentials: 'include',
     body: JSON.stringify(payload),
   })
@@ -221,11 +216,8 @@ export async function refreshToken() {
 
   if (!refreshToken) return null
 
-  const res = await fetch('/api/auth/refresh', {
+  const res = await apiFetch('/api/auth/refresh', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ refreshToken }),
   })
 
