@@ -73,10 +73,8 @@ onMounted(() => {
 
 <style scoped>
 .navbar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   height: 54px;
   padding: 0 20px;
   display: flex;

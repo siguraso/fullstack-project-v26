@@ -103,6 +103,15 @@ async function handleSubmit() {
     feedbackMessage.value = 'Signed in, but we could not open the dashboard. Please try again.'
   }
 }
+
+async function goToRegister() {
+  if (isSubmitting.value) {
+    return
+  }
+
+  feedbackTone.value = 'info'
+  feedbackMessage.value = 'Ask your administrator for an invitation to join your workspace.'
+}
 </script>
 
 <template>

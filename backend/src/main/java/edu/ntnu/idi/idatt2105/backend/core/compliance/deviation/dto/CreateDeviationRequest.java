@@ -26,4 +26,7 @@ public class CreateDeviationRequest {
 
     @NotNull
     private DeviationStatus status;
+
+    private Long checklistItemId;
+    private Long logId;
 }

@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { deleteTemplate, generateChecklist, toggleTemplate } from '@/services/checklist'
 
-interface Template {
-  id: number
-  name: string
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY'
-  itemsCount: number
-  description?: string
-}
-
 const emit = defineEmits<{
   edit: [template: any]
   deleted: []
@@ -18,219 +10,236 @@ const props = defineProps<{
   templates: any[]
 }>()
 
-function getBadgeColor(freq: string) {
-  if (freq === 'DAILY') return 'blue'
-  if (freq === 'WEEKLY') return 'gray'
-  if (freq === 'MONTHLY') return 'red'
-  return 'gray'
+const moduleColor: Record<string, string> = {
+  IK_FOOD: '#16a34a',
+  IK_ALCOHOL: '#dc2626',
+}
+
+const moduleLabel: Record<string, string> = {
+  IK_FOOD: 'IK-Food',
+  IK_ALCOHOL: 'IK-Alcohol',
+}
+
+function accentFor(module: string) {
+  return moduleColor[module] ?? '#475569'
 }
 
 async function confirmDelete(id: number) {
-  if (!Number.isFinite(id)) {
-    return
-  }
-
-  if (confirm('Are you sure?')) {
+  if (!Number.isFinite(id)) return
+  if (confirm('Delete this template? This cannot be undone.')) {
     await deleteTemplate(id)
     emit('deleted')
   }
 }
 
-async function useTemplate(id: number) {
-  if (!Number.isFinite(id)) {
-    return
-  }
-
-  await generateChecklist(id)
-  alert('Checklist created!')
-}
-
 async function toggle(id: number) {
-  if (!Number.isFinite(id)) {
-    return
-  }
-
+  if (!Number.isFinite(id)) return
   await toggleTemplate(id)
   emit('deleted')
 }
 </script>
 
 <template>
-  <section class="template-library">
-    <div class="header">
-      <h2>Template Library</h2>
-
-      <div class="filters">
-        <button class="active">All</button>
-        <button>Kitchen</button>
-        <button>Safety</button>
-      </div>
+  <section v-if="props.templates.length > 0" class="tl">
+    <div class="tl-header">
+      <h2 class="tl-title">Templates</h2>
+      <span class="tl-count">{{ props.templates.length }}</span>
     </div>
 
-    <div class="cards">
+    <div class="tl-grid">
       <div
-        v-for="template in props.templates"
-        :key="template.id"
-        class="card"
-        :class="{ inactive: !template.active }"
+        v-for="t in props.templates"
+        :key="t.id"
+        class="tl-card"
+        :class="{ 'tl-inactive': !t.active }"
+        :style="{ '--accent': accentFor(t.module) }"
       >
-        <!-- icon -->
-        <div class="icon" :class="getBadgeColor(template.frequency)" />
-
-        <!-- badge -->
-        <span class="badge">{{ template.frequency }}</span>
-
-        <!-- title -->
-        <h3>{{ template.name }}</h3>
-        <p>{{ template.module }}</p>
-
-        <!-- meta -->
-        <div class="meta">
-          <span>{{ template.items?.length || 0 }} items</span>
-          <span>•</span>
-          <span>{{ template.frequency }}</span>
+        <!-- Top row: module + frequency tags -->
+        <div class="tl-tags">
+          <span
+            class="tl-module-tag"
+            :style="{ background: accentFor(t.module) + '18', color: accentFor(t.module) }"
+          >
+            {{ moduleLabel[t.module] ?? t.module }}
+          </span>
+          <span class="tl-freq-tag">{{ t.frequency }}</span>
         </div>
 
-        <!-- actions -->
-        <div class="actions">
-          <button class="primary" @click="useTemplate(template.id)">Use Template</button>
+        <!-- Name -->
+        <h3 class="tl-name">{{ t.name }}</h3>
+        <p class="tl-meta">{{ t.items?.length ?? 0 }} items</p>
+
+        <!-- Actions -->
+        <div class="tl-actions">
+          <button class="tl-btn-edit" @click="emit('edit', t)">Edit</button>
           <button
-            :class="template.active ? 'active-btn' : 'inactive-btn'"
-            @click="toggle(template.id)"
+            class="tl-btn-icon"
+            :title="t.active ? 'Deactivate' : 'Activate'"
+            @click="toggle(t.id)"
           >
-            {{ template.active ? 'Deactivate' : 'Activate' }}
+            {{ t.active ? '⏸' : '▶' }}
           </button>
-          <button class="secondary" @click="emit('edit', template)">Edit</button>
-          <button class="danger" @click="confirmDelete(template.id)">Delete</button>
+          <button class="tl-btn-icon tl-btn-delete" title="Delete" @click="confirmDelete(t.id)">
+            ✕
+          </button>
         </div>
       </div>
     </div>
   </section>
 </template>
 
-<style>
-.template-library {
-  margin-bottom: 32px;
+<style scoped>
+.tl {
+  margin-bottom: 28px;
 }
 
-.header {
+.tl-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.filters button {
-  border: none;
-  background: transparent;
-  margin-left: 10px;
-  cursor: pointer;
-  color: black;
+.tl-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
 }
 
-.filters .active {
+.tl-count {
+  font-size: 12px;
   background: #e5e7eb;
-  padding: 6px 12px;
+  color: #374151;
+  padding: 2px 8px;
   border-radius: 999px;
+  font-weight: 600;
 }
 
 /* GRID */
-.cards {
+.tl-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 /* CARD */
-.card {
+.tl-card {
   background: white;
   border-radius: 16px;
-  padding: 18px;
-  border: 1px solid var(--border);
-  position: relative;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  border: 1.5px solid var(--stroke);
+  border-left: 4px solid var(--accent, #475569);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.inactive {
+.tl-inactive {
   opacity: 0.5;
-  filter: grayscale(0.6);
 }
 
-.icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  margin-bottom: 12px;
+/* TAGS */
+.tl-tags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
-.icon.blue {
-  background: #dbeafe;
-}
-.icon.gray {
-  background: #e5e7eb;
-}
-.icon.red {
-  background: #fee2e2;
-}
-
-/* BADGE */
-.badge {
-  position: absolute;
-  top: 16px;
-  right: 16px;
+.tl-module-tag {
   font-size: 11px;
-  background: #e5e7eb;
-  padding: 4px 8px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.tl-freq-tag {
+  font-size: 11px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
   border-radius: 999px;
 }
 
 /* TEXT */
-.card h3 {
+.tl-name {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.3;
 }
 
-.card p {
-  margin: 6px 0 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-/* META */
-.meta {
+.tl-meta {
+  margin: 0;
   font-size: 12px;
-  color: var(--text-secondary);
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
+  color: #94a3b8;
 }
 
 /* ACTIONS */
-.actions {
+.tl-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
 }
 
-.primary {
+.tl-btn-edit {
   flex: 1;
-  background: var(--neutral);
+  padding: 8px 0;
+  border: 1.5px solid var(--stroke);
+  background: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #0f172a;
+}
+
+.tl-btn-edit:hover {
+  background: #f8fafc;
+}
+
+.tl-btn-use {
+  flex: 1;
+  padding: 8px 0;
+  background: #0f172a;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-.secondary {
-  color: black;
-  border: 1px solid var(--border);
-  background: transparent;
-  padding: 10px;
-  border-radius: 10px;
+.tl-btn-use:hover {
+  background: #1e293b;
 }
 
-.secondary:hover {
-  background-color: #f8fafc;
+.tl-btn-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--stroke);
+  background: white;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.tl-btn-icon:hover {
+  background: #f1f5f9;
+}
+
+.tl-btn-delete:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
 }
 
 @media (max-width: 1100px) {

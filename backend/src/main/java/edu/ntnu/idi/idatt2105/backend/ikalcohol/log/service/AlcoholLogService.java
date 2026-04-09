@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.LogStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.repository.BaseComplianceLogRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.service.BaseComplianceLogService;
@@ -36,19 +35,16 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final AlcoholLogMapper mapper;
-    private final DeviationService deviationService;
 
     public AlcoholLogService(
             AlcoholLogRepository repository,
             TenantRepository tenantRepository,
             UserRepository userRepository,
-            AlcoholLogMapper mapper,
-            DeviationService deviationService) {
+            AlcoholLogMapper mapper) {
         this.repository = repository;
         this.tenantRepository = tenantRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
-        this.deviationService = deviationService;
     }
 
     @Override
@@ -67,11 +63,7 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         AlcoholComplianceLog alcoholLog = mapper.toEntity(request, tenant, recordedBy, status);
         AlcoholComplianceLog savedLog = repository.save(alcoholLog);
 
-        if (status == LogStatus.WARNING || status == LogStatus.CRITICAL) {
-            deviationService.createFromLog(savedLog);
-        }
-
-        log.info("Created alcohol log id={} status={}", savedLog.getId(), status);
+        log.info("Created alcohol log id={} status={} deviationCreated=false", savedLog.getId(), status);
 
         return mapper.toDTO(savedLog);
     }

@@ -85,3 +85,33 @@ CREATE TABLE IF NOT EXISTS alcohol_compliance_logs (
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
     FOREIGN KEY (recorded_by) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS documents (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    area VARCHAR(20) NOT NULL CHECK (area IN ('GENERAL', 'IK_FOOD', 'IK_ALCOHOL')),
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(2000),
+    original_filename VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(150) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    uploaded_by BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id),
+    FOREIGN KEY (uploaded_by) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS document_tags (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    document_id BIGINT NOT NULL,
+    tag VARCHAR(80) NOT NULL,
+    UNIQUE (document_id, tag),
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS document_blob_contents (
+    document_id BIGINT PRIMARY KEY,
+    content BLOB NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);
