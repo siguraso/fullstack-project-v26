@@ -51,7 +51,7 @@ const authenticatedRoutes = [
   { path: '/documents', heading: 'Document Library' },
   { path: '/deviation', heading: 'Deviations' },
   { path: '/checklists', heading: 'Checklists' },
-  { path: '/inspections', heading: 'Inspection Logs' },
+  { path: '/inspections', heading: 'Inspection Overview' },
   { path: '/settings', heading: 'Organisation Configuration' },
   { path: '/checklist-builder', heading: 'Checklist Builder' },
   { path: '/temperature-logs', heading: 'Temperature Logs' },
@@ -96,9 +96,16 @@ function stubResponsiveApis() {
     body: { data: false },
   }).as('getChecklistLibraryInUse')
 
-  cy.intercept('GET', '/api/inspection/logs', {
-    body: { data: [] },
-  }).as('getInspectionLogs')
+  cy.intercept('GET', '/api/inspection/stats', {
+    body: {
+      data: {
+        deviationTotal: 0, deviationOpen: 0, deviationInProgress: 0, deviationResolved: 0,
+        deviationCritical: 0, deviationHigh: 0, deviationMedium: 0, deviationLow: 0,
+        temperatureTotal: 0, temperatureOk: 0, temperatureWarning: 0, temperatureCritical: 0,
+        alcoholTotal: 0, alcoholOk: 0, alcoholWarning: 0, alcoholCritical: 0,
+      },
+    },
+  }).as('getInspectionStats')
 
   cy.intercept('GET', '/api/documents*', {
     body: { data: [] },

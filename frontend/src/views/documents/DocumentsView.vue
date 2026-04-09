@@ -309,6 +309,139 @@ onMounted(() => {
     transform 140ms ease,
     background-color 140ms ease,
     border-color 140ms ease;
+  color: black;
+}
+
+.area-button {
+  padding: 10px 14px;
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.area-button-active {
+  background: #0f172a;
+  color: #fff;
+}
+
+.toolbar-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font: inherit;
+  background: #fff;
+}
+
+.tag-row,
+.suggestion-row,
+.actions,
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tag-row,
+.suggestion-row {
+  margin-top: 16px;
+}
+
+.tag-chip {
+  padding: 8px 12px;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.suggestion-label {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.suggestion-chip {
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.results-header {
+  margin-bottom: 12px;
+  color: #334155;
+}
+
+.table-shell {
+  overflow-x: auto;
+}
+
+.documents-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.documents-table th,
+.documents-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 14px 10px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.documents-table th {
+  color: #475569;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-top: 0;
+}
+
+.document-title {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.document-description {
+  margin: 6px 0 0;
+  color: #475569;
+  max-width: 36ch;
+}
+
+.table-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.table-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.primary-action {
+  padding: 12px 16px;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: #fff;
 }
