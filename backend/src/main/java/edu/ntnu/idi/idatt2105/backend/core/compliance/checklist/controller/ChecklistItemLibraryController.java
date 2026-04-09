@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class ChecklistItemLibraryController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<ChecklistItemLibraryDTO>> create(@Valid @RequestBody ChecklistItemLibraryDTO request) {
-        return ResponseEntity.ok(ApiResponse.ok(service.create(request)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.create(request)));
     }
 
     @GetMapping
@@ -40,9 +41,9 @@ public class ChecklistItemLibraryController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.ok(ApiResponse.ok("Checklist library item deleted", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")

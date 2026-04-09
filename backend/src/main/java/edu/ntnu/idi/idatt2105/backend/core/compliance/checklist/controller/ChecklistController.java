@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,13 +35,13 @@ public class ChecklistController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<ChecklistTemplateDTO>> createTemplate(
             @Valid @RequestBody CreateChecklistTemplateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(service.createTemplate(request)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.createTemplate(request)));
     }
 
     @PostMapping("/templates/{id}/generate")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<ChecklistInstanceDTO>> generate(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.generateInstance(id)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.generateInstance(id)));
     }
 
     @PutMapping("/templates/{id}")
@@ -74,9 +75,9 @@ public class ChecklistController {
 
     @DeleteMapping("/templates/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<ApiResponse<Void>> deleteTemplate(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTemplate(@PathVariable Long id) {
         service.deleteTemplate(id);
-        return ResponseEntity.ok(ApiResponse.ok("Checklist template deleted", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/templates/{id}/toggle")
