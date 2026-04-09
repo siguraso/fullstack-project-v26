@@ -2,6 +2,7 @@ import type { AlcoholLog, AlcoholLogInput } from '@/interfaces/AlcoholLog.interf
 import { getAuthSession } from '@/services/auth'
 import { parseJsonSafely, unwrap } from './util/util'
 import type { ApiEnvelope } from './util/util'
+import { jsonApiFetch } from './util/apiHelper'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API_URL = `${API_BASE_URL}/ikalcohol/logs`
@@ -56,8 +57,7 @@ export async function fetchAlcoholLogs(): Promise<AlcoholLog[]> {
   let response: Response
 
   try {
-    response = await fetch(API_URL, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    response = await jsonApiFetch(API_URL, {
       credentials: 'include',
       signal: controller.signal,
     })
@@ -91,20 +91,14 @@ export async function fetchAlcoholLogs(): Promise<AlcoholLog[]> {
 }
 
 export async function createAlcoholLog(payload: AlcoholLogInput): Promise<AlcoholLog> {
-  const token = getAuthSession()?.token
-
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
   let response: Response
 
   try {
-    response = await fetch(API_URL, {
+    response = await jsonApiFetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       credentials: 'include',
       body: JSON.stringify(payload),
       signal: controller.signal,

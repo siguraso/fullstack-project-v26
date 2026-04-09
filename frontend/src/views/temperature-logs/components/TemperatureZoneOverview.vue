@@ -2,7 +2,7 @@
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { getAuthSession } from '@/services/auth'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { Box, ChevronLeft, Pen, Pencil, PencilOff } from '@lucide/vue'
+import { Box, ChevronLeft, Pencil } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{

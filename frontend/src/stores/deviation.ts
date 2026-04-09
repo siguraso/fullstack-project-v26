@@ -55,10 +55,7 @@ export const useDeviationStore = defineStore('deviation', () => {
 
     try {
       const created = await api.createDeviation(form.value)
-
-      if (created) {
-        deviations.value.unshift(created)
-      }
+      deviations.value.unshift(created)
 
       resetForm()
     } catch {
