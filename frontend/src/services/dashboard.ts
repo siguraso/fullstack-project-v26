@@ -1,7 +1,7 @@
-import { apiFetch } from './util/apiHelper'
+import { jsonApiFetch } from './util/apiHelper'
 
 export async function getDashboardOverview() {
-  const res = await apiFetch('/api/dashboard/overview')
+  const res = await jsonApiFetch('/api/dashboard/overview')
 
   if (!res.ok) {
     console.error('Dashboard failed:', res.status)

@@ -1,5 +1,5 @@
 import type { Deviation } from '@/interfaces/Deviation.interface'
-import { apiFetch } from './util/apiHelper'
+import { jsonApiFetch } from './util/apiHelper'
 import { unwrap, parseJsonSafely } from './util/util'
 import type { ApiEnvelope } from './util/util'
 
@@ -39,7 +39,7 @@ function normalizeDeviation(raw: unknown, fallbackModule?: DeviationModule): Dev
 }
 
 export async function getDeviations(): Promise<Deviation[]> {
-  const res = await apiFetch(API)
+  const res = await jsonApiFetch(API)
   const payload = await parseJsonSafely(res)
   const unwrapped = payload ? unwrap<unknown>(payload as ApiEnvelope<unknown>) : null
 
@@ -53,7 +53,7 @@ export async function getDeviations(): Promise<Deviation[]> {
 }
 
 export async function createDeviation(data: Deviation): Promise<Deviation | null> {
-  const res = await apiFetch(API, {
+  const res = await jsonApiFetch(API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -72,7 +72,7 @@ export async function updateDeviation(
   id: number,
   data: { status?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' },
 ): Promise<Deviation | null> {
-  const res = await apiFetch(`${API}/${id}`, {
+  const res = await jsonApiFetch(`${API}/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

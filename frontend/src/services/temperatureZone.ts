@@ -1,7 +1,7 @@
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { parseJsonSafely, unwrap } from './util/util'
 import type { ApiEnvelope } from './util/util'
-import { apiFetch } from './util/apiHelper'
+import { jsonApiFetch } from './util/apiHelper'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API_URL = `${API_BASE_URL}/ikfood/temperature-zones`
@@ -14,7 +14,7 @@ export async function getTemperatureZones(): Promise<Array<TemperatureZone>> {
   let response: Response
 
   try {
-    response = await apiFetch(API_URL, {
+    response = await jsonApiFetch(API_URL, {
       credentials: 'include',
       signal: controller.signal,
     })
@@ -50,7 +50,7 @@ export async function getTemperatureZones(): Promise<Array<TemperatureZone>> {
 export async function addTemperatureZone(
   data: Omit<TemperatureZone, 'id'>,
 ): Promise<TemperatureZone> {
-  const response = await apiFetch(API_URL, {
+  const response = await jsonApiFetch(API_URL, {
     method: 'POST',
     credentials: 'include',
     body: JSON.stringify(data),
@@ -83,7 +83,7 @@ export async function editTemperatureZone(
   id: number,
   data: Omit<TemperatureZone, 'id'>,
 ): Promise<TemperatureZone> {
-  const response = await apiFetch(`${API_URL}/${id}`, {
+  const response = await jsonApiFetch(`${API_URL}/${id}`, {
     method: 'PUT',
     credentials: 'include',
     body: JSON.stringify(data),
@@ -113,7 +113,7 @@ export async function editTemperatureZone(
 }
 
 export async function deleteTemperatureZone(id: number): Promise<void> {
-  const response = await apiFetch(`${API_URL}/${id}`, {
+  const response = await jsonApiFetch(`${API_URL}/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   })

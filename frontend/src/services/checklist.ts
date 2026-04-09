@@ -1,16 +1,7 @@
-import { apiFetch } from './util/apiHelper'
-import type { ApiEnvelope } from './util/util'
-import { parseJsonSafely, unwrap } from './util/util'
+import { jsonApiFetch } from './util/apiHelper'
+import { parseJsonSafely, unwrapMaybeEnvelope } from './util/util'
 
 const API_URL = '/api/checklists'
-
-function unwrapMaybeEnvelope<T>(payload: unknown): T {
-  if (payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)) {
-    return unwrap<T>(payload as ApiEnvelope<T>)
-  }
-
-  return payload as T
-}
 
 async function readJson<T>(res: Response, fallbackMessage: string): Promise<T> {
   const payload = await parseJsonSafely(res)
@@ -23,7 +14,7 @@ async function readJson<T>(res: Response, fallbackMessage: string): Promise<T> {
 }
 
 export async function getTodayChecklist() {
-  const res = await apiFetch(`${API_URL}/today`)
+  const res = await jsonApiFetch(`${API_URL}/today`)
   const data = await readJson<unknown>(res, 'Failed to fetch checklist')
 
   return Array.isArray(data) ? data : []
@@ -34,7 +25,7 @@ export async function generateChecklist(templateId: number) {
     throw new Error('Invalid template id')
   }
 
-  const res = await apiFetch(`${API_URL}/templates/${templateId}/generate`, {
+  const res = await jsonApiFetch(`${API_URL}/templates/${templateId}/generate`, {
     method: 'POST',
   })
 
@@ -44,7 +35,7 @@ export async function generateChecklist(templateId: number) {
 }
 
 export async function updateChecklistItem(id: number, completed: boolean) {
-  const res = await apiFetch(`${API_URL}/items/${id}`, {
+  const res = await jsonApiFetch(`${API_URL}/items/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -59,14 +50,14 @@ export async function updateChecklistItem(id: number, completed: boolean) {
 }
 
 export async function getTemplates() {
-  const res = await apiFetch(`${API_URL}/templates`)
+  const res = await jsonApiFetch(`${API_URL}/templates`)
   const data = await readJson<unknown>(res, 'Failed to fetch templates')
 
   return Array.isArray(data) ? data : []
 }
 
 export async function createTemplate(payload: any) {
-  const res = await apiFetch(`${API_URL}/templates`, {
+  const res = await jsonApiFetch(`${API_URL}/templates`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -80,7 +71,7 @@ export async function updateTemplate(id: number, payload: any) {
     throw new Error('Invalid template id')
   }
 
-  const res = await apiFetch(`${API_URL}/templates/${id}`, {
+  const res = await jsonApiFetch(`${API_URL}/templates/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -90,7 +81,7 @@ export async function updateTemplate(id: number, payload: any) {
 }
 
 export async function getLibraryItems() {
-  const res = await apiFetch(`/api/checklist-library`, {
+  const res = await jsonApiFetch(`/api/checklist-library`, {
     method: 'GET',
   })
   const data = await readJson<unknown>(res, 'Failed to fetch library items')
@@ -99,7 +90,7 @@ export async function getLibraryItems() {
 }
 
 export async function createLibraryItem(payload: any) {
-  const res = await apiFetch(`/api/checklist-library`, {
+  const res = await jsonApiFetch(`/api/checklist-library`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -113,7 +104,7 @@ export async function deleteLibraryItem(id: number) {
     throw new Error('Invalid library item id')
   }
 
-  const res = await apiFetch(`/api/checklist-library/${id}`, {
+  const res = await jsonApiFetch(`/api/checklist-library/${id}`, {
     method: 'DELETE',
   })
 
@@ -127,7 +118,7 @@ export async function updateLibraryItem(id: number, payload: any) {
     throw new Error('Invalid library item id')
   }
 
-  const res = await apiFetch(`/api/checklist-library/${id}`, {
+  const res = await jsonApiFetch(`/api/checklist-library/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -141,7 +132,7 @@ export async function deleteTemplate(id: number) {
     throw new Error('Invalid template id')
   }
 
-  const res = await apiFetch(`/api/checklists/templates/${id}`, {
+  const res = await jsonApiFetch(`/api/checklists/templates/${id}`, {
     method: 'DELETE',
   })
 
@@ -153,7 +144,7 @@ export async function isLibraryItemInUse(id: number) {
     return false
   }
 
-  const res = await apiFetch(`/api/checklist-library/${id}/in-use`)
+  const res = await jsonApiFetch(`/api/checklist-library/${id}/in-use`)
   const data = await readJson<unknown>(res, 'Failed to check library item usage')
 
   return Boolean(data)
@@ -164,7 +155,7 @@ export async function toggleTemplate(id: number) {
     throw new Error('Invalid template id')
   }
 
-  const res = await apiFetch(`/api/checklists/templates/${id}/toggle`, {
+  const res = await jsonApiFetch(`/api/checklists/templates/${id}/toggle`, {
     method: 'PATCH',
   })
 

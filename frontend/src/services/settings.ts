@@ -1,8 +1,10 @@
 import type { Tenant, TenantUpdatePayload } from '@/interfaces/Tenant.interface'
 import type { User, UserUpdatePayload } from '@/interfaces/User.interface'
-import { apiFetch } from './util/apiHelper'
-import { unwrap } from './util/util'
+import { jsonApiFetch } from './util/apiHelper'
+import { parseResponseBody, readErrorMessage, unwrap } from './util/util'
 import type { ApiEnvelope } from './util/util'
+
+export type { Tenant, TenantUpdatePayload } from '@/interfaces/Tenant.interface'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
@@ -16,35 +18,8 @@ function buildHeaders(contentType = false): HeadersInit {
   return headers
 }
 
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const contentType = response.headers.get('content-type') ?? ''
-
-  if (contentType.includes('application/json')) {
-    try {
-      return await response.json()
-    } catch {
-      return null
-    }
-  }
-
-  const text = await response.text()
-
-  return text.length > 0 ? { message: text } : null
-}
-
-function readErrorMessage(payload: unknown, fallback: string): string {
-  if (!payload || typeof payload !== 'object') {
-    return fallback
-  }
-
-  const record = payload as Record<string, unknown>
-  const candidate = record.message ?? record.error ?? record.detail
-
-  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : fallback
-}
-
 async function request<T>(path: string, init?: RequestInit, fallbackError?: string): Promise<T> {
-  const response = await apiFetch(`${API_BASE_URL}${path}`, {
+  const response = await jsonApiFetch(`${API_BASE_URL}${path}`, {
     credentials: 'include',
     ...init,
   })
