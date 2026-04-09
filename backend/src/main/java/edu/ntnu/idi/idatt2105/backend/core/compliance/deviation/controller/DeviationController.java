@@ -2,6 +2,7 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +32,9 @@ public class DeviationController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<DeviationDTO>> create(
             @Valid @RequestBody CreateDeviationRequest request) {
-
-        return ResponseEntity.ok(ApiResponse.ok(service.create(request)));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(service.create(request)));
     }
 
     @GetMapping
