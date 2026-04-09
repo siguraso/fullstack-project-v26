@@ -85,7 +85,7 @@ describe('Documents view', () => {
     }).as('downloadDocument')
   })
 
-  it('filters by keyword and tag, then downloads a document', () => {
+  it('filters by keyword, previews a document, and downloads it', () => {
     cy.visit('/documents', {
       onBeforeLoad(win) {
         seedAuthSession(win)
@@ -103,7 +103,12 @@ describe('Documents view', () => {
     cy.wait('@getDocuments')
     cy.contains('Opening Manual').should('be.visible')
 
-    cy.contains('button', 'Download').click()
+    cy.contains('button', 'View').click()
+    cy.wait('@downloadDocument')
+    cy.get('.preview-card').should('exist')
+    cy.get('iframe[title="Document preview"]').should('have.attr', 'src', 'blob:test-url')
+
+    cy.get('.preview-card').contains('button', 'Download').click()
     cy.wait('@downloadDocument')
     cy.get('@createObjectUrl').should('have.been.called')
   })
