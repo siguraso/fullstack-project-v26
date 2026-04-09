@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '../services/auth'
+import { getAuthSession, isAuthenticated } from '../services/auth'
+import type { UserRole } from '../services/auth'
 import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
 import InviteAcceptView from '../views/InviteAcceptView.vue'
 import DeviationView from '../views/deviation/DeviationView.vue'
 import InspectionsView from '@/views/inspections/InspectionsView.vue'
@@ -20,11 +20,6 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
     },
     {
       path: '/invite/accept',
@@ -60,6 +55,7 @@ const router = createRouter({
           path: '/settings',
           name: 'settings',
           component: SettingsView,
+          meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
         },
         {
           path: '/checklist-builder',
@@ -82,9 +78,15 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authenticated = isAuthenticated()
+  const session = getAuthSession()
 
   if (to.meta.requiresAuth && !authenticated) {
     return { name: 'login' }
+  }
+
+  const allowedRoles = to.meta.allowedRoles as UserRole[] | undefined
+  if (allowedRoles && (!session?.role || !allowedRoles.includes(session.role))) {
+    return { name: 'dashboard' }
   }
 
   if ((to.name === 'login' || to.name === 'register') && authenticated) {

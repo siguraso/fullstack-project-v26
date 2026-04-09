@@ -75,11 +75,15 @@ const complianceGroups: NavGroup[] = [
   },
 ]
 
-const footerItems: NavItem[] = [{ label: 'Settings', icon: Settings, to: '/settings' }]
-
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
+const canAccessSettings = session?.role === 'ADMIN' || session?.role === 'MANAGER'
+
+const footerItems: NavItem[] = canAccessSettings
+  ? [{ label: 'Settings', icon: Settings, to: '/settings' }]
+  : []
+
 const userEmail = computed(() => session?.email ?? 'Signed in user')
 const openGroups = reactive<Record<NavGroup['key'], boolean>>({
   food: true,

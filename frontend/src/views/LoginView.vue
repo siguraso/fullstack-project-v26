@@ -36,13 +36,6 @@ const cinematicStyle = computed(
     }) as CSSProperties,
 )
 
-function goToRegister() {
-  if (isSubmitting.value) {
-    return
-  }
-
-  void router.push('/register')
-}
 
 function wait(durationMs: number) {
   return new Promise((resolve) => window.setTimeout(resolve, durationMs))
@@ -67,6 +60,7 @@ function syncCinematicOrigin() {
         y: window.innerHeight / 2,
       }
 }
+
 
 async function handleSubmit() {
   if (authPhase.value !== 'idle') {
@@ -557,17 +551,6 @@ input:focus {
 .status-error {
   border-left-color: #d64545;
   color: #b42318;
-}
-
-.footer {
-  margin: 22px 0 0;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 12.5px;
-}
-
-.footer-link {
-  font-weight: 600;
 }
 
 .accents {
