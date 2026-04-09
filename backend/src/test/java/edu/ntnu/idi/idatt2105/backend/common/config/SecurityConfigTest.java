@@ -1,6 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.common.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -74,5 +75,16 @@ class SecurityConfigTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("Access denied"));
     }
-}
 
+    @Test
+    void staffCannotUploadDocuments() throws Exception {
+        mockMvc.perform(multipart("/api/documents")
+                        .file("file", "content".getBytes())
+                        .param("title", "Manual")
+                        .param("area", "GENERAL")
+                        .with(user("staff@example.com").roles("STAFF")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+}
