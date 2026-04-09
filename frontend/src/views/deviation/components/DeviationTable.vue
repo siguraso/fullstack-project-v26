@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import InfoCard from '@/components/ui/InfoCard.vue'
-import { useDeviationStore, type Deviation } from '@/stores/deviation'
+import { useDeviationStore } from '@/stores/deviation'
 import { ArrowDown, ArrowUp, ChevronLeft, Filter, History, Minus } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
+import type { Deviation } from '@/interfaces/Deviation.interface'
 
 type SortField = 'category' | 'severity' | 'status' | 'createdAt'
 type SortDirection = 'asc' | 'desc' | null
@@ -17,6 +18,10 @@ const props = withDefaults(
     title: 'Existing Deviations',
   },
 )
+
+const emit = defineEmits<{
+  (event: 'view-requested', deviation: Deviation): void
+}>()
 
 const rows = computed(() =>
   store.filtered.filter((deviation) => !props.category || deviation.category === props.category),
@@ -159,6 +164,10 @@ function sortStateFor(field: SortField): SortDirection {
   return sortDirection.value
 }
 
+function requestView(deviation: Deviation) {
+  emit('view-requested', deviation)
+}
+
 watch(
   () => [store.filters.status, store.filters.severity, props.category],
   () => {
@@ -178,106 +187,115 @@ watch(totalPages, (nextTotalPages) => {
     class="info-card"
     :title="props.title"
     :icon="History"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-blue)"
+    iconColor="var(--icon-stroke-blue)"
     :addToHeader="true"
   >
     <template #extra-header-content>
       <div class="filters-wrap">
         <Filter class="filter-icon" :size="16" aria-hidden="true" />
         <div class="filters">
-        <select v-model="store.filters.status">
-          <option value="ALL">Status: All</option>
-          <option value="OPEN">Open</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="RESOLVED">Resolved</option>
-        </select>
+          <select v-model="store.filters.status">
+            <option value="ALL">Status: All</option>
+            <option value="OPEN">Open</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+          </select>
 
-        <select v-model="store.filters.severity">
-          <option value="ALL">Severity: All</option>
-          <option value="LOW">Low</option>
-          <option value="MEDIUM">Medium</option>
-          <option value="HIGH">High</option>
-          <option value="CRITICAL">Critical</option>
-        </select>
+          <select v-model="store.filters.severity">
+            <option value="ALL">Severity: All</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
         </div>
       </div>
     </template>
 
-    <table class="log-table">
-      <thead class="log-table-header">
-        <tr>
-          <th>Title</th>
-          <th>
-            <button type="button" class="sort-header-button" @click="toggleSort('category')">
-              Category
-              <ArrowUp v-if="sortStateFor('category') === 'asc'" :size="14" aria-hidden="true" />
-              <ArrowDown
-                v-else-if="sortStateFor('category') === 'desc'"
-                :size="14"
-                aria-hidden="true"
-              />
-              <Minus v-else :size="14" aria-hidden="true" />
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header-button" @click="toggleSort('severity')">
-              Severity
-              <ArrowUp v-if="sortStateFor('severity') === 'asc'" :size="14" aria-hidden="true" />
-              <ArrowDown
-                v-else-if="sortStateFor('severity') === 'desc'"
-                :size="14"
-                aria-hidden="true"
-              />
-              <Minus v-else :size="14" aria-hidden="true" />
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header-button" @click="toggleSort('status')">
-              Status
-              <ArrowUp v-if="sortStateFor('status') === 'asc'" :size="14" aria-hidden="true" />
-              <ArrowDown
-                v-else-if="sortStateFor('status') === 'desc'"
-                :size="14"
-                aria-hidden="true"
-              />
-              <Minus v-else :size="14" aria-hidden="true" />
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header-button" @click="toggleSort('createdAt')">
-              Created date
-              <ArrowUp v-if="sortStateFor('createdAt') === 'asc'" :size="14" aria-hidden="true" />
-              <ArrowDown
-                v-else-if="sortStateFor('createdAt') === 'desc'"
-                :size="14"
-                aria-hidden="true"
-              />
-              <Minus v-else :size="14" aria-hidden="true" />
-            </button>
-          </th>
-          <th>Actions</th>
-        </tr>
-      </thead>
 
-      <tbody class="log-table-body">
-        <tr v-for="d in currentPageRows" :key="d.id ?? d.title">
-          <td class="title">{{ d.title }}</td>
-          <td>{{ formatCategory(d.category) }}</td>
-          <td class="severity-cell">
-            <span class="deviation-badge" :class="severityClass(d.severity)">{{ d.severity }}</span>
-          </td>
-          <td class="status-cell">
-            <span class="deviation-badge" :class="statusClass(d.status)">{{ formatStatus(d.status) }}</span>
-          </td>
-          <td>{{ formatDate(d.createdAt) }}</td>
-          <td><button class="view" type="button">View</button></td>
-        </tr>
-        <tr v-if="rows.length === 0">
-          <td colspan="6" class="empty">{{ emptyMessage }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="log-table">
+        <thead class="log-table-header">
+          <tr>
+            <th>Title</th>
+            <th>
+              <button type="button" class="sort-header-button" @click="toggleSort('category')">
+                Category
+                <ArrowUp v-if="sortStateFor('category') === 'asc'" :size="14" aria-hidden="true" />
+                <ArrowDown
+                  v-else-if="sortStateFor('category') === 'desc'"
+                  :size="14"
+                  aria-hidden="true"
+                />
+                <Minus v-else :size="14" aria-hidden="true" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header-button" @click="toggleSort('severity')">
+                Severity
+                <ArrowUp v-if="sortStateFor('severity') === 'asc'" :size="14" aria-hidden="true" />
+                <ArrowDown
+                  v-else-if="sortStateFor('severity') === 'desc'"
+                  :size="14"
+                  aria-hidden="true"
+                />
+                <Minus v-else :size="14" aria-hidden="true" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header-button" @click="toggleSort('status')">
+                Status
+                <ArrowUp v-if="sortStateFor('status') === 'asc'" :size="14" aria-hidden="true" />
+                <ArrowDown
+                  v-else-if="sortStateFor('status') === 'desc'"
+                  :size="14"
+                  aria-hidden="true"
+                />
+                <Minus v-else :size="14" aria-hidden="true" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header-button" @click="toggleSort('createdAt')">
+                Created date
+                <ArrowUp v-if="sortStateFor('createdAt') === 'asc'" :size="14" aria-hidden="true" />
+                <ArrowDown
+                  v-else-if="sortStateFor('createdAt') === 'desc'"
+                  :size="14"
+                  aria-hidden="true"
+                />
+                <Minus v-else :size="14" aria-hidden="true" />
+              </button>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody class="log-table-body">
+          <tr v-for="d in currentPageRows" :key="d.id ?? d.title">
+            <td class="title">{{ d.title }}</td>
+            <td>{{ formatCategory(d.category) }}</td>
+            <td class="severity-cell">
+              <span class="deviation-badge" :class="severityClass(d.severity)">{{
+                d.severity
+              }}</span>
+            </td>
+            <td class="status-cell">
+              <span class="deviation-badge" :class="statusClass(d.status)">{{
+                formatStatus(d.status)
+              }}</span>
+            </td>
+            <td>{{ formatDate(d.createdAt) }}</td>
+            <td>
+              <button class="view" type="button" @click="requestView(d)">View</button>
+            </td>
+          </tr>
+          <tr v-if="rows.length === 0">
+            <td colspan="6" class="empty">{{ emptyMessage }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
@@ -301,28 +319,20 @@ watch(totalPages, (nextTotalPages) => {
   margin-left: auto;
 }
 
-.filters {
-  display: flex;
-  gap: 8px;
-}
-
 .filter-icon {
   color: var(--text-secondary);
 }
 
-.filters select {
-  min-height: 34px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  font-size: 11px;
-  color: var(--text-secondary);
+.table-scroll {
+  overflow-x: auto;
 }
+
 
 .log-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 760px;
 }
 
 .log-table-header th:nth-child(1) {
@@ -371,7 +381,7 @@ watch(totalPages, (nextTotalPages) => {
 .log-table-body td {
   text-align: left;
   padding: 15px 10px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1px solid var(--border);
   color: var(--text);
   font-size: 13px;
 }
@@ -436,25 +446,27 @@ watch(totalPages, (nextTotalPages) => {
 }
 
 .status-resolved {
-  background: var(--surface-muted);
+  background: var(--bg);
   color: var(--text-secondary);
 }
 
 .view {
-  border: 0;
-  min-height: 22px;
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
   text-transform: uppercase;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  padding: 0;
+  padding: 10px;
 }
 
 .view:hover {
-  text-decoration: underline;
-  background: transparent;
+  background: var(--bg);
+}
+
+.view:active {
+  background: var(--bg-hover);
 }
 
 .paging {
@@ -483,7 +495,7 @@ watch(totalPages, (nextTotalPages) => {
 
 .empty {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   padding: 24px;
 }
 
@@ -491,12 +503,24 @@ watch(totalPages, (nextTotalPages) => {
   .filters-wrap {
     width: 100%;
     margin-left: 0;
+    flex-wrap: wrap;
   }
 
   .filters {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .paging {
+    flex-wrap: wrap;
+    align-items: center;
   }
 }
 </style>

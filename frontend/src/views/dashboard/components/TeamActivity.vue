@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import Card from '@/components/ui/Card.vue'
-import { User2Icon, ChevronDownIcon } from '@lucide/vue'
+import Avatar from '@/components/ui/Avatar.vue'
+import { ChevronDownIcon } from '@lucide/vue'
 import { ref, computed } from 'vue'
-
-interface Activity {
-  username: string
-  task: string
-  dateFinished: Date
-}
 
 const props = defineProps<{
   activities: any[]
@@ -40,9 +34,7 @@ const formatTimeAgo = (date: Date): string => {
 <template>
   <div v-if="activity.length > 0">
     <div v-for="(item, index) in displayedActivities" :key="index" class="activity-item">
-      <div class="activity-icon">
-        <User2Icon :size="32" />
-      </div>
+      <Avatar :name="item.actor" />
       <div class="activity-content">
         <div class="activity-header">
           <p class="username">{{ item.actor }}</p>
@@ -65,7 +57,7 @@ const formatTimeAgo = (date: Date): string => {
 .activity-container {
   display: flex;
   flex-direction: column;
-  outline: 1px solid var(--stroke);
+  outline: 1px solid var(--border);
   border-radius: 10px;
   gap: 5px;
   padding: 10px;
@@ -102,7 +94,7 @@ const formatTimeAgo = (date: Date): string => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background-color: var(--stroke);
+  background-color: var(--border);
   border-radius: 50%;
   flex-shrink: 0;
   color: black;

@@ -4,7 +4,9 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ChevronDown,
+  X,
   ClipboardCheck,
+  FolderOpen,
   LayoutDashboard,
   SearchCheck,
   Settings,
@@ -26,8 +28,24 @@ interface NavGroup {
   items: NavItem[]
 }
 
+const props = withDefaults(
+  defineProps<{
+    isMobile?: boolean
+    open?: boolean
+  }>(),
+  {
+    isMobile: false,
+    open: true,
+  },
+)
+
+const emit = defineEmits<{
+  close: []
+}>()
+
 const primaryItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
+  { label: 'Documents', icon: FolderOpen, to: '/documents' },
   { label: 'Deviations', icon: TriangleAlert, to: '/deviation' },
   { label: 'Inspections', icon: SearchCheck, to: '/inspections' },
 ]
@@ -42,7 +60,6 @@ const complianceGroups: NavGroup[] = [
         icon: ClipboardCheck,
         to: { path: '/checklists', query: { ik: 'food' } },
       },
-      { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'food' } } },
       { label: 'Temperature Logs', icon: Thermometer, to: '/temperature-logs' },
     ],
   },
@@ -55,18 +72,21 @@ const complianceGroups: NavGroup[] = [
         icon: ClipboardCheck,
         to: { path: '/checklists', query: { ik: 'alcohol' } },
       },
-      { label: 'Logs', icon: ScrollText, to: { path: '/logs', query: { ik: 'alcohol' } } },
       { label: 'Alcohol Logs', icon: ScrollText, to: '/alcohol-logs' },
     ],
   },
 ]
 
-const footerItems: NavItem[] = [{ label: 'Settings', icon: Settings, to: '/settings' }]
-
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
-const userLabel = computed(() => session?.email ?? 'Signed in user')
+const canAccessSettings = session?.role === 'ADMIN' || session?.role === 'MANAGER'
+
+const footerItems: NavItem[] = canAccessSettings
+  ? [{ label: 'Settings', icon: Settings, to: '/settings' }]
+  : []
+
+const userEmail = computed(() => session?.email ?? 'Signed in user')
 const openGroups = reactive<Record<NavGroup['key'], boolean>>({
   food: true,
   alcohol: true,
@@ -81,7 +101,11 @@ function groupIsActive(group: NavGroup) {
 }
 
 function navigate(destination: RouteLocationRaw) {
-  router.push(destination)
+  void router.push(destination)
+
+  if (props.isMobile) {
+    emit('close')
+  }
 }
 
 function toggleGroup(key: NavGroup['key']) {
@@ -90,12 +114,38 @@ function toggleGroup(key: NavGroup['key']) {
 
 async function logout() {
   clearAuthSession()
+  if (props.isMobile) {
+    emit('close')
+  }
   await router.push('/login')
 }
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside
+    class="sidebar"
+    :class="{
+      'sidebar-mobile': props.isMobile,
+      'sidebar-open': props.open,
+      'sidebar-closed': props.isMobile && !props.open,
+    }"
+    :aria-hidden="props.isMobile ? !props.open : undefined"
+  >
+    <div v-if="props.isMobile" class="mobile-header">
+      <div class="mobile-brand">
+        <span class="mobile-brand-title">Navigation</span>
+        <p>{{ userEmail }}</p>
+      </div>
+      <button
+        type="button"
+        class="mobile-close"
+        aria-label="Close navigation"
+        @click="emit('close')"
+      >
+        <X :size="18" aria-hidden="true" />
+      </button>
+    </div>
+
     <nav class="nav-shell" aria-label="Sidebar">
       <div class="nav-main">
         <section class="nav-section">
@@ -176,7 +226,7 @@ async function logout() {
     </nav>
 
     <div class="user-info">
-      <p>{{ userLabel }}</p>
+      <p>{{ userEmail }}</p>
       <button type="button" class="logout-button" @click="logout">Logout</button>
     </div>
   </aside>
@@ -184,10 +234,11 @@ async function logout() {
 
 <style scoped>
 .sidebar {
-  width: var(--sidebar-width, 220px);
-  min-width: var(--sidebar-width, 220px);
-  height: calc(100vh - var(--navbar-height, 64px));
-  position: fixed;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--sidebar-width, 220px);
+  height: calc(100dvh - var(--navbar-height, 64px));
+  position: sticky;
   top: var(--navbar-height, 64px);
   left: 0;
   padding: 20px 14px 16px;
@@ -196,6 +247,8 @@ async function logout() {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  align-self: start;
+  z-index: 100;
 }
 
 .brand-block {
@@ -206,7 +259,7 @@ async function logout() {
 .brand-kicker {
   display: inline-block;
   margin-bottom: 8px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -227,12 +280,17 @@ async function logout() {
   color: var(--text-secondary);
 }
 
+.mobile-header {
+  display: none;
+}
+
 .nav-shell {
   display: flex;
   flex-direction: column;
   gap: 18px;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .nav-main {
@@ -256,7 +314,7 @@ async function logout() {
 .nav-section-label {
   margin: 0;
   padding: 0 10px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -394,5 +452,73 @@ async function logout() {
 .subnav-button:active,
 .group-trigger:active {
   transform: scale(0.99);
+}
+
+@media (max-width: 960px) {
+  .sidebar-mobile {
+    position: fixed;
+    top: var(--navbar-height, 54px);
+    left: 0;
+    bottom: 0;
+    width: min(86vw, 320px);
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    padding: 16px 14px 18px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
+    transform: translateX(-110%);
+    transition: transform 220ms ease;
+    z-index: 1100;
+  }
+
+  .sidebar-mobile.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-mobile.sidebar-closed {
+    pointer-events: none;
+  }
+
+  .sidebar-mobile .mobile-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 4px 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobile-brand {
+    min-width: 0;
+  }
+
+  .mobile-brand-title {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .mobile-brand p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-close {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text);
+    flex-shrink: 0;
+  }
 }
 </style>

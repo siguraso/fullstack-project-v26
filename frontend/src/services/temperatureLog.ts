@@ -1,23 +1,20 @@
 import type { TemperatureLog, TemperatureLogInput } from '@/interfaces/TemperatureLog.interface'
-import { getAuthSession } from '@/services/auth'
 import { parseJsonSafely, unwrap } from './util/util'
 import type { ApiEnvelope } from './util/util'
+import { jsonApiFetch } from './util/apiHelper'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 const API_URL = `${API_BASE_URL}/ikfood/temperature-logs`
 const REQUEST_TIMEOUT_MS = 10000
 
 export async function fetchTemperatureLogs(): Promise<TemperatureLog[]> {
-  const token = getAuthSession()?.token
-
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
   let response: Response
 
   try {
-    response = await fetch(API_URL, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    response = await jsonApiFetch(API_URL, {
       credentials: 'include',
       signal: controller.signal,
     })
@@ -51,10 +48,7 @@ export async function fetchTemperatureLogs(): Promise<TemperatureLog[]> {
 }
 
 export async function getTemperatureLogById(id: number): Promise<TemperatureLog> {
-  const token = getAuthSession()?.token
-
-  const response = await fetch(`${API_URL}/${id}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  const response = await jsonApiFetch(`${API_URL}/${id}`, {
     credentials: 'include',
   })
 
@@ -78,14 +72,8 @@ export async function getTemperatureLogById(id: number): Promise<TemperatureLog>
 }
 
 export async function createTemperatureLog(data: TemperatureLogInput): Promise<TemperatureLog> {
-  const token = getAuthSession()?.token
-
-  const response = await fetch(API_URL, {
+  const response = await jsonApiFetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
     credentials: 'include',
     body: JSON.stringify({
       temperatureZoneId: data.temperatureZoneId,
@@ -114,11 +102,8 @@ export async function createTemperatureLog(data: TemperatureLogInput): Promise<T
 }
 
 export async function deleteTemperatureLog(id: number): Promise<void> {
-  const token = getAuthSession()?.token
-
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await jsonApiFetch(`${API_URL}/${id}`, {
     method: 'DELETE',
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     credentials: 'include',
   })
 

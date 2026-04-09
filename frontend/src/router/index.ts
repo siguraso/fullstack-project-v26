@@ -1,13 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '../services/auth'
+import { getAuthSession, isAuthenticated } from '../services/auth'
+import type { UserRole } from '../services/auth'
 import DashboardView from '../views/dashboard/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
 import InviteAcceptView from '../views/InviteAcceptView.vue'
 import DeviationView from '../views/deviation/DeviationView.vue'
-import TemperatureView from '../views/temperature/TemperatureView.vue'
-import TasksView from '@/views/tasks/TasksView.vue'
-import LogsView from '@/views/logs/LogsView.vue'
 import InspectionsView from '@/views/inspections/InspectionsView.vue'
 import ChecklistView from '@/views/checklist/ChecklistView.vue'
 import MainLayout from '@/views/MainLayout.vue'
@@ -15,6 +12,7 @@ import SettingsView from '@/views/settings/SettingsView.vue'
 import ChecklistBuilderView from '@/views/checklist/ChecklistBuilderView.vue'
 import TemperatureLogView from '@/views/temperature-logs/TemperatureLogView.vue'
 import AlcoholLogView from '@/views/alcohol-logs/AlcoholLogView.vue'
+import DocumentsView from '@/views/documents/DocumentsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,11 +21,6 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
     },
     {
       path: '/invite/accept',
@@ -50,24 +43,9 @@ const router = createRouter({
           component: DeviationView,
         },
         {
-          path: '/temperature',
-          name: 'temperature',
-          component: TemperatureView,
-        },
-        {
           path: '/checklists',
           name: 'checklist',
           component: ChecklistView,
-        },
-        {
-          path: '/tasks',
-          name: 'tasks',
-          component: TasksView,
-        },
-        {
-          path: '/logs',
-          name: 'logs',
-          component: LogsView,
         },
         {
           path: '/inspections',
@@ -78,6 +56,12 @@ const router = createRouter({
           path: '/settings',
           name: 'settings',
           component: SettingsView,
+          meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
+        },
+        {
+          path: '/documents',
+          name: 'documents',
+          component: DocumentsView,
         },
         {
           path: '/checklist-builder',
@@ -100,15 +84,20 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authenticated = isAuthenticated()
+  const session = getAuthSession()
 
   if (to.meta.requiresAuth && !authenticated) {
     return { name: 'login' }
   }
 
-  if ((to.name === 'login' || to.name === 'register') && authenticated) {
+  const allowedRoles = to.meta.allowedRoles as UserRole[] | undefined
+  if (allowedRoles && (!session?.role || !allowedRoles.includes(session.role))) {
     return { name: 'dashboard' }
   }
 
+  if ((to.name === 'login' || to.name === 'register') && authenticated) {
+    return { name: 'dashboard' }
+  }
 
   return true
 })

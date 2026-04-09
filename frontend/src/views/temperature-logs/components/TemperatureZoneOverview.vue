@@ -2,7 +2,7 @@
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { getAuthSession } from '@/services/auth'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { Box, ChevronLeft } from '@lucide/vue'
+import { Box, ChevronLeft, Pencil } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
@@ -58,33 +58,37 @@ function openCreateOverlay() {
     class="info-card"
     title="Temperature zones"
     :icon="Box"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-green)"
+    iconColor="var(--icon-stroke-green)"
     :addToHeader="true"
   >
     <template #extra-header-content>
       <button v-if="role == 'ADMIN'" class="add-button" @click="openCreateOverlay">+</button>
     </template>
-    <table class="log-table">
-      <thead class="log-table-header">
-        <tr>
-          <th>Zone Name</th>
-          <th>Lower limit</th>
-          <th>Upper limit</th>
-          <th v-if="role == 'ADMIN'"></th>
-        </tr>
-      </thead>
-      <tbody class="log-table-body">
-        <tr v-for="zone in currentPageZones" :key="zone.id">
-          <td>{{ zone.name }}</td>
-          <td>{{ zone.lowerLimitCelsius }}°C</td>
-          <td>{{ zone.upperLimitCelsius }}°C</td>
-          <td v-if="role == 'ADMIN'">
-            <button class="edit-btn" @click="openEditOverlay(zone)">Edit</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="log-table">
+        <thead class="log-table-header">
+          <tr>
+            <th>Zone Name</th>
+            <th>Lower limit</th>
+            <th>Upper limit</th>
+            <th v-if="role == 'ADMIN'">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="log-table-body">
+          <tr v-for="zone in currentPageZones" :key="zone.id">
+            <td>{{ zone.name }}</td>
+            <td>{{ zone.lowerLimitCelsius }}°C</td>
+            <td>{{ zone.upperLimitCelsius }}°C</td>
+            <td v-if="role == 'ADMIN'">
+              <button class="edit-btn" @click="openEditOverlay(zone)" aria-label="Edit zone">
+                <Pencil :size="16" aria-hidden="true" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
       <p>Page {{ currentPage }} of {{ zonesSplit.length || 1 }}</p>
@@ -102,10 +106,15 @@ function openCreateOverlay() {
   font-size: 15px;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .log-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 520px;
 }
 
 .log-table-header th:nth-child(1) {
@@ -168,7 +177,7 @@ function openCreateOverlay() {
 
 .log-table-body td {
   padding: 15px 10px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1px solid var(--border);
 }
 
 .log-table-body tr:last-child td {
@@ -176,6 +185,26 @@ function openCreateOverlay() {
 }
 
 .edit-btn {
-  width: 100%;
+  background-color: var(--bg-secondary);
+  color: var(--neutral);
+  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  place-items: center;
+}
+
+.edit-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.edit-btn:active {
+  background-color: var(--bg-active);
+}
+
+@media (max-width: 640px) {
+  .paging {
+    flex-wrap: wrap;
+    align-items: center;
+  }
 }
 </style>

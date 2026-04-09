@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.LogStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.repository.BaseComplianceLogRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.service.BaseComplianceLogService;
@@ -25,28 +24,27 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.entity.AlcoholComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.enums.AlcoholLogType;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.mapper.AlcoholLogMapper;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.repository.AlcoholLogRepository;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianceLog> {
 
     private final AlcoholLogRepository repository;
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final AlcoholLogMapper mapper;
-    private final DeviationService deviationService;
 
     public AlcoholLogService(
             AlcoholLogRepository repository,
             TenantRepository tenantRepository,
             UserRepository userRepository,
-            AlcoholLogMapper mapper,
-            DeviationService deviationService) {
+            AlcoholLogMapper mapper) {
         this.repository = repository;
         this.tenantRepository = tenantRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
-        this.deviationService = deviationService;
     }
 
     @Override
@@ -56,34 +54,38 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
 
     public AlcoholLogDTO createLog(AlcoholLogCreateRequest request) {
         Long tenantId = TenantContext.getCurrentOrg();
+        log.info("Creating alcohol compliance log for tenantId={} type={}", tenantId, request.getLogType());
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
         User recordedBy = resolveAuthenticatedUser(tenantId);
         LogStatus status = resolveStatus(request);
-        AlcoholComplianceLog log = mapper.toEntity(request, tenant, recordedBy, status);
-        AlcoholComplianceLog savedLog = repository.save(log);
+        AlcoholComplianceLog alcoholLog = mapper.toEntity(request, tenant, recordedBy, status);
+        AlcoholComplianceLog savedLog = repository.save(alcoholLog);
 
-        if (status == LogStatus.WARNING || status == LogStatus.CRITICAL) {
-            deviationService.createFromLog(savedLog);
-        }
+        log.info("Created alcohol log id={} status={} deviationCreated=false", savedLog.getId(), status);
 
         return mapper.toDTO(savedLog);
     }
 
     public AlcoholLogDTO recordRefusal(AlcoholLogCreateRequest request) {
+        log.info("Recording alcohol service refusal for current tenant");
         request.setServiceRefused(true);
         return createLog(request);
     }
 
     @Transactional(readOnly = true)
     public List<AlcoholLogDTO> getAllForCurrentOrgAsDTO() {
-        return getAllForCurrentOrg().stream().map(this::toEnrichedDTO).toList();
+        Long tenantId = TenantContext.getCurrentOrg();
+        List<AlcoholLogDTO> logs = repository.findAllByTenantId(tenantId).stream().map(this::toEnrichedDTO).toList();
+        log.debug("Fetched {} alcohol logs for current tenant", logs.size());
+        return logs;
     }
 
     @Transactional(readOnly = true)
     public AlcoholLogDTO getByIdAsDTO(Long id) {
-        return toEnrichedDTO(getById(id));
+        log.debug("Fetching alcohol log id={}", id);
+        return toEnrichedDTO(getAuthorizedLogById(id));
     }
 
     private AlcoholLogDTO toEnrichedDTO(AlcoholComplianceLog entity) {
@@ -98,12 +100,9 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         }
 
         userRepository.findById(dto.getRecordedById()).ifPresent(user -> {
-            String fullName = String.format("%s %s",
-                    user.getFirstName() != null ? user.getFirstName().trim() : "",
-                    user.getLastName() != null ? user.getLastName().trim() : "").trim();
-
-            String displayName = fullName;
-            dto.setRecordedByName(displayName == null || displayName.isBlank() ? null : displayName);
+            String fullName = ((user.getFirstName() != null ? user.getFirstName().trim() : "") + " "
+                    + (user.getLastName() != null ? user.getLastName().trim() : "")).trim();
+            dto.setRecordedByName(fullName.isBlank() ? null : fullName);
         });
 
         return dto;
@@ -112,6 +111,7 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
     private User resolveAuthenticatedUser(Long tenantId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getPrincipal() == null) {
+            log.warn("Missing authentication principal while creating alcohol log for tenantId={}", tenantId);
             throw new UnauthorizedException("Authenticated user is required");
         }
 
@@ -121,6 +121,7 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
                 .orElseThrow(() -> new UnauthorizedException("Authenticated user was not found"));
 
         if (!user.getTenant().getId().equals(tenantId)) {
+            log.warn("Authenticated user id={} does not belong to tenantId={}", user.getId(), tenantId);
             throw new UnauthorizedException("Authenticated user does not belong to current organization");
         }
 
@@ -133,6 +134,7 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
                 && requestedStatus != LogStatus.OK
                 && requestedStatus != LogStatus.WARNING
                 && requestedStatus != LogStatus.CRITICAL) {
+            log.warn("Rejecting alcohol log with unsupported status={}", requestedStatus);
             throw new ValidationException("Alcohol logs only support OK, WARNING, or CRITICAL status");
         }
 
@@ -141,6 +143,20 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         }
 
         return requestedStatus != null ? requestedStatus : LogStatus.OK;
+    }
+
+    private AlcoholComplianceLog getAuthorizedLogById(Long id) {
+        AlcoholComplianceLog entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Compliance log not found"));
+
+        Long currentOrgId = TenantContext.getCurrentOrg();
+        if (entity.getTenant() == null || entity.getTenant().getId() == null
+                || !entity.getTenant().getId().equals(currentOrgId)) {
+            log.warn("Access denied to alcohol log id={} for tenantId={}", id, currentOrgId);
+            throw new UnauthorizedException("You do not have access to this compliance log");
+        }
+
+        return entity;
     }
 
     private boolean isDeviationWorthy(AlcoholLogCreateRequest request) {

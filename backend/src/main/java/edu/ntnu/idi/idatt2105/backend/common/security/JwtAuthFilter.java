@@ -2,12 +2,15 @@ package edu.ntnu.idi.idatt2105.backend.common.security;
 
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +22,7 @@ import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserRepository userRepository;
@@ -27,14 +31,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain) {
+      @NonNull FilterChain filterChain) throws ServletException, IOException {
     try {
       authenticateIfPossible(request);
-      filterChain.doFilter(request, response);
     } catch (JwtException e) {
-      logger.error("JWT validation failed: " + e.getMessage());
-    } catch (Exception e) {
-      logger.error("Authentication error: " + e.getMessage());
+      log.error("JWT validation failed: {}", e.getMessage());
+      SecurityContextHolder.clearContext();
+    }
+
+    try {
+      filterChain.doFilter(request, response);
     } finally {
       TenantContext.clear();
     }

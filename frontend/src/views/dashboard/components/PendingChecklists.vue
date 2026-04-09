@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TaskListItem from '@/components/ui/TaskListItem.vue'
-import { BottleWine, BrushCleaning, ForkKnife, ChevronDownIcon } from '@lucide/vue'
+import { ChevronDownIcon } from '@lucide/vue'
 import { ref, computed, watchEffect } from 'vue'
 import Card from '@/components/ui/Card.vue'
 import { updateChecklistItem } from '@/services/checklist'
@@ -82,7 +82,7 @@ async function toggleTask(id: number, completed: boolean) {
   display: flex;
   flex-direction: column;
   padding: 10px;
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--border);
   border-radius: 10px;
 }
 

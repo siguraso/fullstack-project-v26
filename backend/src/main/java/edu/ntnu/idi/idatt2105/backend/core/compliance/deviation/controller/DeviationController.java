@@ -2,7 +2,9 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,32 +18,39 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.CreateDeviat
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.UpdateDeviationRequest;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service.DeviationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/deviations")
 @RequiredArgsConstructor
+@Slf4j
 public class DeviationController {
 
     private final DeviationService service;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<DeviationDTO>> create(
-            @RequestBody CreateDeviationRequest request) {
-
-        return ResponseEntity.ok(ApiResponse.ok(service.create(request)));
+            @Valid @RequestBody CreateDeviationRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(service.create(request)));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<DeviationDTO>>> getForCurrentTenant() {
 
         return ResponseEntity.ok(ApiResponse.ok(service.getForCurrentTenant()));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<DeviationDTO>> update(
             @PathVariable Long id,
-            @RequestBody UpdateDeviationRequest request) {
+            @Valid @RequestBody UpdateDeviationRequest request) {
 
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, request)));
     }

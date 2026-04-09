@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  Building2,
-  Pencil,
-  UserRound,
-} from '@lucide/vue'
 import Card from '@/components/ui/Card.vue'
-import InfoCard from '@/components/ui/InfoCard.vue'
+import OrganisationProfileCard from '@/views/settings/components/OrganisationProfileCard.vue'
+import StaffRolesCard from '@/views/settings/components/StaffRolesCard.vue'
 import {
   deactivateUser,
   getCurrentTenant,
@@ -15,12 +11,10 @@ import {
   getUsers,
   updateCurrentTenant,
   updateUser,
-  type Tenant,
-  type TenantUpdatePayload,
-  type User,
-  type UserUpdatePayload,
 } from '@/services/settings'
 import { useTenantStore } from '@/stores/tenant'
+import { type Tenant, type TenantUpdatePayload } from '@/interfaces/Tenant.interface'
+import { type User, type UserUpdatePayload } from '@/interfaces/User.interface'
 
 type TenantForm = {
   name: string
@@ -88,7 +82,6 @@ const userForm = reactive<UserForm>({
 
 const initialTenantPayload = ref('')
 
-
 const roleOptions = computed(() =>
   [
     'ALL',
@@ -143,13 +136,6 @@ const isSelectedUserBeingDeactivated = computed(
 
 function toErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error && error.message.trim().length > 0 ? error.message : fallback
-}
-
-function initialsForUser(user: Pick<User, 'firstName' | 'lastName'>) {
-  const first = user.firstName?.trim().charAt(0) ?? ''
-  const last = user.lastName?.trim().charAt(0) ?? ''
-
-  return `${first}${last}`.toUpperCase() || 'NA'
 }
 
 function fullName(user: Pick<User, 'firstName' | 'lastName'>) {
@@ -406,213 +392,36 @@ onMounted(() => {
 
 <template>
   <div class="settings-view">
-    <section class="hero-card">
-      <div class="hero-copy">
-        <p class="section-label">Configuration</p>
-        <h1>Workspace settings</h1>
-        <p>
-          Manage the organisation profile, keep contact data current, and maintain staff access
-          without leaving the main workspace.
-        </p>
-      </div>
-    </section>
+    <h1>Organisation Configuration</h1>
 
     <section class="content-grid">
-      <InfoCard
-        title="Organisation profile"
-        :icon="Building2"
-        icon-background-color="#e7efe3"
-        icon-color="#305431"
-        class="main-panel"
-      >
-        <p v-if="tenantError" class="message-banner error-banner">{{ tenantError }}</p>
-        <p v-if="tenantSuccess" class="message-banner success-banner">{{ tenantSuccess }}</p>
+      <OrganisationProfileCard
+        :tenant-error="tenantError"
+        :tenant-success="tenantSuccess"
+        :tenant-form="tenantForm"
+        :tenant-is-dirty="tenantIsDirty"
+        :is-saving-tenant="isSavingTenant"
+        :has-tenant="Boolean(tenant)"
+        @save="saveTenant"
+        @reset="resetTenantForm"
+      />
 
-        <form class="form-grid" @submit.prevent="saveTenant">
-          <label class="field">
-            <span>Organisation name</span>
-            <input v-model="tenantForm.name" type="text" placeholder="The Nordic Kitchen" />
-          </label>
-
-          <label class="field">
-            <span>Org number</span>
-            <input v-model="tenantForm.orgNumber" type="text" placeholder="987654321" />
-          </label>
-
-          <label class="field field-wide">
-            <span>Address</span>
-            <input v-model="tenantForm.address" type="text" placeholder="Storgata 14" />
-          </label>
-
-          <label class="field">
-            <span>City</span>
-            <input v-model="tenantForm.city" type="text" placeholder="Oslo" />
-          </label>
-
-          <label class="field">
-            <span>Country</span>
-            <input v-model="tenantForm.country" type="text" placeholder="Norway" />
-          </label>
-
-          <label class="field">
-            <span>Contact email</span>
-            <input v-model="tenantForm.contactEmail" type="email" placeholder="admin@example.com" />
-          </label>
-
-          <label class="field">
-            <span>Contact phone</span>
-            <input v-model="tenantForm.contactPhone" type="text" placeholder="+47 00 00 00 00" />
-          </label>
-
-          <div class="form-actions tenant-form-actions field-wide">
-            <button type="submit" :disabled="!tenantIsDirty || isSavingTenant || !tenant">
-              {{ isSavingTenant ? 'Saving...' : 'Save workspace' }}
-            </button>
-            <button
-              type="button"
-              class="secondary-button"
-              :disabled="!tenantIsDirty || isSavingTenant || !tenant"
-              @click="resetTenantForm"
-            >
-              Reset changes
-            </button>
-          </div>
-        </form>
-      </InfoCard>
-
-      <InfoCard
-        title="Staff roles & permissions"
-        :icon="UserRound"
-        icon-background-color="#ece9fb"
-        icon-color="#4c3da5"
-        class="main-panel"
-      >
-        <p v-if="inviteError" class="message-banner error-banner">{{ inviteError }}</p>
-        <div class="staff-toolbar">
-          <label class="field toolbar-search">
-            <span>Search staff</span>
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Search by name, email, or username"
-            />
-          </label>
-
-          <label class="field toolbar-filter">
-            <span>Role</span>
-            <select v-model="roleFilter">
-              <option v-for="role in roleOptions" :key="role" :value="role">
-                {{ role === 'ALL' ? 'All roles' : role }}
-              </option>
-            </select>
-          </label>
-
-          <label class="field toolbar-filter">
-            <span>Status</span>
-            <select v-model="statusFilter">
-              <option value="ALL">All statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-          </label>
-
-          <div class="toolbar-invite">
-            <button
-              type="button"
-              class="secondary-button invite-toolbar-button"
-              @click="toggleInvitePopup"
-            >
-              {{ isInvitePopupOpen ? 'Close' : 'Invite Staff' }}
-            </button>
-
-            <transition name="invite-popup">
-              <div v-if="isInvitePopupOpen" class="invite-popup">
-                <label class="field invite-popup-field">
-                  <span>Email address</span>
-                  <input
-                    v-model="inviteEmail"
-                    type="email"
-                    placeholder="new.staff@example.com"
-                    @keyup.enter="sendInviteForTesting"
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  class="primary-button"
-                  :disabled="isSendingInvite || inviteEmail.trim().length === 0"
-                  @click="sendInviteForTesting"
-                >
-                  {{ isSendingInvite ? 'Sending...' : 'Send' }}
-                </button>
-              </div>
-            </transition>
-          </div>
-        </div>
-        <p v-if="usersError" class="message-banner error-banner">{{ usersError }}</p>
-        <p v-if="staffSuccess" class="message-banner success-banner">{{ staffSuccess }}</p>
-
-        <div class="staff-table">
-          <div class="table-head">
-            <span>Staff member</span>
-            <span>Role</span>
-            <span>Contact</span>
-            <span>Status</span>
-            <span>Actions</span>
-          </div>
-
-          <div v-if="filteredUsers.length > 0" class="table-body">
-            <article v-for="user in filteredUsers" :key="user.id" class="table-row">
-              <div class="table-cell staff-cell">
-                <span class="mobile-label">Staff member</span>
-                <div class="avatar">{{ initialsForUser(user) }}</div>
-                <div>
-                  <strong>{{ fullName(user) }}</strong>
-                  <p>{{ user.username }}</p>
-                </div>
-              </div>
-
-              <div class="table-cell">
-                <span class="mobile-label">Role</span>
-                <span class="role-chip">{{ user.role }}</span>
-              </div>
-
-              <div class="table-cell">
-                <span class="mobile-label">Contact</span>
-                <p>{{ user.email }}</p>
-                <p>{{ user.phone || 'No phone saved' }}</p>
-              </div>
-
-              <div class="table-cell">
-                <span class="mobile-label">Status</span>
-                <span
-                  class="status-pill"
-                  :class="user.active ? 'status-active' : 'status-inactive'"
-                >
-                  {{ user.active ? 'Active' : 'Inactive' }}
-                </span>
-              </div>
-
-              <div class="table-cell actions-cell">
-                <span class="mobile-label">Actions</span>
-                <button
-                  type="button"
-                  class="secondary-button table-icon-button"
-                  aria-label="Edit staff member"
-                  title="Edit staff member"
-                  @click="openUserEditor(user)"
-                >
-                  <Pencil :size="16" aria-hidden="true" />
-                </button>
-              </div>
-            </article>
-          </div>
-
-          <div v-else class="empty-state">
-            <p>No staff members match the current filters.</p>
-          </div>
-        </div>
-      </InfoCard>
+      <StaffRolesCard
+        v-model:search-query="searchQuery"
+        v-model:role-filter="roleFilter"
+        v-model:status-filter="statusFilter"
+        v-model:invite-email="inviteEmail"
+        :invite-error="inviteError"
+        :role-options="roleOptions"
+        :is-invite-popup-open="isInvitePopupOpen"
+        :is-sending-invite="isSendingInvite"
+        :users-error="usersError"
+        :staff-success="staffSuccess"
+        :filtered-users="filteredUsers"
+        @toggle-invite-popup="toggleInvitePopup"
+        @send-invite="sendInviteForTesting"
+        @edit-user="openUserEditor"
+      />
     </section>
 
     <div v-if="isUserEditorOpen" class="modal-backdrop" @click.self="closeUserEditor">
@@ -677,7 +486,10 @@ onMounted(() => {
                 type="button"
                 class="danger-button"
                 :disabled="
-                  isSavingUser || isUserEditorLoading || isSelectedUserBeingDeactivated || !selectedUser.active
+                  isSavingUser ||
+                  isUserEditorLoading ||
+                  isSelectedUserBeingDeactivated ||
+                  !selectedUser.active
                 "
                 @click="deactivateSelectedUser(selectedUser)"
               >
@@ -727,9 +539,7 @@ onMounted(() => {
 }
 
 .section-label,
-.field span,
-.mobile-label,
-.table-head span {
+.field span {
   margin: 0 0 8px;
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -742,19 +552,6 @@ onMounted(() => {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
   gap: 16px;
-}
-
-.panel-intro p,
-.table-cell p,
-.empty-state p {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.main-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
 }
 
 .form-grid {
@@ -777,16 +574,6 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   justify-content: flex-start;
-}
-
-.tenant-form-actions {
-  margin-top: 8px;
-  justify-content: flex-end;
-}
-
-.tenant-form-actions button {
-  min-width: 140px;
-  padding: 10px 16px;
 }
 
 .secondary-button,
@@ -834,185 +621,6 @@ onMounted(() => {
   border: 1px solid #badcc1;
 }
 
-.staff-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto auto auto;
-  gap: 12px;
-  align-items: end;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.toolbar-invite {
-  position: relative;
-}
-
-.toolbar-search {
-  min-width: 180px;
-}
-
-.invite-toolbar-button {
-  padding: 10px 16px;
-  border-radius: 12px;
-  border-color: rgba(76, 61, 165, 0.25);
-  background: linear-gradient(180deg, #ffffff, #f6f4ff);
-  font-weight: 600;
-}
-
-.invite-toolbar-button:hover {
-  background: linear-gradient(180deg, #ffffff, #f0ecff);
-  border-color: rgba(76, 61, 165, 0.36);
-}
-
-.invite-popup {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(320px, 78vw);
-  padding: 14px;
-  border: 1px solid rgba(76, 61, 165, 0.16);
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
-  display: grid;
-  gap: 10px;
-  z-index: 15;
-}
-
-.invite-popup-field {
-  gap: 6px;
-}
-
-:deep(.invite-popup-enter-active),
-:deep(.invite-popup-leave-active) {
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-:deep(.invite-popup-enter-from),
-:deep(.invite-popup-leave-to) {
-  opacity: 0;
-  transform: translateY(-6px) scale(0.98);
-}
-
-.staff-table {
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  overflow-x: auto;
-  background: #ffffff;
-  margin-top: 10px;
-}
-
-.table-head,
-.table-row {
-  display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) minmax(100px, 0.75fr) minmax(180px, 1fr) minmax(
-      92px,
-      0.65fr
-    ) minmax(150px, 0.85fr);
-  gap: 14px;
-  align-items: center;
-}
-
-.table-head {
-  padding: 14px 18px;
-  background: #f7f7f8;
-  border-bottom: 1px solid var(--border);
-}
-
-.table-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.table-row {
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.table-row:last-child {
-  border-bottom: 0;
-}
-
-.table-cell {
-  min-width: 0;
-}
-
-.table-cell strong {
-  display: block;
-  margin-bottom: 4px;
-  overflow-wrap: anywhere;
-}
-
-.table-cell p {
-  overflow-wrap: anywhere;
-}
-
-.staff-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: #eef0e7;
-  color: #305431;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.role-chip,
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.role-chip {
-  background: #f3f4f6;
-  color: var(--text);
-}
-
-.status-active {
-  background: #e8f5eb;
-  color: #166534;
-}
-
-.status-inactive {
-  background: #fbe7e6;
-  color: #9f2d25;
-}
-
-.actions-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.table-icon-button {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 10px;
-}
-
-.empty-state {
-  padding: 24px 18px;
-  text-align: center;
-}
-
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1046,10 +654,6 @@ onMounted(() => {
   min-width: 72px;
 }
 
-.mobile-label {
-  display: none;
-}
-
 button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
@@ -1059,21 +663,6 @@ button:disabled {
   .content-grid {
     grid-template-columns: 1fr;
   }
-
-  .staff-toolbar {
-    grid-template-columns: minmax(180px, 0.7fr) auto auto auto;
-  }
-
-  .table-head,
-  .table-row {
-    grid-template-columns: minmax(180px, 1.3fr) minmax(88px, 0.7fr) minmax(160px, 1fr) minmax(
-        84px,
-        0.6fr
-      ) minmax(128px, 0.8fr);
-    gap: 10px;
-    padding-left: 14px;
-    padding-right: 14px;
-  }
 }
 
 @media (max-width: 860px) {
@@ -1082,51 +671,29 @@ button:disabled {
     flex-direction: column;
   }
 
-  .form-grid,
-  .staff-toolbar {
+  .form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .toolbar-invite {
-    justify-self: stretch;
-  }
-
-  .tenant-form-actions {
-    justify-content: flex-start;
-  }
-
-  .invite-popup {
-    position: static;
-    width: 100%;
-  }
-
-  .table-head {
-    display: none;
-  }
-
-  .table-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .table-cell,
-  .actions-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .mobile-label {
-    display: block;
-  }
-
-  .actions-cell {
-    flex-direction: row;
-    flex-wrap: wrap;
   }
 
   .modal-backdrop {
     padding: 12px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .user-editor-card {
+    max-height: calc(100vh - 24px);
+    overflow: auto;
   }
 }
 </style>

@@ -12,9 +12,11 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.Check
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistTemplateRepository;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.service.ChecklistService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ChecklistScheduler {
 
     private final ChecklistTemplateRepository templateRepo;
@@ -23,8 +25,10 @@ public class ChecklistScheduler {
 
     @Scheduled(cron = "0 0 6 * * *") // hver dag kl 06
     public void generateChecklists() {
+        log.info("Starting scheduled checklist generation");
 
         List<ChecklistTemplate> templates = templateRepo.findAll();
+        int generatedCount = 0;
 
         for (ChecklistTemplate template : templates) {
 
@@ -44,7 +48,11 @@ public class ChecklistScheduler {
 
             if (!exists) {
                 checklistService.generateInstance(template.getId());
+                generatedCount++;
             }
         }
+
+        log.info("Completed scheduled checklist generation: templatesScanned={} instancesGenerated={}",
+                templates.size(), generatedCount);
     }
 }

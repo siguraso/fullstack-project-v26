@@ -1,22 +1,14 @@
-import { apiFetch } from './apiHelper'
+import { jsonApiFetch } from './util/apiHelper'
+import { assertOk, parseResponseBody, unwrapMaybeEnvelope } from './util/util'
 
-export interface InspectionLog {
-  type: 'DEVIATION' | 'TEMPERATURE' | 'ALCOHOL'
-  referenceId: number
-  title: string
-  description?: string
-  status?: string
-  severity?: string
-  module?: string
-  actor?: string
-  timestamp: string
-}
+import type { InspectionLog } from '../interfaces/Inspection.interface'
 
 export async function getInspectionLogs(): Promise<InspectionLog[]> {
-  const res = await apiFetch('/api/inspection/logs')
+  const response = await jsonApiFetch('/api/inspection/logs')
+  await assertOk(response, 'Failed to load inspection logs.')
 
-  if (!res.ok) return []
+  const payload = await parseResponseBody(response)
+  const logs = unwrapMaybeEnvelope<unknown>(payload)
 
-  const json = await res.json()
-  return json.data ?? []
+  return Array.isArray(logs) ? (logs as InspectionLog[]) : []
 }

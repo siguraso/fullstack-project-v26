@@ -8,14 +8,14 @@ import CriticalAlerts from './components/CriticalAlerts.vue'
 import { onMounted, ref } from 'vue'
 import { getDashboardOverview } from '@/services/dashboard'
 
-type DashboardState = 'ready' | 'loading' | 'error'
-
 const dashboard = ref<any>(null)
 const loading = ref(true)
 
 onMounted(async () => {
   try {
     dashboard.value = await getDashboardOverview()
+  } catch {
+    dashboard.value = null
   } finally {
     loading.value = false
   }
@@ -23,7 +23,11 @@ onMounted(async () => {
 
 async function reloadDashboard() {
   setTimeout(async () => {
-    dashboard.value = await getDashboardOverview()
+    try {
+      dashboard.value = await getDashboardOverview()
+    } catch {
+      dashboard.value = null
+    }
   }, 250)
 }
 </script>
@@ -116,5 +120,19 @@ async function reloadDashboard() {
 
 .dashboard-content > * {
   position: relative;
+}
+
+@media (max-width: 1100px) {
+  .info-cards,
+  .second-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .info-cards,
+  .second-row {
+    gap: 0.85rem;
+  }
 }
 </style>

@@ -1,111 +1,25 @@
-import { getAuthSession } from '@/services/auth'
+import type { Tenant, TenantUpdatePayload } from '@/interfaces/Tenant.interface'
+import type { User, UserUpdatePayload } from '@/interfaces/User.interface'
+import { jsonApiFetch } from './util/apiHelper'
+import { parseResponseBody, readErrorMessage, unwrap } from './util/util'
+import type { ApiEnvelope } from './util/util'
+
+export type { Tenant, TenantUpdatePayload } from '@/interfaces/Tenant.interface'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
-type ApiEnvelope<T> = {
-  success?: boolean
-  message?: string | null
-  error?: string | null
-  detail?: string | null
-  data?: T
-}
-
-export interface Tenant {
-  id: number
-  name: string
-  org_number: string
-  address: string
-  city: string
-  country: string
-  contact_email: string
-  contact_phone: string
-  active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface TenantUpdatePayload {
-  name: string
-  orgNumber: string
-  address: string
-  city: string
-  country: string
-  contactEmail: string
-  contactPhone: string
-}
-
-export interface User {
-  id: number
-  tenantId: number
-  firstName: string
-  lastName: string
-  username: string
-  email: string
-  phone: string
-  role: string
-  active: boolean
-}
-
-export interface UserUpdatePayload {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  role: string
-}
-
 function buildHeaders(contentType = false): HeadersInit {
-  const session = getAuthSession()
   const headers: Record<string, string> = {}
 
   if (contentType) {
     headers['Content-Type'] = 'application/json'
   }
 
-  if (session?.token) {
-    headers.Authorization = `Bearer ${session.token}`
-  }
-
   return headers
 }
 
-function unwrap<T>(payload: T | ApiEnvelope<T>): T {
-  if (payload && typeof payload === 'object' && 'data' in payload) {
-    return (payload as ApiEnvelope<T>).data as T
-  }
-
-  return payload as T
-}
-
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const contentType = response.headers.get('content-type') ?? ''
-
-  if (contentType.includes('application/json')) {
-    try {
-      return await response.json()
-    } catch {
-      return null
-    }
-  }
-
-  const text = await response.text()
-
-  return text.length > 0 ? { message: text } : null
-}
-
-function readErrorMessage(payload: unknown, fallback: string): string {
-  if (!payload || typeof payload !== 'object') {
-    return fallback
-  }
-
-  const record = payload as Record<string, unknown>
-  const candidate = record.message ?? record.error ?? record.detail
-
-  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : fallback
-}
-
 async function request<T>(path: string, init?: RequestInit, fallbackError?: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await jsonApiFetch(`${API_BASE_URL}${path}`, {
     credentials: 'include',
     ...init,
   })
@@ -119,9 +33,13 @@ async function request<T>(path: string, init?: RequestInit, fallbackError?: stri
 }
 
 export async function getCurrentTenant(): Promise<Tenant> {
-  return request<Tenant>('/tenants/current', {
-    headers: buildHeaders(),
-  }, 'Unable to load workspace details.')
+  return request<Tenant>(
+    '/tenants/current',
+    {
+      headers: buildHeaders(),
+    },
+    'Unable to load workspace details.',
+  )
 }
 
 export async function updateCurrentTenant(payload: TenantUpdatePayload): Promise<Tenant> {
@@ -204,4 +122,3 @@ export async function sendStaffInvite(email: string): Promise<void> {
     'Unable to send staff invite.',
   )
 }
-

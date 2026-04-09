@@ -1,16 +1,43 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { Edit2 } from '@lucide/vue'
 import { computed, watchEffect } from 'vue'
-import { useDeviationStore, type Deviation } from '@/stores/deviation'
+import { useDeviationStore } from '@/stores/deviation'
+import type { Deviation, DeviationModule, DeviationSeverity } from '@/interfaces/Deviation.interface'
 
 const store = useDeviationStore()
 
-const props = defineProps<{
-  lockedCategory?: Deviation['category']
-  title?: string
+const props = withDefaults(
+  defineProps<{
+    lockedCategory?: Deviation['category']
+    lockedModule?: DeviationModule
+    title?: string
+    submitLabel?: string
+    footerText?: string
+    showInternalTracking?: boolean
+    useExternalSubmit?: boolean
+    isSubmitting?: boolean
+    maxCardHeight?: string
+  }>(),
+  {
+    submitLabel: 'Submit Deviation',
+    footerText: 'All PDF fields are included and saved as a structured deviation summary.',
+    showInternalTracking: true,
+    useExternalSubmit: false,
+    isSubmitting: undefined,
+    maxCardHeight: 'calc(100dvh - 140px)',
+  },
+)
+
+const emit = defineEmits<{
+  (event: 'submit'): void
 }>()
 
-const levels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
+const severityOptions: Array<{ value: Exclude<DeviationSeverity, 'MEDIUM'>; label: string }> = [
+  { value: 'LOW', label: 'Minor' },
+  { value: 'HIGH', label: 'Major' },
+  { value: 'CRITICAL', label: 'Critical' },
+]
 
 const categoryLabels: Record<string, string> = {
   TEMPERATURE: 'Temperature',
@@ -24,191 +51,285 @@ watchEffect(() => {
   if (props.lockedCategory) {
     store.form.category = props.lockedCategory
   }
+
+  if (props.lockedModule) {
+    store.form.module = props.lockedModule
+  }
 })
 
-const selectedLabel = computed(() => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General')
-const heading = computed(() => props.title ?? `Report ${selectedLabel.value} Deviation`)
+const selectedLabel = computed(
+  () => categoryLabels[props.lockedCategory ?? store.form.category] ?? 'General',
+)
+const heading = computed(() => props.title ?? `${selectedLabel.value} Deviation Registration`)
+const submitDisabled = computed(() => props.isSubmitting ?? store.submitting)
+
+function handleSubmit() {
+  if (props.useExternalSubmit) {
+    emit('submit')
+    return
+  }
+
+  void store.createDeviation()
+}
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-head">
-      <div class="title-wrap">
-        <div class="title-icon">
-          <Edit2 :size="20" aria-hidden="true" />
+  <InfoCard
+    class="card"
+    :title="heading"
+    :icon="Edit2"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
+  >
+    <form class="form-shell" @submit.prevent="handleSubmit">
+      <div class="sheet-grid">
+        <label class="field-wide">
+          <span>Deviation form for *</span>
+          <input
+            v-model="store.form.title"
+            placeholder="e.g., Cold storage, dishwashing area, bar service"
+          />
+        </label>
+
+        <label>
+          <span>Reference No.</span>
+          <input v-model="store.form.referenceNumber" placeholder="Optional reference number" />
+        </label>
+
+        <div class="field-wide assessment-card">
+          <span>This deviation is assessed as</span>
+          <div class="severity">
+            <button
+              v-for="option in severityOptions"
+              :key="option.value"
+              type="button"
+              :class="[
+                'severity-btn',
+                option.value.toLowerCase(),
+                { active: store.form.severity === option.value },
+              ]"
+              @click="store.form.severity = option.value"
+            >
+              {{ option.label }}
+            </button>
+          </div>
         </div>
-        <h3 class="title-text">{{ heading }}</h3>
+
+        <label>
+          <span>Date</span>
+          <input v-model="store.form.reportedDate" type="date" />
+        </label>
+
+        <label>
+          <span>Who discovered the issue</span>
+          <input v-model="store.form.discoveredBy" placeholder="Name" />
+        </label>
+
+        <label>
+          <span>Who the issue was reported to</span>
+          <input v-model="store.form.reportedTo" placeholder="Name / role" />
+        </label>
+
+        <label>
+          <span>Who should handle the deviation</span>
+          <input v-model="store.form.assignedTo" placeholder="Responsible person" />
+        </label>
       </div>
-    </div>
 
-    <div class="form-grid">
-      <label>
-        <span>Deviation title *</span>
-        <input v-model="store.form.title" placeholder="e.g., Cold Storage Sensor Failure" />
-      </label>
-
-      <label v-if="!lockedCategory">
-        <span>Category</span>
-        <select v-model="store.form.category">
-          <option value="TEMPERATURE">Temperature</option>
-          <option value="HYGIENE">Hygiene</option>
-          <option value="ALCOHOL">Alcohol</option>
-          <option value="DOCUMENTATION">Documentation</option>
-          <option value="OTHER">Other</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Current status</span>
-        <select v-model="store.form.status">
-          <option value="OPEN">Open</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="RESOLVED">Resolved</option>
-        </select>
-      </label>
-
-      <label class="field-wide">
-        <span>Severity level</span>
-        <div class="severity">
-          <button
-            v-for="s in levels"
-            :key="s"
-            type="button"
-            :class="['severity-btn', s.toLowerCase(), { active: store.form.severity === s }]"
-            @click="store.form.severity = s"
-          >
-            {{ s }}
-          </button>
+      <section class="section-card">
+        <div class="section-header">
+          <h3>Describe the issue / what went wrong</h3>
+          <label class="section-date">
+            <span>Date</span>
+            <input v-model="store.form.issueDate" type="date" />
+          </label>
         </div>
-      </label>
-
-      <label class="description field-wide">
-        <span>Detailed description</span>
         <textarea
-            v-model="store.form.description"
-            maxlength="500"
-            placeholder="Describe what happened, location, and immediate actions taken..."
+          v-model="store.form.issueDescription"
+          rows="5"
+          placeholder="Describe the deviation, where it happened, and the immediate impact."
         />
-      </label>
-    </div>
+      </section>
 
-    <div class="footer">
-      <small>{{ store.form.description.length }} / 500</small>
-      <button class="submit" type="button" @click="store.createDeviation">Submit deviation ></button>
-    </div>
-  </div>
+      <section class="section-card">
+        <div class="section-header">
+          <h3>Immediate handling / what did you do right away</h3>
+          <label class="section-date">
+            <span>Date</span>
+            <input v-model="store.form.immediateActionDate" type="date" />
+          </label>
+        </div>
+        <textarea
+          v-model="store.form.immediateAction"
+          rows="4"
+          placeholder="Document the first actions taken to contain or reduce the issue."
+        />
+        <label>
+          <span>Signature</span>
+          <input v-model="store.form.immediateActionSignature" placeholder="Name / initials" />
+        </label>
+      </section>
+
+      <section class="section-card">
+        <div class="section-header">
+          <h3>What could be the reason / cause of the issue</h3>
+          <label class="section-date">
+            <span>Date</span>
+            <input v-model="store.form.causeDate" type="date" />
+          </label>
+        </div>
+        <textarea
+          v-model="store.form.rootCause"
+          rows="4"
+          placeholder="Explain the likely cause or chain of events behind the deviation."
+        />
+      </section>
+
+      <section class="section-card">
+        <div class="section-header">
+          <h3>Corrective action / how to prevent the same issue from happening again</h3>
+          <label class="section-date">
+            <span>Date</span>
+            <input v-model="store.form.correctiveActionDate" type="date" />
+          </label>
+        </div>
+        <textarea
+          v-model="store.form.correctiveAction"
+          rows="4"
+          placeholder="Describe the corrective action and prevention plan."
+        />
+        <label>
+          <span>Signature</span>
+          <input v-model="store.form.correctiveActionSignature" placeholder="Name / initials" />
+        </label>
+      </section>
+
+      <section class="section-card">
+        <div class="section-header">
+          <h3>Corrective action has been completed</h3>
+          <label class="section-date">
+            <span>Date</span>
+            <input v-model="store.form.completionDate" type="date" />
+          </label>
+        </div>
+        <textarea
+          v-model="store.form.completionNotes"
+          rows="3"
+          placeholder="Confirm what has been completed and any remaining follow-up."
+        />
+        <label>
+          <span>Signature</span>
+          <input v-model="store.form.completionSignature" placeholder="Name / initials" />
+        </label>
+      </section>
+
+      <section v-if="showInternalTracking" class="system-section">
+        <h3>Internal tracking</h3>
+        <div class="system-grid">
+          <label v-if="!lockedCategory">
+            <span>Category</span>
+            <select v-model="store.form.category">
+              <option value="TEMPERATURE">Temperature</option>
+              <option value="HYGIENE">Hygiene</option>
+              <option value="ALCOHOL">Alcohol</option>
+              <option value="DOCUMENTATION">Documentation</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Status</span>
+            <select v-model="store.form.status">
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+          </label>
+
+          <label v-if="!lockedModule">
+            <span>Module</span>
+            <select v-model="store.form.module">
+              <option value="IK_FOOD">IK Food</option>
+              <option value="IK_ALCOHOL">IK Alcohol</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <p v-if="store.error" class="error-message">{{ store.error }}</p>
+
+      <div class="footer">
+        <small>{{ footerText }}</small>
+        <button class="submit" type="submit" :disabled="submitDisabled">
+          {{ submitDisabled ? 'Submitting...' : submitLabel }}
+        </button>
+      </div>
+    </form>
+  </InfoCard>
 </template>
 
 <style scoped>
 .card {
-  background: var(--surface);
-  padding: 22px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
-}
-
-.card-head {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.title-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-}
-
-.title-text {
   margin: 0;
-  color: var(--text);
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 800;
 }
 
-.form-grid {
+.form-shell {
   display: grid;
-  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.sheet-grid,
+.system-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
 .field-wide {
-  grid-column: auto;
+  grid-column: 1 / -1;
 }
 
-label {
-  display: flex;
-  flex-direction: column;
+label,
+.assessment-card {
+  display: grid;
   gap: 8px;
 }
 
-label > span {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 10px;
-  font-weight: 700;
+label > span,
+.assessment-card > span,
+.section-date > span {
+  font-size: 0.9em;
   color: var(--text-secondary);
+  margin-bottom: 2px;
 }
 
-input,
-select,
-textarea {
+.assessment-card,
+.section-card,
+.system-section {
   border: 1px solid var(--border);
-  background: var(--surface-muted);
-  border-radius: 8px;
-  color: var(--text);
-}
-
-input {
-  min-height: 42px;
-  padding: 10px 12px;
-}
-
-select {
-  min-height: 42px;
-  padding: 8px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fdfdfd 0%, #f8fafc 100%);
+  padding: 16px;
 }
 
 .severity {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
 .severity-btn {
-  min-height: 34px;
+  min-height: 38px;
   border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--surface);
+  border-radius: 8px;
+  background: #ffffff;
   color: var(--text-secondary);
-  font-size: 10px;
-  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .severity-btn.low.active {
   background: #e9fff2;
   border-color: #23975c;
-  color: #1a1c1e;
-}
-
-.severity-btn.medium.active {
-  background: #fff8e6;
-  border-color: #b3891a;
   color: #1a1c1e;
 }
 
@@ -219,60 +340,92 @@ select {
 }
 
 .severity-btn.critical.active {
-  background: var(--cta-red);
-  border-color: var(--cta-red);
+  background: var(--cta-red-btn);
+  border-color: var(--cta-red-btn);
   color: var(--bg);
 }
 
-.description {
-  grid-row: auto;
+.section-card {
+  display: grid;
+  gap: 12px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.section-header h3,
+.system-section h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.section-date {
+  min-width: 168px;
 }
 
 textarea {
   width: 100%;
-  min-height: 110px;
   resize: vertical;
+  min-height: 100px;
   padding: 12px;
 }
 
+.system-section {
+  display: grid;
+  gap: 12px;
+}
+
+.error-message {
+  margin: 0;
+  border: 1px solid var(--cta-red);
+  background: #fff0f0;
+  color: var(--cta-red);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
 .footer {
-  margin-top: 16px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 16px;
 }
 
 small {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
 }
 
 .submit {
-  background: var(--neutral);
-  border: 1px solid var(--neutral);
-  border-radius: 8px;
   min-height: 42px;
-  min-width: 220px;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-}
-
-.submit:hover {
-  background: var(--neutral-hover);
+  min-width: 200px;
 }
 
 @media (max-width: 1020px) {
-  .form-grid {
+  .sheet-grid,
+  .system-grid {
     grid-template-columns: 1fr;
   }
 
-  .description {
-    grid-column: auto;
-    grid-row: auto;
+  .section-header,
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
   }
 
+  .section-date {
+    min-width: 0;
+  }
+
+  .severity {
+    grid-template-columns: 1fr;
+  }
 }
+
 </style>

@@ -148,4 +148,21 @@ function toggle() {
   border-radius: 999px;
   font-weight: bold;
 }
+
+@media (max-width: 640px) {
+  .task {
+    flex-direction: column;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .title-row {
+    flex-wrap: wrap;
+  }
+
+  .right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
 </style>

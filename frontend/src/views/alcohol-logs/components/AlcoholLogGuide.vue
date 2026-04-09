@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { ScrollText } from '@lucide/vue'
 </script>
 
 <template>
-  <aside class="guide-card">
-    <div class="panel-head">
-      <div class="panel-icon">
-        <ScrollText :size="20" aria-hidden="true" />
-      </div>
-      <h2 class="panel-title">Alcohol log guide</h2>
-    </div>
-
+  <InfoCard
+    class="guide-card"
+    title="Alcohol log guide"
+    :icon="ScrollText"
+    iconBackgroundColor="var(--icon-bg-green)"
+    iconColor="var(--icon-stroke-green)"
+  >
     <p class="intro-copy">
       Keep entries factual and specific. Clear details help teams verify compliance quickly and
       follow up consistently.
@@ -31,45 +31,16 @@ import { ScrollText } from '@lucide/vue'
         <p><strong>Estimated Age:</strong> Add when relevant for age-related incidents.</p>
       </article>
     </div>
-  </aside>
+  </InfoCard>
 </template>
 
 <style scoped>
 .guide-card {
-  background: linear-gradient(180deg, var(--surface), #f8f9fb);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-soft);
-  padding: 22px;
+  margin: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.panel-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.panel-title {
-  margin: 0;
-  font-size: 24px;
-  line-height: 1.15;
-  color: var(--text);
-  font-weight: 800;
-}
-
-.panel-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
 }
 
 .intro-copy {
@@ -122,4 +93,3 @@ import { ScrollText } from '@lucide/vue'
   }
 }
 </style>
-

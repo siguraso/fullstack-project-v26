@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getInspectionLogs, type InspectionLog } from '@/services/inspection'
+import { getInspectionLogs } from '@/services/inspection'
+import type { InspectionLog } from '@/interfaces/Inspection.interface'
 import { Download } from '@lucide/vue'
 
 const logs = ref<InspectionLog[]>([])
@@ -9,6 +10,8 @@ const loading = ref(true)
 async function loadLogs() {
   try {
     logs.value = await getInspectionLogs()
+  } catch {
+    logs.value = []
   } finally {
     loading.value = false
   }
@@ -16,7 +19,7 @@ async function loadLogs() {
 
 onMounted(loadLogs)
 
-// 🔄 senere kan du legge polling her
+// legg til polling her
 // setInterval(loadLogs, 10000)
 
 function formatDate(date: string) {
@@ -107,15 +110,17 @@ function exportJson() {
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--stroke);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   cursor: pointer;
 }
 
 /* TABLE */
 .table {
   border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid var(--stroke);
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--border);
 }
 
 .table-head,
@@ -124,6 +129,7 @@ function exportJson() {
   grid-template-columns: 120px 2fr 120px 150px 180px;
   gap: 12px;
   padding: 14px 16px;
+  min-width: 760px;
 }
 
 .table-head {
@@ -181,5 +187,13 @@ function exportJson() {
 .row-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+@media (max-width: 640px) {
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 </style>

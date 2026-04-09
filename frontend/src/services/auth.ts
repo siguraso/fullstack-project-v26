@@ -1,38 +1,28 @@
+import type {
+  AuthSession,
+  LoginPayload,
+  RegisterPayload,
+  UserRole,
+} from '@/interfaces/Auth.interface'
+import { jsonApiFetch } from './util/apiHelper'
+import { parseResponseBody, readErrorMessage, unwrapMaybeEnvelope } from './util/util'
+
+export type { AuthSession, LoginPayload, RegisterPayload, UserRole }
+
 const AUTH_SESSION_KEY = 'regula.auth.session'
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
-type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF'
-
-export interface LoginPayload {
-  email: string
-  password: string
-}
-
-export interface RegisterPayload {
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  orgNumber?: string
-  phone?: string
-  inviteToken?: string
-}
-
-export interface AuthSession {
-  email: string
-  remember: boolean
-  token: string | null
-  refreshToken: string | null
-  role: UserRole | null
-}
-
-interface LoginResponseData {
+interface AuthLoginResponseData {
   accessToken?: string
   refreshToken?: string
   email?: string
   fullName?: string
   organizationId?: number
   role?: UserRole
+}
+
+interface RefreshTokenResponseData {
+  accessToken?: string
 }
 
 function getStorage(remember: boolean): Storage {
@@ -57,33 +47,8 @@ function parseSession(value: string | null): AuthSession | null {
   }
 }
 
-function readResponseMessage(payload: unknown): string | null {
-  if (!payload || typeof payload !== 'object') {
-    return null
-  }
-
-  const record = payload as Record<string, unknown>
-  const candidate = record.message ?? record.error ?? record.detail
-
-  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null
-}
-
-function unwrapApiResponse(payload: unknown): unknown {
-  if (!payload || typeof payload !== 'object') {
-    return payload
-  }
-
-  const record = payload as Record<string, unknown>
-
-  if ('data' in record) {
-    return record.data
-  }
-
-  return payload
-}
-
 function readToken(payload: unknown): string | null {
-  const unwrappedPayload = unwrapApiResponse(payload)
+  const unwrappedPayload = unwrapMaybeEnvelope<unknown>(payload)
 
   if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
     return null
@@ -97,7 +62,7 @@ function readToken(payload: unknown): string | null {
 }
 
 function readRole(payload: unknown): UserRole | null {
-  const unwrappedPayload = unwrapApiResponse(payload)
+  const unwrappedPayload = unwrapMaybeEnvelope<unknown>(payload)
 
   if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
     return null
@@ -113,26 +78,24 @@ function readRole(payload: unknown): UserRole | null {
   return null
 }
 
-function readLoginResponseData(payload: unknown): LoginResponseData | null {
-  const unwrappedPayload = unwrapApiResponse(payload)
+function readLoginResponseData(payload: unknown): AuthLoginResponseData | null {
+  const unwrappedPayload = unwrapMaybeEnvelope<unknown>(payload)
 
   if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
     return null
   }
 
-  return unwrappedPayload as LoginResponseData
+  return unwrappedPayload as AuthLoginResponseData
 }
 
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const contentType = response.headers.get('content-type') ?? ''
+function readRefreshTokenResponseData(payload: unknown): RefreshTokenResponseData | null {
+  const unwrappedPayload = unwrapMaybeEnvelope<unknown>(payload)
 
-  if (contentType.includes('application/json')) {
-    return response.json()
+  if (!unwrappedPayload || typeof unwrappedPayload !== 'object') {
+    return null
   }
 
-  const text = await response.text()
-
-  return text.length > 0 ? { message: text } : null
+  return unwrappedPayload as RefreshTokenResponseData
 }
 
 function persistSession(session: AuthSession) {
@@ -142,12 +105,12 @@ function persistSession(session: AuthSession) {
 }
 
 function createSession(email: string, remember: boolean, responseBody: unknown): AuthSession {
-  const data = unwrapApiResponse(responseBody) as any
+  const data = readLoginResponseData(responseBody)
 
   return {
     email,
     remember,
-    token: data?.accessToken ?? null,
+    token: data?.accessToken ?? readToken(responseBody),
     refreshToken: data?.refreshToken ?? null,
     role: readRole(responseBody),
   }
@@ -170,11 +133,8 @@ export function clearAuthSession() {
 }
 
 export async function login(payload: LoginPayload, remember: boolean): Promise<AuthSession> {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await jsonApiFetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     credentials: 'include',
     body: JSON.stringify(payload),
   })
@@ -183,7 +143,7 @@ export async function login(payload: LoginPayload, remember: boolean): Promise<A
 
   if (!response.ok) {
     throw new Error(
-      readResponseMessage(responseBody) ?? 'Unable to sign in with the provided credentials.',
+      readErrorMessage(responseBody, 'Unable to sign in with the provided credentials.'),
     )
   }
 
@@ -195,11 +155,8 @@ export async function login(payload: LoginPayload, remember: boolean): Promise<A
 }
 
 export async function register(payload: RegisterPayload, remember: boolean): Promise<AuthSession> {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  const response = await jsonApiFetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     credentials: 'include',
     body: JSON.stringify(payload),
   })
@@ -207,7 +164,7 @@ export async function register(payload: RegisterPayload, remember: boolean): Pro
   const responseBody = await parseResponseBody(response)
 
   if (!response.ok) {
-    throw new Error(readResponseMessage(responseBody) ?? 'Unable to create your account right now.')
+    throw new Error(readErrorMessage(responseBody, 'Unable to create your account right now.'))
   }
 
   const session = createSession(payload.email, remember, responseBody)
@@ -223,16 +180,16 @@ export async function refreshToken() {
 
   if (!refreshToken) return null
 
-  const res = await fetch('/api/auth/refresh', {
+  const res = await jsonApiFetch('/api/auth/refresh', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ refreshToken }),
+    skipAuthRefresh: true,
   })
 
   if (!res.ok) return null
 
-  const json = await res.json()
-  return json.data.accessToken
+  const responseBody = await parseResponseBody(res)
+  const data = readRefreshTokenResponseData(responseBody)
+
+  return data?.accessToken ?? null
 }

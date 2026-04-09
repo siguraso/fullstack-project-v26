@@ -1,46 +1,104 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as api from '@/services/deviation'
+import type { CreateDeviationInput, Deviation, DeviationFormInput } from '@/interfaces/Deviation.interface'
 
-export interface Deviation {
-  id?: number
-  title: string
-  category: 'TEMPERATURE' | 'HYGIENE' | 'ALCOHOL' | 'DOCUMENTATION' | 'OTHER'
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  module: 'IK_FOOD' | 'IK_ALCOHOL'
-  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED'
-  description: string
-  createdAt?: string
+function createEmptyForm(): DeviationFormInput {
+  return {
+    title: '',
+    referenceNumber: '',
+    category: 'TEMPERATURE',
+    severity: 'LOW',
+    module: 'IK_FOOD',
+    status: 'OPEN',
+    reportedDate: '',
+    discoveredBy: '',
+    reportedTo: '',
+    assignedTo: '',
+    issueDate: '',
+    issueDescription: '',
+    immediateActionDate: '',
+    immediateAction: '',
+    immediateActionSignature: '',
+    causeDate: '',
+    rootCause: '',
+    correctiveActionDate: '',
+    correctiveAction: '',
+    correctiveActionSignature: '',
+    completionDate: '',
+    completionNotes: '',
+    completionSignature: '',
+  }
+}
+
+function buildSection(label: string, value: string) {
+  const normalized = value.trim()
+  return normalized ? `${label}: ${normalized}` : null
+}
+
+function buildDeviationDescription(form: DeviationFormInput) {
+  return [
+    buildSection('Reference number', form.referenceNumber),
+    buildSection('Reported date', form.reportedDate),
+    buildSection('Discovered by', form.discoveredBy),
+    buildSection('Reported to', form.reportedTo),
+    buildSection('Assigned to', form.assignedTo),
+    buildSection('Issue date', form.issueDate),
+    buildSection('Describe the error / what went wrong', form.issueDescription),
+    buildSection('Immediate action date', form.immediateActionDate),
+    buildSection('Immediate action taken', form.immediateAction),
+    buildSection('Immediate action signature', form.immediateActionSignature),
+    buildSection('Cause analysis date', form.causeDate),
+    buildSection('Possible cause', form.rootCause),
+    buildSection('Corrective action date', form.correctiveActionDate),
+    buildSection('Corrective action / prevention', form.correctiveAction),
+    buildSection('Corrective action signature', form.correctiveActionSignature),
+    buildSection('Completion date', form.completionDate),
+    buildSection('Corrective action completed', form.completionNotes),
+    buildSection('Completion signature', form.completionSignature),
+  ]
+    .filter((section): section is string => section !== null)
+    .join('\n\n')
+}
+
+function buildCreateDeviationPayload(
+  form: DeviationFormInput,
+  links?: Pick<CreateDeviationInput, 'checklistItemId' | 'logId'>,
+): CreateDeviationInput {
+  return {
+    title: form.title.trim(),
+    category: form.category,
+    severity: form.severity,
+    module: form.module,
+    status: form.status,
+    description: buildDeviationDescription(form),
+    checklistItemId: links?.checklistItemId,
+    logId: links?.logId,
+  }
 }
 
 export const useDeviationStore = defineStore('deviation', () => {
   const deviations = ref<Deviation[]>([])
   const loading = ref(false)
+  const submitting = ref(false)
   const error = ref<string | null>(null)
 
   const filters = ref({
     status: 'ALL',
-    severity: 'ALL'
+    severity: 'ALL',
   })
 
-  const form = ref<Deviation>({
-    title: '',
-    category: 'TEMPERATURE',
-    severity: 'CRITICAL',
-    module: 'IK_FOOD',
-    status: 'OPEN',
-    description: ''
-  })
+  const form = ref<DeviationFormInput>(createEmptyForm())
 
   const filtered = computed(() => {
     if (!Array.isArray(deviations.value)) {
       return []
     }
 
-    return deviations.value.filter(d => {
+    return deviations.value.filter((d) => {
       return (
-          (filters.value.status === 'ALL' || d.status === filters.value.status) &&
-          (filters.value.severity === 'ALL' || d.severity === filters.value.severity)
+        (filters.value.status === 'ALL' || d.status === filters.value.status) &&
+        (filters.value.severity === 'ALL' || d.severity === filters.value.severity)
       )
     })
   })
@@ -60,31 +118,52 @@ export const useDeviationStore = defineStore('deviation', () => {
     }
   }
 
-  async function createDeviation() {
+  function validateForm() {
     error.value = null
 
-    try {
-      const created = await api.createDeviation(form.value)
+    if (!form.value.title.trim()) {
+      error.value = 'Deviation form title is required.'
+      return false
+    }
 
-      if (created) {
-        deviations.value.unshift(created)
-      }
+    if (!form.value.issueDescription.trim()) {
+      error.value = 'Describe what went wrong before submitting the deviation.'
+      return false
+    }
+
+    return true
+  }
+
+  function patchForm(values: Partial<DeviationFormInput>) {
+    form.value = {
+      ...form.value,
+      ...values,
+    }
+  }
+
+  async function createDeviation(links?: Pick<CreateDeviationInput, 'checklistItemId' | 'logId'>) {
+    if (!validateForm()) {
+      return null
+    }
+
+    submitting.value = true
+
+    try {
+      const created = await api.createDeviation(buildCreateDeviationPayload(form.value, links))
+      deviations.value.unshift(created)
 
       resetForm()
+      return created
     } catch {
       error.value = 'Unable to create deviation right now.'
+      return null
+    } finally {
+      submitting.value = false
     }
   }
 
   function resetForm() {
-    form.value = {
-      title: '',
-      category: 'TEMPERATURE',
-      severity: 'LOW',
-      module: 'IK_FOOD',
-      status: 'OPEN',
-      description: ''
-    }
+    form.value = createEmptyForm()
   }
 
   return {
@@ -93,8 +172,12 @@ export const useDeviationStore = defineStore('deviation', () => {
     filters,
     form,
     loading,
+    submitting,
     error,
+    validateForm,
+    patchForm,
+    resetForm,
     fetchDeviations,
-    createDeviation
+    createDeviation,
   }
 })

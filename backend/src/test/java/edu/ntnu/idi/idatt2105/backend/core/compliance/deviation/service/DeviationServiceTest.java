@@ -1,6 +1,5 @@
 package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.service;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +20,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
+import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistItemTemplate;
@@ -41,7 +40,6 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.entity.Tenant;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
-import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DeviationServiceTest {
@@ -51,9 +49,6 @@ class DeviationServiceTest {
 
 	@Mock
 	private TenantRepository tenantRepo;
-
-	@Mock
-	private UserRepository userRepo;
 
 	@Mock
 	private DeviationMapper mapper;
@@ -74,7 +69,6 @@ class DeviationServiceTest {
 	@Test
 	void testCreateSuccess() {
 		CreateDeviationRequest request = new CreateDeviationRequest();
-		setTenantIdIfPresent(request, 1L);
 		request.setModule(ComplianceModule.IK_FOOD);
 		request.setTitle("Test deviation");
 		request.setDescription("Description");
@@ -108,14 +102,44 @@ class DeviationServiceTest {
 		assertEquals(DeviationSeverity.CRITICAL, saved.getSeverity());
 		assertEquals(DeviationCategory.HYGIENE, saved.getCategory());
 		assertEquals(DeviationStatus.OPEN, saved.getStatus());
+		assertNull(saved.getChecklistItemId());
+		assertNull(saved.getLogId());
 		assertNotNull(saved.getCreatedAt());
 		assertNull(saved.getResolvedAt());
 	}
 
 	@Test
+	void testCreateSetsOptionalLinks() {
+		CreateDeviationRequest request = new CreateDeviationRequest();
+		request.setModule(ComplianceModule.IK_FOOD);
+		request.setTitle("Linked deviation");
+		request.setDescription("Description");
+		request.setSeverity(DeviationSeverity.HIGH);
+		request.setCategory(DeviationCategory.TEMPERATURE);
+		request.setStatus(DeviationStatus.OPEN);
+		request.setChecklistItemId(12L);
+		request.setLogId(34L);
+
+		Tenant tenant = new Tenant();
+		tenant.setId(1L);
+
+		when(tenantRepo.findById(1L)).thenReturn(Optional.of(tenant));
+		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(mapper.toDTO(any(Deviation.class))).thenReturn(new DeviationDTO());
+
+		deviationService.create(request);
+
+		ArgumentCaptor<Deviation> captor = ArgumentCaptor.forClass(Deviation.class);
+		verify(deviationRepo).save(captor.capture());
+		Deviation saved = captor.getValue();
+
+		assertEquals(12L, saved.getChecklistItemId());
+		assertEquals(34L, saved.getLogId());
+	}
+
+	@Test
 	void testCreateThrowsWhenTenantNotFound() {
 		CreateDeviationRequest request = new CreateDeviationRequest();
-		setTenantIdIfPresent(request, 1L);
 
 		when(tenantRepo.findById(1L)).thenReturn(Optional.empty());
 
@@ -126,11 +150,8 @@ class DeviationServiceTest {
 	}
 
 	@Test
-	void testGetByTenantReturnsMappedList() {
-		Long tenantId = 2L;
-		Method getByTenant = findLongParamMethod(DeviationService.class, "getByTenant");
-
-		Assumptions.assumeTrue(getByTenant != null, "getByTenant API not present in this branch");
+	void testGetForCurrentTenantReturnsMappedList() {
+		Long tenantId = 1L;
 
 		Deviation deviation1 = new Deviation();
 		Deviation deviation2 = new Deviation();
@@ -143,8 +164,7 @@ class DeviationServiceTest {
 		when(deviationRepo.findByTenantId(tenantId)).thenReturn(List.of(deviation1, deviation2));
 		when(mapper.toDTO(any(Deviation.class))).thenReturn(dto1, dto2);
 
-		@SuppressWarnings("unchecked")
-		List<DeviationDTO> result = (List<DeviationDTO>) invokeLongParamMethod(getByTenant, deviationService, tenantId);
+		List<DeviationDTO> result = deviationService.getForCurrentTenant();
 
 		assertEquals(2, result.size());
 		assertEquals("Deviation 1", result.get(0).getTitle());
@@ -156,7 +176,11 @@ class DeviationServiceTest {
 	void testUpdateResolvedSetsStatusAndResolvedAt() {
 		Long deviationId = 10L;
 
+		Tenant tenant = new Tenant();
+		tenant.setId(1L);
+
 		Deviation existing = new Deviation();
+		existing.setTenant(tenant);
 		existing.setStatus(DeviationStatus.OPEN);
 
 		UpdateDeviationRequest request = new UpdateDeviationRequest();
@@ -180,6 +204,28 @@ class DeviationServiceTest {
 
 		assertEquals(DeviationStatus.RESOLVED, saved.getStatus());
 		assertNotNull(saved.getResolvedAt());
+	}
+
+	@Test
+	void testUpdateThrowsWhenDeviationBelongsToAnotherTenant() {
+		Long deviationId = 11L;
+
+		Tenant otherTenant = new Tenant();
+		otherTenant.setId(2L);
+
+		Deviation existing = new Deviation();
+		existing.setTenant(otherTenant);
+		existing.setStatus(DeviationStatus.OPEN);
+
+		UpdateDeviationRequest request = new UpdateDeviationRequest();
+		request.setStatus(DeviationStatus.RESOLVED);
+
+		when(deviationRepo.findById(deviationId)).thenReturn(Optional.of(existing));
+
+		UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+				() -> deviationService.update(deviationId, request));
+
+		assertEquals("Deviation does not belong to current organization", exception.getMessage());
 	}
 
 	@Test
@@ -216,6 +262,8 @@ class DeviationServiceTest {
 		item.setChecklist(checklist);
 		item.setTemplateItem(templateItem);
 
+		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
 		deviationService.createFromChecklist(item);
 
 		ArgumentCaptor<Deviation> captor = ArgumentCaptor.forClass(Deviation.class);
@@ -250,6 +298,8 @@ class DeviationServiceTest {
 		log.setTitle("Missing alcohol report");
 		log.setDescription(null);
 
+		when(deviationRepo.save(any(Deviation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
 		deviationService.createFromLog(log);
 
 		ArgumentCaptor<Deviation> captor = ArgumentCaptor.forClass(Deviation.class);
@@ -268,41 +318,4 @@ class DeviationServiceTest {
 		assertNotNull(saved.getCreatedAt());
 	}
 
-	private static void setTenantIdIfPresent(CreateDeviationRequest request, Long tenantId) {
-		try {
-			Method setter = CreateDeviationRequest.class.getMethod("setTenantId", Long.class);
-			setter.invoke(request, tenantId);
-			return;
-		} catch (NoSuchMethodException ignored) {
-			// fall back to field assignment when request no longer exposes setter
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("Unable to set tenantId", e);
-		}
-
-		try {
-			var field = CreateDeviationRequest.class.getDeclaredField("tenantId");
-			field.setAccessible(true);
-			field.set(request, tenantId);
-		} catch (NoSuchFieldException ignored) {
-			// tenant might be derived from context in newer API variants
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("Unable to set tenantId", e);
-		}
-	}
-
-	private static Method findLongParamMethod(Class<?> type, String methodName) {
-		try {
-			return type.getMethod(methodName, Long.class);
-		} catch (NoSuchMethodException e) {
-			return null;
-		}
-	}
-
-	private static Object invokeLongParamMethod(Method method, Object target, Long arg) {
-		try {
-			return method.invoke(target, arg);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("Failed to invoke method " + method.getName(), e);
-		}
-	}
 }

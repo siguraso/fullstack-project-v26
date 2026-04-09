@@ -1,74 +1,46 @@
 <script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
 import { TriangleAlert } from '@lucide/vue'
 </script>
 
 <template>
-  <aside class="guide-card">
-    <div class="panel-head">
-      <div class="panel-icon">
-        <TriangleAlert :size="20" aria-hidden="true" />
-      </div>
-      <h2 class="panel-title">Deviation guide</h2>
-    </div>
-
+  <InfoCard
+    class="guide-card"
+    title="Deviation guide"
+    :icon="TriangleAlert"
+    iconBackgroundColor="var(--icon-bg-yellow)"
+    iconColor="var(--icon-stroke-yellow)"
+  >
     <p class="intro-copy">
-      Use specific titles and short factual descriptions. The faster a teammate understands impact
-      and urgency, the faster the issue gets resolved.
+      The form now follows the PDF structure. Capture each step in order so the incident, cause,
+      and follow-up stay together in one record.
     </p>
 
     <div class="hint-list">
       <article class="hint-card">
-        <h3>Recommended by category</h3>
-        <p><strong>Temperature:</strong> Include location, measured value, and threshold.</p>
-        <p><strong>Hygiene:</strong> Mention area, contamination risk, and immediate action.</p>
-        <p><strong>Documentation:</strong> Reference missing or outdated record.</p>
+        <h3>Sections to complete</h3>
+        <p><strong>Header:</strong> Title, reference number, severity, and who is involved.</p>
+        <p><strong>Middle:</strong> What happened, immediate action, cause, and prevention.</p>
+        <p><strong>Close-out:</strong> Completion date and signatures when the action is done.</p>
       </article>
 
       <article class="hint-card">
         <h3>Severity quick rule</h3>
-        <p><strong>Low/Medium:</strong> Minor process issue with low risk.</p>
-        <p><strong>High/Critical:</strong> Safety or compliance risk requiring immediate follow-up.</p>
+        <p><strong>Minor:</strong> Limited deviation with low operational impact.</p>
+        <p><strong>Major:</strong> Significant issue that needs managed follow-up.</p>
+        <p><strong>Critical:</strong> Immediate safety or compliance risk.</p>
       </article>
     </div>
-  </aside>
+  </InfoCard>
 </template>
 
 <style scoped>
 .guide-card {
-  background: linear-gradient(180deg, var(--surface), #f8f9fb);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-soft);
-  padding: 22px;
+  margin: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.panel-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.panel-title {
-  margin: 0;
-  font-size: 24px;
-  line-height: 1.15;
-  color: var(--text);
-  font-weight: 800;
-}
-
-.panel-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--neutral);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
 }
 
 .intro-copy {
@@ -121,6 +93,3 @@ import { TriangleAlert } from '@lucide/vue'
   }
 }
 </style>
-
-
-

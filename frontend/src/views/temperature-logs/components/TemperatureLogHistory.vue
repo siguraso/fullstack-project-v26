@@ -3,7 +3,7 @@ import InfoCard from '@/components/ui/InfoCard.vue'
 import { getAuthSession } from '@/services/auth'
 import type { TemperatureLog } from '@/interfaces/TemperatureLog.interface'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
-import { History, Check, TriangleAlert, ChevronLeft, Filter } from '@lucide/vue'
+import { History, Check, TriangleAlert, ChevronLeft, Filter, Trash2 } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
@@ -66,9 +66,9 @@ function isRowAbnormal(log: TemperatureLog) {
     return false
   }
 
-  if (log.temperatureCelsius >= zone.upperLimitCelsius) {
+  if (log.temperatureCelsius > zone.upperLimitCelsius) {
     return true
-  } else if (log.temperatureCelsius <= zone.lowerLimitCelsius) {
+  } else if (log.temperatureCelsius < zone.lowerLimitCelsius) {
     return true
   }
 
@@ -113,8 +113,8 @@ function deleteLog(logId: number) {
     class="info-card"
     title="Temperature Log History"
     :icon="History"
-    iconBackgroundColor="var(--neutral)"
-    iconColor="white"
+    iconBackgroundColor="var(--icon-bg-blue)"
+    iconColor="var(--icon-stroke-blue)"
   >
     <template #extra-header-content>
       <div class="zone-filter-wrap">
@@ -127,46 +127,50 @@ function deleteLog(logId: number) {
         </select>
       </div>
     </template>
-    <table class="log-table">
-      <thead class="log-table-header">
-        <tr>
-          <th>Time Logged</th>
-          <th>Temperature Zone</th>
-          <th>Temperature (°C)</th>
-          <th>Status</th>
-          <th>Logged By</th>
-          <th v-if="canDeleteLogs"></th>
-        </tr>
-      </thead>
-      <tbody class="log-table-body">
-        <tr
-          v-for="log in currentPageLogs"
-          :key="log.id"
-          v-bind:class="isRowAbnormal(log) ? 'abnormal-row' : ''"
-        >
-          <td>{{ formatTimestamp(log.timestamp) }}</td>
-          <td>
-            {{
-              log.temperatureZoneName ??
-              props.temperatureZones.find((zone) => zone.id === log.temperatureZoneId)?.name ??
-              'Unknown zone'
-            }}
-          </td>
-          <td>{{ log.temperatureCelsius }} °C</td>
-          <td class="status-column">
-            <div class="status-content">
-              <Check v-if="!isRowAbnormal(log)" :size="20" />
-              <TriangleAlert v-else :size="20" />
-              <span>{{ isRowAbnormal(log) ? 'Abnormal' : 'Optimal' }}</span>
-            </div>
-          </td>
-          <td>{{ log.recordedByName ?? 'Unknown user' }}</td>
-          <td v-if="canDeleteLogs">
-            <button class="delete-btn" @click="deleteLog(log.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="log-table">
+        <thead class="log-table-header">
+          <tr>
+            <th>Time Logged</th>
+            <th>Temperature Zone</th>
+            <th>Temperature (°C)</th>
+            <th>Status</th>
+            <th>Logged By</th>
+            <th v-if="canDeleteLogs">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="log-table-body">
+          <tr
+            v-for="log in currentPageLogs"
+            :key="log.id"
+            v-bind:class="isRowAbnormal(log) ? 'abnormal-row' : ''"
+          >
+            <td>{{ formatTimestamp(log.timestamp) }}</td>
+            <td>
+              {{
+                log.temperatureZoneName ??
+                props.temperatureZones.find((zone) => zone.id === log.temperatureZoneId)?.name ??
+                'Unknown zone'
+              }}
+            </td>
+            <td>{{ log.temperatureCelsius }} °C</td>
+            <td class="status-column">
+              <div class="status-content">
+                <Check v-if="!isRowAbnormal(log)" :size="20" />
+                <TriangleAlert v-else :size="20" />
+                <span>{{ isRowAbnormal(log) ? 'Abnormal' : 'Optimal' }}</span>
+              </div>
+            </td>
+            <td>{{ log.recordedByName ?? 'Unknown user' }}</td>
+            <td v-if="canDeleteLogs">
+              <button class="delete-btn" @click="deleteLog(log.id)">
+                <Trash2 :size="16" aria-hidden="true" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="paging">
       <button class="page-button" @click="pageLeft"><ChevronLeft /></button>
@@ -190,10 +194,15 @@ function deleteLog(logId: number) {
   color: var(--text-secondary);
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .log-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 780px;
 }
 
 .log-table-header th:nth-child(1) {
@@ -260,7 +269,7 @@ function deleteLog(logId: number) {
 
 .log-table-body td {
   padding: 15px 10px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1px solid var(--border);
 }
 
 .log-table-body tr:last-child td {
@@ -303,8 +312,25 @@ function deleteLog(logId: number) {
 }
 
 .delete-btn {
-  width: 100%;
   background-color: var(--cta-red-btn);
   color: white;
+  height: 36px;
+  width: 36px;
+}
+
+@media (max-width: 640px) {
+  .zone-filter-wrap {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .zone-filter-wrap select {
+    width: 100%;
+  }
+
+  .paging {
+    flex-wrap: wrap;
+    align-items: center;
+  }
 }
 </style>

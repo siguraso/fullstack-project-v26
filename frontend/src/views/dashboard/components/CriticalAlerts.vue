@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import Card from '@/components/ui/Card.vue'
 import { resolveDeviation } from '@/services/deviation'
-import { Thermometer, TimerReset, TriangleAlert } from '@lucide/vue'
+import { TriangleAlert } from '@lucide/vue'
+import { getAuthSession } from '@/services/auth'
 
 const props = defineProps<{
   alerts: any[]
 }>()
 
 const emit = defineEmits(['resolved'])
+
+const session = getAuthSession()
+const canResolveAlerts = session?.role === 'ADMIN' || session?.role === 'MANAGER'
 
 async function handleResolve(id: number) {
   try {
@@ -42,7 +46,9 @@ async function handleResolve(id: number) {
             <p class="alert-details">{{ alert.description }}</p>
           </div>
 
-          <button class="alert-action" @click="handleResolve(alert.id)">Resolve</button>
+          <button v-if="canResolveAlerts" class="alert-action" @click="handleResolve(alert.id)">
+            Resolve
+          </button>
         </li>
       </TransitionGroup>
     </template>
