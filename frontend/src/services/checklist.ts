@@ -151,7 +151,7 @@ export async function isLibraryItemInUse(id: number) {
 }
 
 export async function getPresets() {
-  const res = await apiFetch('/api/checklist-presets')
+  const res = await jsonApiFetch('/api/checklist-presets')
   const data = await readJson<unknown>(res, 'Failed to fetch presets')
 
   return Array.isArray(data) ? data : []
