@@ -16,6 +16,7 @@ public class ChecklistInstanceMapper {
         ChecklistInstanceDTO dto = new ChecklistInstanceDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getTemplate().getName());
+        dto.setModule(entity.getTemplate().getModule().name());
         dto.setDate(entity.getDate());
         dto.setStatus(entity.getStatus().name());
         dto.setItems(entity.getItems().stream().map(this::mapItem).toList());
