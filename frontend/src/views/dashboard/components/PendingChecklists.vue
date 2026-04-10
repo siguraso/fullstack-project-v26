@@ -4,6 +4,7 @@ import { ChevronDownIcon } from '@lucide/vue'
 import { ref, computed, watchEffect } from 'vue'
 import Card from '@/components/ui/Card.vue'
 import { updateChecklistItem } from '@/services/checklist'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   checklists: any[]
@@ -14,6 +15,7 @@ const tasks = ref<any[]>([])
 const showAll = ref(false)
 
 const emit = defineEmits(['updated'])
+const logger = createLogger('pending-checklists')
 
 const tasksList = watchEffect(() => {
   tasks.value = (props.checklists || []).flatMap((c: any) =>
@@ -27,6 +29,11 @@ const tasksList = watchEffect(() => {
         dueDate: item.dueDate,
       })),
   )
+
+  logger.log('pending checklist tasks derived', {
+    checklistCount: props.checklists?.length ?? 0,
+    taskCount: tasks.value.length,
+  })
 })
 
 const displayedTasks = computed(() => {
@@ -35,15 +42,23 @@ const displayedTasks = computed(() => {
 
 async function toggleTask(id: number, completed: boolean) {
   const task = tasks.value.find((t) => t.id === id)
-  if (task) task.completed = completed
+  if (!task) {
+    logger.warn('pending checklist toggle skipped because task was not found', { id, completed })
+    return
+  }
+
+  task.completed = completed
+  logger.info('pending checklist toggle started', { id, completed })
 
   try {
     await updateChecklistItem(id, completed)
     if (completed) {
       emit('updated')
     }
+    logger.info('pending checklist toggle succeeded', { id, completed })
   } catch (e) {
-    if (task) task.completed = !completed
+    task.completed = !completed
+    logger.error('pending checklist toggle failed', e, { id, completed })
   }
 }
 </script>
