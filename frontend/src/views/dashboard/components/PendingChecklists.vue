@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TaskListItem from '@/components/ui/TaskListItem.vue'
 import { ChevronDownIcon } from '@lucide/vue'
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Card from '@/components/ui/Card.vue'
 import { updateChecklistItem } from '@/services/checklist'
 import { createLogger } from '@/services/util/logger'
@@ -10,15 +10,13 @@ const props = defineProps<{
   checklists: any[]
 }>()
 
-const tasks = ref<any[]>([])
-
 const showAll = ref(false)
 
 const emit = defineEmits(['updated'])
 const logger = createLogger('pending-checklists')
 
-const tasksList = watchEffect(() => {
-  tasks.value = (props.checklists || []).flatMap((c: any) =>
+const tasks = computed(() =>
+  (props.checklists || []).flatMap((c: any) =>
     (c.items || [])
       .filter((item: any) => !item.completed)
       .map((item: any) => ({
@@ -28,13 +26,25 @@ const tasksList = watchEffect(() => {
         completed: item.completed,
         dueDate: item.dueDate,
       })),
-  )
+  ),
+)
 
-  logger.log('pending checklist tasks derived', {
-    checklistCount: props.checklists?.length ?? 0,
-    taskCount: tasks.value.length,
-  })
-})
+watch(
+  tasks,
+  (nextTasks) => {
+    if (showAll.value && nextTasks.length <= 3) {
+      showAll.value = false
+    }
+
+    logger.log('pending checklist tasks derived', {
+      checklistCount: props.checklists?.length ?? 0,
+      taskCount: nextTasks.length,
+    })
+  },
+  { immediate: true },
+)
+
+const hasMoreTasks = computed(() => tasks.value.length > 3)
 
 const displayedTasks = computed(() => {
   return showAll.value ? tasks.value : tasks.value.slice(0, 3)
@@ -84,7 +94,7 @@ async function toggleTask(id: number, completed: boolean) {
           <p>All tasks completed 🎉</p>
         </div>
       </div>
-      <button v-if="tasksList.length > 3" @click="showAll = !showAll" class="show-more-btn">
+      <button v-if="hasMoreTasks" @click="showAll = !showAll" class="show-more-btn" type="button">
         <span>{{ showAll ? 'Show Less' : 'Show More' }}</span>
         <ChevronDownIcon :size="16" :class="{ rotated: showAll }" />
       </button>
