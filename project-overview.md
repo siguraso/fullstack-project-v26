@@ -49,12 +49,12 @@ Key modules:
 - common:
   - Security, auth, config, exceptions, shared DTOs, email integration
 - core:
+  - dashboard
   - tenant, user, invitation
   - document
   - compliance:
     - checklist
     - deviation
-    - dashboard
     - inspection
     - base log abstractions
 - ikfood:
