@@ -116,6 +116,7 @@ function handleFilterTagKeydown(event: KeyboardEvent) {
   border-radius: 999px;
   border: 1px solid transparent;
   cursor: pointer;
+  color: lightblue;
   transition:
     transform 140ms ease,
     background-color 140ms ease,
