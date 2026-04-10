@@ -15,6 +15,7 @@ import {
 import { useTenantStore } from '@/stores/tenant'
 import { type Tenant, type TenantUpdatePayload } from '@/interfaces/Tenant.interface'
 import { type User, type UserUpdatePayload } from '@/interfaces/User.interface'
+import { createLogger } from '@/services/util/logger'
 
 type TenantForm = {
   name: string
@@ -61,6 +62,7 @@ const deactivatingUserId = ref<number | null>(null)
 const inviteEmail = ref('')
 const isSendingInvite = ref(false)
 const isInvitePopupOpen = ref(false)
+const logger = createLogger('settings-view')
 
 const tenantForm = reactive<TenantForm>({
   name: '',
@@ -199,6 +201,7 @@ function replaceUserInList(nextUser: User) {
 }
 
 async function loadTenant() {
+  logger.info('tenant load started')
   tenantError.value = ''
 
   try {
@@ -206,12 +209,15 @@ async function loadTenant() {
     tenant.value = payload
     tenantStore.setTenant(payload)
     applyTenantToForm(payload)
+    logger.info('tenant load succeeded', { tenantId: payload.id, tenantName: payload.name })
   } catch (error) {
     tenantError.value = toErrorMessage(error, 'Unable to load workspace details.')
+    logger.error('tenant load failed', error)
   }
 }
 
 async function loadUsersSection(showRefreshingState = false) {
+  logger.info('users load started', { showRefreshingState })
   usersError.value = ''
 
   if (showRefreshingState) {
@@ -220,8 +226,13 @@ async function loadUsersSection(showRefreshingState = false) {
 
   try {
     users.value = await getUsers()
+    logger.info('users load succeeded', {
+      showRefreshingState,
+      userCount: users.value.length,
+    })
   } catch (error) {
     usersError.value = toErrorMessage(error, 'Unable to load staff members.')
+    logger.error('users load failed', error, { showRefreshingState })
   } finally {
     if (showRefreshingState) {
       isRefreshingUsers.value = false
@@ -230,6 +241,7 @@ async function loadUsersSection(showRefreshingState = false) {
 }
 
 async function bootstrapPage() {
+  logger.info('settings bootstrap started')
   isBootstrapping.value = true
   tenantSuccess.value = ''
   staffSuccess.value = ''
@@ -237,26 +249,34 @@ async function bootstrapPage() {
   await Promise.all([loadTenant(), loadUsersSection()])
 
   isBootstrapping.value = false
+  logger.info('settings bootstrap completed', {
+    hasTenant: Boolean(tenant.value),
+    userCount: users.value.length,
+  })
 }
 
 async function sendInviteForTesting() {
   const email = inviteEmail.value.trim()
   if (!email) {
     inviteError.value = 'Enter an email address before sending an invitation.'
+    logger.warn('invite send skipped because email was missing')
     return
   }
 
   isSendingInvite.value = true
   inviteError.value = ''
   staffSuccess.value = ''
+  logger.info('invite send started', { emailDomain: email.split('@')[1] ?? null })
 
   try {
     await sendStaffInvite(email)
     staffSuccess.value = `Invitation sent to ${email}.`
     inviteEmail.value = ''
     isInvitePopupOpen.value = false
+    logger.info('invite send succeeded', { emailDomain: email.split('@')[1] ?? null })
   } catch (error) {
     inviteError.value = toErrorMessage(error, 'Unable to send invitation email.')
+    logger.error('invite send failed', error, { emailDomain: email.split('@')[1] ?? null })
   } finally {
     isSendingInvite.value = false
   }
@@ -264,6 +284,7 @@ async function sendInviteForTesting() {
 
 function toggleInvitePopup() {
   isInvitePopupOpen.value = !isInvitePopupOpen.value
+  logger.info('invite popup toggled', { isOpen: isInvitePopupOpen.value })
 
   if (!isInvitePopupOpen.value) {
     inviteError.value = ''
@@ -273,22 +294,26 @@ function toggleInvitePopup() {
 
 function resetTenantForm() {
   if (!tenant.value) {
+    logger.warn('tenant reset skipped because tenant is not loaded')
     return
   }
 
   tenantSuccess.value = ''
   tenantError.value = ''
   applyTenantToForm(tenant.value)
+  logger.info('tenant form reset')
 }
 
 async function saveTenant() {
   if (!tenant.value) {
+    logger.warn('tenant save skipped because tenant is not loaded')
     return
   }
 
   isSavingTenant.value = true
   tenantError.value = ''
   tenantSuccess.value = ''
+  logger.info('tenant save started')
 
   try {
     const updatedTenant = await updateCurrentTenant(buildTenantPayload())
@@ -296,8 +321,10 @@ async function saveTenant() {
     tenantStore.setTenant(updatedTenant)
     applyTenantToForm(updatedTenant)
     tenantSuccess.value = 'Workspace settings saved.'
+    logger.info('tenant save succeeded', { tenantId: updatedTenant.id, tenantName: updatedTenant.name })
   } catch (error) {
     tenantError.value = toErrorMessage(error, 'Unable to save workspace details.')
+    logger.error('tenant save failed', error)
   } finally {
     isSavingTenant.value = false
   }
@@ -308,9 +335,11 @@ function closeUserEditor() {
   isUserEditorLoading.value = false
   userEditorError.value = ''
   selectedUserId.value = null
+  logger.info('user editor closed')
 }
 
 async function openUserEditor(user: User) {
+  logger.info('user editor opened', { userId: user.id, role: user.role, active: user.active })
   isUserEditorOpen.value = true
   isUserEditorLoading.value = true
   selectedUserId.value = user.id
@@ -321,11 +350,13 @@ async function openUserEditor(user: User) {
     const payload = await getUser(user.id)
     replaceUserInList(payload)
     applyUserToForm(payload)
+    logger.info('user detail refresh succeeded', { userId: user.id })
   } catch (error) {
     userEditorError.value = toErrorMessage(
       error,
       'Unable to refresh staff member details. Showing list data instead.',
     )
+    logger.error('user detail refresh failed', error, { userId: user.id })
   } finally {
     isUserEditorLoading.value = false
   }
@@ -333,11 +364,13 @@ async function openUserEditor(user: User) {
 
 async function saveSelectedUser() {
   if (selectedUserId.value === null) {
+    logger.warn('user save skipped because no user is selected')
     return
   }
 
   isSavingUser.value = true
   userEditorError.value = ''
+  logger.info('user save started', { userId: selectedUserId.value, role: userForm.role })
 
   try {
     const updatedUser = await updateUser(selectedUserId.value, buildUserPayload())
@@ -345,8 +378,10 @@ async function saveSelectedUser() {
     await loadUsersSection()
     staffSuccess.value = `${fullName(updatedUser)} updated.`
     closeUserEditor()
+    logger.info('user save succeeded', { userId: updatedUser.id, role: updatedUser.role })
   } catch (error) {
     userEditorError.value = toErrorMessage(error, 'Unable to update staff member.')
+    logger.error('user save failed', error, { userId: selectedUserId.value })
   } finally {
     isSavingUser.value = false
   }
@@ -356,6 +391,7 @@ async function deactivateSelectedUser(user: User) {
   const confirmed = window.confirm(`Deactivate ${fullName(user)}? They will lose active access.`)
 
   if (!confirmed) {
+    logger.warn('user deactivation cancelled', { userId: user.id })
     return
   }
 
@@ -363,6 +399,7 @@ async function deactivateSelectedUser(user: User) {
   usersError.value = ''
   userEditorError.value = ''
   staffSuccess.value = ''
+  logger.info('user deactivation started', { userId: user.id })
 
   try {
     await deactivateUser(user.id)
@@ -372,6 +409,7 @@ async function deactivateSelectedUser(user: User) {
     if (selectedUserId.value === user.id) {
       closeUserEditor()
     }
+    logger.info('user deactivation succeeded', { userId: user.id })
   } catch (error) {
     const message = toErrorMessage(error, 'Unable to deactivate staff member.')
 
@@ -380,13 +418,16 @@ async function deactivateSelectedUser(user: User) {
     } else {
       usersError.value = message
     }
+
+    logger.error('user deactivation failed', error, { userId: user.id })
   } finally {
     deactivatingUserId.value = null
   }
 }
 
 onMounted(() => {
-  bootstrapPage()
+  logger.info('view mounted')
+  void bootstrapPage()
 })
 </script>
 

@@ -15,6 +15,7 @@ import {
   getTemperatureZones,
 } from '@/services/temperatureZone'
 import { addTemperatureZone } from '@/services/temperatureZone'
+import { createLogger } from '@/services/util/logger'
 
 const zones = ref<TemperatureZone[]>([])
 const logs = ref<TemperatureLog[]>([])
@@ -22,37 +23,45 @@ const isLoadingZones = ref(false)
 const isLoadingLogs = ref(false)
 const zoneLoadError = ref('')
 const logLoadError = ref('')
+const logger = createLogger('temperature-log-view')
 
 async function loadZones() {
+  logger.info('zone load started')
   isLoadingZones.value = true
   zoneLoadError.value = ''
 
   try {
     zones.value = await getTemperatureZones()
+    logger.info('zone load succeeded', { zoneCount: zones.value.length })
   } catch (error) {
     zoneLoadError.value =
       error instanceof Error ? error.message : 'Failed to fetch temperature zones'
-    console.error('Failed to fetch temperature zones', error)
+    logger.error('zone load failed', error)
   } finally {
     isLoadingZones.value = false
+    logger.log('zone loading state updated', { loading: isLoadingZones.value })
   }
 }
 
 async function loadLogs() {
+  logger.info('temperature log load started')
   isLoadingLogs.value = true
   logLoadError.value = ''
 
   try {
     logs.value = await fetchTemperatureLogs()
+    logger.info('temperature log load succeeded', { logCount: logs.value.length })
   } catch (error) {
     logLoadError.value = error instanceof Error ? error.message : 'Failed to fetch temperature logs'
-    console.error('Failed to fetch temperature logs', error)
+    logger.error('temperature log load failed', error)
   } finally {
     isLoadingLogs.value = false
+    logger.log('temperature log loading state updated', { loading: isLoadingLogs.value })
   }
 }
 
 onMounted(() => {
+  logger.info('view mounted')
   void loadZones()
   void loadLogs()
 })
@@ -89,6 +98,13 @@ function unlockBodyScroll() {
 watch(
   isAnyOverlayOpen,
   (isOpen) => {
+    logger.log('overlay visibility changed', {
+      isOpen,
+      editZoneOpen: isEditZoneOverlayOpen.value,
+      createZoneOpen: isCreateZoneOverlayOpen.value,
+      viewLogOpen: isViewLogOverlayOpen.value,
+    })
+
     if (isOpen) {
       lockBodyScroll()
       return
@@ -100,75 +116,112 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  logger.info('view unmounted')
   unlockBodyScroll()
 })
 
 function handleTemperatureLogCreated(log: TemperatureLog) {
   logs.value = [log, ...logs.value]
+  logger.info('temperature log appended', {
+    logId: log.id,
+    totalLogs: logs.value.length,
+    deviationCreated: Boolean(log.deviationCreated),
+  })
 }
 
 function openTemperatureLogDetails(log: TemperatureLog) {
   selectedLog.value = log
   isViewLogOverlayOpen.value = true
+  logger.info('temperature log details opened', { logId: log.id })
 }
 
 function closeViewLogOverlay() {
   isViewLogOverlayOpen.value = false
   selectedLog.value = null
+  logger.info('temperature log details closed')
 }
 
 function openEditZoneOverlay(zone: TemperatureZone) {
   selectedZone.value = zone
   isEditZoneOverlayOpen.value = true
+  logger.info('temperature zone editor opened', { zoneId: zone.id, zoneName: zone.name })
 }
 
 async function closeEditZoneOverlay() {
   isEditZoneOverlayOpen.value = false
   await nextTick()
   selectedZone.value = null
+  logger.info('temperature zone editor closed')
 }
 
 async function saveZoneChanges(updatedZone: TemperatureZone) {
+  logger.info('temperature zone save started', {
+    zoneId: updatedZone.id,
+    zoneName: updatedZone.name,
+  })
+
   editTemperatureZone(updatedZone.id, updatedZone)
     .then((responseZone) => {
       const zoneIndex = zones.value.findIndex((zone) => zone.id === updatedZone.id)
       if (zoneIndex === -1) {
+        logger.warn('temperature zone save completed with missing local zone', {
+          zoneId: updatedZone.id,
+        })
         return
       }
 
       zones.value[zoneIndex] = responseZone
       selectedZone.value = responseZone
+      logger.info('temperature zone save succeeded', {
+        zoneId: responseZone.id,
+        zoneName: responseZone.name,
+      })
     })
     .catch((error) => {
-      console.error('Failed to update temperature zone', error)
+      logger.error('temperature zone save failed', error, { zoneId: updatedZone.id })
     })
     .finally(() => {
-      closeEditZoneOverlay()
+      void closeEditZoneOverlay()
     })
 }
 
 async function deleteZone(zoneId: number) {
+  logger.info('temperature zone delete started', { zoneId })
   deleteTemperatureZone(zoneId)
     .then(() => {
       zones.value = zones.value.filter((zone) => zone.id !== zoneId)
+      logger.info('temperature zone delete succeeded', {
+        zoneId,
+        remainingZones: zones.value.length,
+      })
     })
     .catch((error) => {
-      console.error('Failed to delete temperature zone', error)
+      logger.error('temperature zone delete failed', error, { zoneId })
     })
     .finally(() => {
-      closeEditZoneOverlay()
+      void closeEditZoneOverlay()
     })
 
   await closeEditZoneOverlay()
 }
 
 async function createZone(newZone: Omit<TemperatureZone, 'id'>) {
+  logger.info('temperature zone create started', {
+    zoneName: newZone.name,
+    lowerLimitCelsius: newZone.lowerLimitCelsius,
+    upperLimitCelsius: newZone.upperLimitCelsius,
+  })
+
   addTemperatureZone(newZone)
     .then((createdZone) => {
       zones.value.push(createdZone)
+      logger.info('temperature zone create succeeded', {
+        zoneId: createdZone.id,
+        totalZones: zones.value.length,
+      })
     })
     .catch((error) => {
-      console.error('Failed to create temperature zone', error)
+      logger.error('temperature zone create failed', error, { zoneName: newZone.name })
     })
     .finally(() => {
       closeCreateZoneOverlay()
@@ -177,10 +230,12 @@ async function createZone(newZone: Omit<TemperatureZone, 'id'>) {
 
 function openCreateZoneOverlay() {
   isCreateZoneOverlayOpen.value = true
+  logger.info('temperature zone create dialog opened')
 }
 
 function closeCreateZoneOverlay() {
   isCreateZoneOverlayOpen.value = false
+  logger.info('temperature zone create dialog closed')
 }
 </script>
 
