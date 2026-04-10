@@ -1,0 +1,106 @@
+<script setup lang="ts">
+import Card from '@/components/ui/Card.vue'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
+import { ref } from 'vue'
+import { createLogger } from '@/services/util/logger'
+
+const emit = defineEmits<{
+  (event: 'close'): void
+  (event: 'create', payload: Omit<TemperatureZone, 'id'>): void
+}>()
+
+const name = ref('')
+const lowerLimit = ref(0)
+const upperLimit = ref(5)
+const logger = createLogger('create-temperature-zone')
+
+function closeOverlay() {
+  logger.info('create zone dialog closed')
+  emit('close')
+}
+
+function createZone() {
+  logger.info('create zone emitted', {
+    name: name.value,
+    lowerLimitCelsius: lowerLimit.value,
+    upperLimitCelsius: upperLimit.value,
+  })
+  emit('create', {
+    name: name.value,
+    lowerLimitCelsius: lowerLimit.value,
+    upperLimitCelsius: upperLimit.value,
+    active: true,
+  })
+}
+</script>
+
+<template>
+  <Card class="card">
+    <template #card-header>
+      <h3 class="title">Create new temperature zone</h3>
+    </template>
+
+    <template #card-content>
+      <p class="subtext">Temperature Zone Name</p>
+      <input type="text" v-model="name" class="edit-input" />
+      <p class="subtext">Lower Limit (°C)</p>
+      <input type="number" v-model.number="lowerLimit" class="edit-input" />
+      <p class="subtext">Upper Limit (°C)</p>
+      <input type="number" v-model.number="upperLimit" class="edit-input" />
+      <div class="buttons">
+        <button class="close-button" @click="closeOverlay">Cancel</button>
+        <button class="save-btn" @click="createZone">Create Zone</button>
+      </div>
+    </template>
+  </Card>
+</template>
+
+<style scoped>
+.title {
+  margin: 0;
+}
+
+.card {
+  width: min(480px, 92vw);
+  max-width: 480px;
+  max-height: calc(100vh - 3rem);
+  overflow: auto;
+}
+
+.subtext {
+  margin: 10px 0px 5px 0px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.edit-input {
+  width: 100%;
+}
+
+.save-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.close-button {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  margin-top: 1.5rem;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .card {
+    max-height: calc(100vh - 24px);
+  }
+
+  .buttons {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

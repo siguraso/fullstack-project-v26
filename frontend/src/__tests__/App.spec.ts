@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest'
 
 import { mount } from '@vue/test-utils'
-import App from '../App.vue'
+import LoginView from '../views/LoginView.vue'
 
 describe('App', () => {
-  it('mounts renders properly', () => {
-    const wrapper = mount(App)
-    expect(wrapper.text()).toContain('You did it!')
+  it('renders the login page', () => {
+    const wrapper = mount(LoginView, {
+      global: {
+        stubs: {
+          RouterLink: true,
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Welcome back')
+    expect(wrapper.text()).toContain('Sign in to continue to your workspace.')
   })
 })

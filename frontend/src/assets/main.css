@@ -1,0 +1,129 @@
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('./fonts/PlusJakartaSans-Regular.ttf');
+}
+
+@font-face {
+  font-family: Inter;
+  src: url(./fonts/Inter_18pt-Regular.ttf);
+}
+
+:root {
+  /* main color scheme */
+  --bg: #f6f6f6;
+  --bg-hover: rgb(202, 202, 202);
+  --bg-active: rgb(170, 170, 170);
+  --bg-secondary: #ffffff;
+  --cta-red: #ff9393;
+  --cta-red-bg: #ffdad6;
+  --cta-red-text: #93000a;
+  --cta-red-btn: #ff0000;
+  --cta-red-btn-hover: #e60000;
+  --cta-red-btn-active: #b30000;
+  --neutral: #1a1c1e;
+  --neutral-hover: #333333;
+  --neutral-active: #666666;
+  --text: var(--neutral);
+  --text-secondary: #727272;
+  --border: #d8d8d8;
+  --shadow-soft: 0 28px 60px rgba(26, 28, 30, 0.08);
+
+  /* icon colors */
+  --icon-bg-blue: #d2e4fb;
+  --icon-stroke-blue: #003984;
+
+  --icon-bg-green: #d2fbd8;
+  --icon-stroke-green: #007a2e;
+
+  --icon-bg-yellow: #ffedb6;
+  --icon-stroke-yellow: #8e5500;
+
+  --icon-bg-purple: #e8d2fb;
+  --icon-stroke-purple: #5e2e8e;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html * {
+  font-family: 'Inter', sans-serif;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--bg);
+}
+
+button {
+  border-radius: 10px;
+  min-height: 35px;
+  border: none;
+  background-color: var(--neutral);
+  color: var(--bg);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+button:hover {
+  background-color: var(--neutral-hover);
+}
+
+button:active {
+  background-color: var(--neutral-active);
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 8px;
+  color: var(--text);
+}
+
+input {
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
+select {
+  min-height: 42px;
+  padding: 8px 10px;
+  padding-right: 40px;
+  border-radius: 10px;
+  height: 40px;
+  padding-left: 10px;
+  background-color: var(--bg);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238A8A8E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 12px 8px;
+}
+
+textarea {
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  min-height: 80px;
+  resize: vertical;
+}
+
+h1 {
+  margin-top: 0;
+}

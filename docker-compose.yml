@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: regula-backend
+    environment:
+      INVITE_FRONTEND_BASE_URL: http://localhost:8081
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: regula-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"

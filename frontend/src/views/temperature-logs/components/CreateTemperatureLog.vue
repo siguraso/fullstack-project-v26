@@ -1,0 +1,514 @@
+<script setup lang="ts">
+import InfoCard from '@/components/ui/InfoCard.vue'
+import type { TemperatureLog, TemperatureLogInput } from '@/interfaces/TemperatureLog.interface'
+import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
+import { createTemperatureLog } from '@/services/temperatureLog'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { AlertTriangle, Edit2, X } from '@lucide/vue'
+import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
+import { useDeviationStore } from '@/stores/deviation'
+import { createLogger } from '@/services/util/logger'
+
+const props = defineProps<{
+  temperatureZones: TemperatureZone[]
+}>()
+
+const emit = defineEmits<{
+  (event: 'created', log: TemperatureLog): void
+}>()
+
+const deviationStore = useDeviationStore()
+
+const notes = ref<string>('')
+const selectedZoneId = ref<number | null>(null)
+const temperature = ref<number | null>(null)
+const isSubmitting = ref(false)
+const statusMessage = ref('')
+const statusMessageType = ref<'success' | 'error' | ''>('')
+const isDeviationModalOpen = ref(false)
+const pendingTemperaturePayload = ref<TemperatureLogInput | null>(null)
+const pendingCreatedLog = ref<TemperatureLog | null>(null)
+const logger = createLogger('create-temperature-log')
+
+const selectedZone = computed(
+  () => props.temperatureZones.find((zone) => zone.id === selectedZoneId.value) ?? null,
+)
+
+function lockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBodyScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.style.overflow = ''
+  document.body.style.overflow = ''
+}
+
+watch(
+  isDeviationModalOpen,
+  (isOpen) => {
+    logger.log('deviation modal visibility changed', {
+      isOpen,
+      hasPendingPayload: Boolean(pendingTemperaturePayload.value),
+      hasCreatedLog: Boolean(pendingCreatedLog.value),
+    })
+
+    if (isOpen) {
+      lockBodyScroll()
+      return
+    }
+
+    unlockBodyScroll()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  logger.info('component unmounted')
+  unlockBodyScroll()
+})
+
+function buildPayload(): TemperatureLogInput | null {
+  if (!selectedZoneId.value || temperature.value === null) {
+    logger.warn('temperature payload build failed', {
+      selectedZoneId: selectedZoneId.value,
+      temperature: temperature.value,
+    })
+    return null
+  }
+
+  return {
+    temperatureZoneId: selectedZoneId.value,
+    temperatureCelsius: temperature.value,
+    note: notes.value.trim().length > 0 ? notes.value.trim() : null,
+  }
+}
+
+function isOutsideAllowedRange(zone: TemperatureZone, measuredTemperature: number) {
+  return (
+    measuredTemperature < zone.lowerLimitCelsius || measuredTemperature > zone.upperLimitCelsius
+  )
+}
+
+function resetTemperatureForm() {
+  selectedZoneId.value = null
+  temperature.value = null
+  notes.value = ''
+  logger.info('temperature form reset')
+}
+
+function clearDeviationFlowState() {
+  isDeviationModalOpen.value = false
+  pendingTemperaturePayload.value = null
+  pendingCreatedLog.value = null
+  deviationStore.error = null
+  logger.info('temperature deviation flow state cleared')
+}
+
+function seedDeviationForm(zone: TemperatureZone, measuredTemperature: number, note: string) {
+  const today = new Date().toISOString().slice(0, 10)
+  const noteLine = note ? ` Notes: ${note}` : ''
+
+  deviationStore.resetForm()
+  deviationStore.patchForm({
+    title: `${zone.name} temperature deviation`,
+    category: 'TEMPERATURE',
+    severity: 'HIGH',
+    module: 'IK_FOOD',
+    status: 'OPEN',
+    reportedDate: today,
+    issueDescription: `Recorded ${measuredTemperature}°C in ${zone.name}. Allowed range is ${zone.lowerLimitCelsius}°C to ${zone.upperLimitCelsius}°C.${noteLine}`,
+  })
+}
+
+async function submitNormalTemperatureLog(payload: TemperatureLogInput) {
+  statusMessage.value = ''
+  statusMessageType.value = ''
+  isSubmitting.value = true
+  logger.info('temperature log submit started', {
+    zoneId: payload.temperatureZoneId,
+    hasNote: Boolean(payload.note),
+  })
+
+  try {
+    const createdLog = await createTemperatureLog(payload)
+    emit('created', createdLog)
+    resetTemperatureForm()
+    statusMessageType.value = 'success'
+    statusMessage.value = 'Temperature log created successfully.'
+    logger.info('temperature log submit succeeded', { logId: createdLog.id })
+  } catch (error) {
+    statusMessageType.value = 'error'
+    statusMessage.value =
+      error instanceof Error ? error.message : 'Failed to create temperature log.'
+    logger.error('temperature log submit failed', error, {
+      zoneId: payload.temperatureZoneId,
+    })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+function closeDeviationModal() {
+  if (isSubmitting.value) {
+    logger.warn('temperature deviation modal close blocked because submit is in progress')
+    return
+  }
+
+  if (pendingCreatedLog.value) {
+    deviationStore.error =
+      'The temperature log has already been saved. Complete the deviation before closing this dialog.'
+    logger.warn('temperature deviation modal close blocked because log already exists', {
+      logId: pendingCreatedLog.value.id,
+    })
+    return
+  }
+
+  clearDeviationFlowState()
+}
+
+async function createLog() {
+  const payload = buildPayload()
+
+  if (!payload || !selectedZone.value || temperature.value === null) {
+    statusMessageType.value = 'error'
+    statusMessage.value = 'Please select a storage unit and enter a temperature.'
+    logger.warn('temperature log submit skipped because required fields were missing', {
+      selectedZoneId: selectedZoneId.value,
+      temperature: temperature.value,
+    })
+    return
+  }
+
+  if (isOutsideAllowedRange(selectedZone.value, temperature.value)) {
+    statusMessage.value = ''
+    statusMessageType.value = ''
+    pendingTemperaturePayload.value = payload
+    pendingCreatedLog.value = null
+    seedDeviationForm(selectedZone.value, temperature.value, notes.value.trim())
+    isDeviationModalOpen.value = true
+    logger.info('temperature deviation flow opened', {
+      zoneId: selectedZone.value.id,
+      measuredTemperature: temperature.value,
+    })
+    return
+  }
+
+  await submitNormalTemperatureLog(payload)
+}
+
+async function submitTemperatureDeviation() {
+  if (!pendingTemperaturePayload.value || !deviationStore.validateForm()) {
+    logger.warn('temperature deviation submit skipped', {
+      hasPendingPayload: Boolean(pendingTemperaturePayload.value),
+    })
+    return
+  }
+
+  statusMessage.value = ''
+  statusMessageType.value = ''
+  isSubmitting.value = true
+  logger.info('temperature deviation submit started', {
+    zoneId: pendingTemperaturePayload.value.temperatureZoneId,
+  })
+
+  try {
+    let createdLog = pendingCreatedLog.value
+
+    if (!createdLog) {
+      createdLog = await createTemperatureLog(pendingTemperaturePayload.value)
+      pendingCreatedLog.value = createdLog
+      logger.info('temperature log created during deviation flow', { logId: createdLog.id })
+    }
+
+    const createdDeviation = await deviationStore.createDeviation({ logId: createdLog.id })
+
+    if (!createdDeviation) {
+      statusMessageType.value = 'error'
+      statusMessage.value =
+        'The temperature log was saved, but the deviation still needs to be completed.'
+      return
+    }
+
+    emit('created', {
+      ...createdLog,
+      deviationCreated: true,
+    })
+    resetTemperatureForm()
+    clearDeviationFlowState()
+    statusMessageType.value = 'success'
+    statusMessage.value = 'Temperature log and deviation created successfully.'
+    logger.info('temperature deviation submit succeeded', {
+      logId: createdLog.id,
+      deviationId: createdDeviation.id,
+    })
+  } catch (error) {
+    statusMessageType.value = 'error'
+    statusMessage.value =
+      error instanceof Error
+        ? error.message
+        : 'Failed to create the temperature log for this deviation.'
+    logger.error('temperature deviation submit failed', error, {
+      zoneId: pendingTemperaturePayload.value.temperatureZoneId,
+    })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>
+
+<template>
+  <InfoCard
+    class="info-card"
+    title="Create Temperature Log"
+    :icon="Edit2"
+    iconBackgroundColor="var(--icon-bg-purple)"
+    iconColor="var(--icon-stroke-purple)"
+  >
+    <div class="input-field">
+      <p class="subtext">Storage Unit</p>
+      <select
+        v-model.number="selectedZoneId"
+        class="deviation-filter"
+        aria-label="Select storage unit"
+      >
+        <option :value="null" selected disabled>Select Storage Unit</option>
+        <option v-for="zone in temperatureZones" :key="zone.id" :value="zone.id">
+          {{ zone.name }}
+        </option>
+      </select>
+    </div>
+
+    <div v-if="selectedZone" class="zone-range">
+      Allowed range: {{ selectedZone.lowerLimitCelsius }}°C to
+      {{ selectedZone.upperLimitCelsius }}°C
+    </div>
+
+    <div class="input-field">
+      <p class="subtext">Temperature (°C)</p>
+      <input
+        v-model.number="temperature"
+        class="temperature-input"
+        type="number"
+        placeholder="Enter temperature"
+      />
+    </div>
+
+    <div class="input-field">
+      <p class="subtext">Notes (Optional)</p>
+      <input v-model="notes" type="text" placeholder="Additional notes" />
+    </div>
+
+    <button class="create-btn" :disabled="isSubmitting" @click="createLog">
+      {{ isSubmitting ? 'Submitting...' : 'Create Log' }}
+    </button>
+
+    <p v-if="statusMessage" class="status-message" :class="statusMessageType">
+      {{ statusMessage }}
+    </p>
+  </InfoCard>
+
+  <div v-if="isDeviationModalOpen" class="overlay-backdrop" @click.self="closeDeviationModal">
+    <div class="deviation-dialog">
+      <div class="dialog-header">
+        <div class="dialog-copy">
+          <div class="dialog-badge">
+            <AlertTriangle :size="16" aria-hidden="true" />
+            <span>Out-of-range reading</span>
+          </div>
+          <h2>Complete the deviation before saving this temperature log</h2>
+          <p>
+            This temperature is outside the configured range for the selected zone. Fill in the rest
+            of the deviation details to continue.
+          </p>
+        </div>
+
+        <button
+          class="close-btn"
+          type="button"
+          :disabled="isSubmitting"
+          @click="closeDeviationModal"
+        >
+          <X :size="18" aria-hidden="true" />
+        </button>
+      </div>
+
+      <DeviationForm
+        lockedCategory="TEMPERATURE"
+        lockedModule="IK_FOOD"
+        title="Complete Temperature Deviation"
+        submitLabel="Save Log and Deviation"
+        footerText="The temperature log will be saved together with this completed deviation."
+        :showInternalTracking="false"
+        :useExternalSubmit="true"
+        :isSubmitting="isSubmitting"
+        maxCardHeight="calc(100dvh - 120px)"
+        @submit="submitTemperatureDeviation"
+      />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.info-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.deviation-filter {
+  width: 100%;
+}
+
+.subtext {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.temperature-input {
+  width: 100%;
+}
+
+.zone-range {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.create-btn {
+  margin-top: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.status-message {
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.status-message.success {
+  color: #00a45f;
+}
+
+.status-message.error {
+  color: var(--cta-red);
+}
+
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.deviation-dialog {
+  width: min(960px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border-radius: 18px;
+  background: var(--bg);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+  padding: 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dialog-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.dialog-copy h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.dialog-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.dialog-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  border-radius: 999px;
+  background: #fff3d9;
+  color: #8a5d00;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.close-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #000000;
+}
+
+.close-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .info-card {
+    max-width: 100%;
+  }
+
+  .overlay-backdrop {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .deviation-dialog {
+    max-height: none;
+    padding: 14px;
+  }
+
+  .dialog-header {
+    align-items: flex-start;
+  }
+
+  .dialog-copy h2 {
+    font-size: 20px;
+  }
+}
+</style>
