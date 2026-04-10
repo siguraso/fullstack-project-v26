@@ -228,7 +228,7 @@ function parseFilenameFromDisposition(headerValue: string | null) {
   return asciiMatch?.[1] ?? null
 }
 
-export interface DocumentFileData {
+interface DocumentFileData {
   blob: Blob
   filename: string
   mimeType: string
