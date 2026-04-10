@@ -12,6 +12,7 @@ import {
   updateTemplate,
 } from '@/services/checklist'
 import draggable from 'vuedraggable'
+import { createLogger } from '@/services/util/logger'
 
 interface Item {
   id: number
@@ -46,6 +47,7 @@ const search = ref('')
 const showPresetPicker = ref(false)
 const showModal = ref(false)
 const editingItem = ref<Item | null>(null)
+const logger = createLogger('checklist-builder-view')
 
 const newItem = ref({
   title: '',
@@ -71,25 +73,43 @@ const isEditing = computed(() => selectedTemplate.value !== null)
 // ── Data loading ───────────────────────────────────────────────────────────────
 
 onMounted(async () => {
+  logger.info('builder bootstrap started')
   try {
     const [templatesData, libraryData] = await Promise.all([getTemplates(), getLibraryItems()])
     templates.value = Array.isArray(templatesData) ? templatesData : []
     libraryItems.value = Array.isArray(libraryData) ? libraryData : []
-  } catch {
+    logger.info('builder bootstrap succeeded', {
+      templateCount: templates.value.length,
+      libraryItemCount: libraryItems.value.length,
+    })
+  } catch (error) {
     templates.value = []
     libraryItems.value = []
+    logger.error('builder bootstrap failed', error)
   }
 })
 
 async function reloadTemplates() {
-  const data = await getTemplates()
-  templates.value = Array.isArray(data) ? data : []
+  logger.info('template reload started')
+
+  try {
+    const data = await getTemplates()
+    templates.value = Array.isArray(data) ? data : []
+    logger.info('template reload succeeded', { templateCount: templates.value.length })
+  } catch (error) {
+    logger.error('template reload failed', error)
+    throw error
+  }
 }
 
 // ── Template actions ───────────────────────────────────────────────────────────
 
 function loadTemplate(template: any) {
-  if (!template || typeof template.id !== 'number') return
+  if (!template || typeof template.id !== 'number') {
+    logger.warn('template load skipped because template was invalid')
+    return
+  }
+
   selectedTemplate.value = template
   checklistName.value = template.name
   frequency.value = template.frequency
@@ -103,6 +123,11 @@ function loadTemplate(template: any) {
       description: item.description,
       inUse: false,
     }))
+  logger.info('template loaded into builder', {
+    templateId: template.id,
+    itemCount: activeItems.value.length,
+    module: moduleType.value,
+  })
 }
 
 function resetBuilder() {
@@ -111,10 +136,17 @@ function resetBuilder() {
   selectedTemplate.value = null
   frequency.value = 'DAILY'
   moduleType.value = 'IK_FOOD'
+  logger.info('builder reset')
 }
 
 async function saveChecklist() {
-  if (!isValidChecklist.value) return
+  if (!isValidChecklist.value) {
+    logger.warn('checklist save skipped because builder state was invalid', {
+      checklistNameLength: checklistName.value.trim().length,
+      itemCount: activeItems.value.length,
+    })
+    return
+  }
 
   const payload = {
     name: checklistName.value,
@@ -123,15 +155,34 @@ async function saveChecklist() {
     itemIds: activeItems.value.map((i) => i.id),
   }
 
-  if (selectedTemplate.value) {
-    await updateTemplate(selectedTemplate.value.id, payload)
-  } else {
-    await createTemplate(payload)
-  }
+  logger.info('checklist save started', {
+    isEditing: Boolean(selectedTemplate.value),
+    itemCount: payload.itemIds.length,
+    module: payload.module,
+    frequency: payload.frequency,
+  })
 
-  await reloadTemplates()
-  resetBuilder()
-  document.getElementById('cb-builder')?.scrollIntoView({ behavior: 'smooth' })
+  try {
+    if (selectedTemplate.value) {
+      await updateTemplate(selectedTemplate.value.id, payload)
+    } else {
+      await createTemplate(payload)
+    }
+
+    await reloadTemplates()
+    resetBuilder()
+    document.getElementById('cb-builder')?.scrollIntoView({ behavior: 'smooth' })
+    logger.info('checklist save succeeded', {
+      isEditing: Boolean(selectedTemplate.value),
+      itemCount: payload.itemIds.length,
+    })
+  } catch (error) {
+    logger.error('checklist save failed', error, {
+      isEditing: Boolean(selectedTemplate.value),
+      itemCount: payload.itemIds.length,
+    })
+    throw error
+  }
 }
 
 // ── Item actions ───────────────────────────────────────────────────────────────
@@ -139,11 +190,16 @@ async function saveChecklist() {
 function addItem(item: Item) {
   if (!activeItems.value.find((i) => i.id === item.id)) {
     activeItems.value.push(item)
+    logger.info('builder item added', { itemId: item.id, activeItemCount: activeItems.value.length })
+    return
   }
+
+  logger.warn('builder item add skipped because item already exists', { itemId: item.id })
 }
 
 function removeItem(id: number) {
   activeItems.value = activeItems.value.filter((i) => i.id !== id)
+  logger.info('builder item removed', { itemId: id, activeItemCount: activeItems.value.length })
 }
 
 function openEditItem(item: Item) {
@@ -155,16 +211,22 @@ function openEditItem(item: Item) {
     category: 'IK_FOOD',
   }
   showModal.value = true
+  logger.info('library item editor opened', { itemId: item.id })
 }
 
 function openNewItem() {
   editingItem.value = null
   newItem.value = { title: '', description: '', priority: 'LOW', category: 'IK_FOOD' }
   showModal.value = true
+  logger.info('library item creator opened')
 }
 
 async function saveItem() {
-  if (!newItem.value.title.trim()) return
+  if (!newItem.value.title.trim()) {
+    logger.warn('library item save skipped because title was empty')
+    return
+  }
+
   const payload = {
     title: newItem.value.title,
     description: newItem.value.description,
@@ -172,34 +234,72 @@ async function saveItem() {
     priority: newItem.value.priority,
   }
 
-  if (editingItem.value) {
-    const updated = await updateLibraryItem(editingItem.value.id, payload)
-    const index = libraryItems.value.findIndex((i) => i.id === updated.id)
-    if (index !== -1)
-      libraryItems.value[index] = { ...updated, inUse: libraryItems.value[index]?.inUse ?? false }
-  } else {
-    const saved = await createLibraryItem(payload)
-    libraryItems.value.push({ ...saved, inUse: false })
-    activeItems.value.push({ ...saved, inUse: false })
-  }
+  logger.info('library item save started', {
+    isEditing: Boolean(editingItem.value),
+    category: payload.category,
+  })
 
-  showModal.value = false
+  try {
+    if (editingItem.value) {
+      const updated = await updateLibraryItem(editingItem.value.id, payload)
+      const index = libraryItems.value.findIndex((i) => i.id === updated.id)
+      if (index !== -1) {
+        libraryItems.value[index] = { ...updated, inUse: libraryItems.value[index]?.inUse ?? false }
+      }
+    } else {
+      const saved = await createLibraryItem(payload)
+      libraryItems.value.push({ ...saved, inUse: false })
+      activeItems.value.push({ ...saved, inUse: false })
+    }
+
+    showModal.value = false
+    logger.info('library item save succeeded', {
+      isEditing: Boolean(editingItem.value),
+      libraryItemCount: libraryItems.value.length,
+    })
+  } catch (error) {
+    logger.error('library item save failed', error, {
+      isEditing: Boolean(editingItem.value),
+    })
+    throw error
+  }
 }
 
 async function removeLibraryItem(id: number) {
-  await deleteLibraryItem(id)
-  libraryItems.value = libraryItems.value.filter((i) => i.id !== id)
-  activeItems.value = activeItems.value.filter((i) => i.id !== id)
+  logger.info('library item delete started', { itemId: id })
+
+  try {
+    await deleteLibraryItem(id)
+    libraryItems.value = libraryItems.value.filter((i) => i.id !== id)
+    activeItems.value = activeItems.value.filter((i) => i.id !== id)
+    logger.info('library item delete succeeded', { itemId: id, libraryItemCount: libraryItems.value.length })
+  } catch (error) {
+    logger.error('library item delete failed', error, { itemId: id })
+    throw error
+  }
 }
 
 async function addPresets(
   items: { title: string; description: string; category: string; priority: string }[],
 ) {
   showPresetPicker.value = false
-  for (const preset of items) {
-    const saved = await createLibraryItem(preset)
-    libraryItems.value.push({ ...saved, inUse: false })
-    activeItems.value.push({ ...saved, inUse: false })
+  logger.info('preset import started', { presetCount: items.length })
+
+  try {
+    for (const preset of items) {
+      const saved = await createLibraryItem(preset)
+      libraryItems.value.push({ ...saved, inUse: false })
+      activeItems.value.push({ ...saved, inUse: false })
+    }
+
+    logger.info('preset import succeeded', {
+      presetCount: items.length,
+      libraryItemCount: libraryItems.value.length,
+      activeItemCount: activeItems.value.length,
+    })
+  } catch (error) {
+    logger.error('preset import failed', error, { presetCount: items.length })
+    throw error
   }
 }
 </script>
