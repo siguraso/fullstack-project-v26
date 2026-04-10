@@ -108,7 +108,7 @@ Reference documentation is available in docs/api-contract.md, covering:
 
 ### Endpoints
 
-All endpoints can be viewed through Swagger UI when running directly on your machine (_does NOT work when running through docker!_):
+All endpoints can be viewed through Swagger UI:
 
 localhost:8080/swagger_ui.html
 
@@ -126,6 +126,7 @@ Important note:
 
 - Current application.properties includes concrete default values for security/email settings intended for local development.
 - Production deployment should use secure environment-managed secrets and disable dev-only defaults.
+- Get link, when inviting a new user, is used as a fall back if email service is down.
 
 ## Testing and Quality
 
