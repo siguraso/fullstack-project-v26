@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto;
+package edu.ntnu.idi.idatt2105.backend.core.dashboard.dto;
 
 import lombok.Data;
 

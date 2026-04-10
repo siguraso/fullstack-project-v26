@@ -53,7 +53,8 @@ public class ChecklistService {
     public ChecklistTemplateDTO createTemplate(CreateChecklistTemplateRequest request) {
 
         Long tenantId = TenantContext.getCurrentOrg();
-        log.info("Creating checklist template for tenantId={} frequency={} module={}", tenantId, request.getFrequency(), request.getModule());
+        log.info("Creating checklist template for tenantId={} frequency={} module={}", tenantId, request.getFrequency(),
+                request.getModule());
         Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
@@ -88,7 +89,8 @@ public class ChecklistService {
         }
 
         generateInstance(savedTemplate.getId());
-        log.info("Created checklist template id={} with {} items for tenantId={}", savedTemplate.getId(), libraryItems.size(), tenantId);
+        log.info("Created checklist template id={} with {} items for tenantId={}", savedTemplate.getId(),
+                libraryItems.size(), tenantId);
 
         return templateMapper.toDto(savedTemplate);
     }
@@ -119,7 +121,8 @@ public class ChecklistService {
             itemInstanceRepo.save(item);
         }
 
-        log.info("Generated checklist instance id={} from templateId={} with {} items", savedInstance.getId(), templateId, templates.size());
+        log.info("Generated checklist instance id={} from templateId={} with {} items", savedInstance.getId(),
+                templateId, templates.size());
 
         return instanceMapper.toDto(savedInstance);
     }
@@ -136,7 +139,8 @@ public class ChecklistService {
     public void completeItem(Long itemId, CompleteChecklistItemRequest request) {
 
         Long tenantId = TenantContext.getCurrentOrg();
-        log.info("Updating checklist item id={} completed={} for tenantId={}", itemId, request.getCompleted(), tenantId);
+        log.info("Updating checklist item id={} completed={} for tenantId={}", itemId, request.getCompleted(),
+                tenantId);
         ChecklistItemInstance item = itemInstanceRepo.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Checklist item not found"));
         ensureChecklistItemOwnedByTenant(item, tenantId);
@@ -217,7 +221,8 @@ public class ChecklistService {
         }
 
         ChecklistTemplate savedTemplate = templateRepo.save(template);
-        log.info("Updated checklist template id={} with {} requested items", savedTemplate.getId(), requestedItemIds.size());
+        log.info("Updated checklist template id={} with {} requested items", savedTemplate.getId(),
+                requestedItemIds.size());
         return templateMapper.toDto(savedTemplate);
     }
 
@@ -252,7 +257,8 @@ public class ChecklistService {
         }
 
         instanceRepo.save(checklist);
-        log.debug("Checklist id={} status recalculated to {} ({}/{})", checklistId, checklist.getStatus(), completed, total);
+        log.debug("Checklist id={} status recalculated to {} ({}/{})", checklistId, checklist.getStatus(), completed,
+                total);
     }
 
     public void toggleTemplate(Long id) {
@@ -269,21 +275,24 @@ public class ChecklistService {
     }
 
     private void ensureTemplateOwnedByTenant(ChecklistTemplate template, Long tenantId) {
-        if (template.getTenant() == null || template.getTenant().getId() == null || !template.getTenant().getId().equals(tenantId)) {
+        if (template.getTenant() == null || template.getTenant().getId() == null
+                || !template.getTenant().getId().equals(tenantId)) {
             log.warn("Access denied to checklist template id={} for tenantId={}", template.getId(), tenantId);
             throw new UnauthorizedException("Template does not belong to current organization");
         }
     }
 
     private void ensureLibraryItemOwnedByTenant(ChecklistItemLibrary libraryItem, Long tenantId) {
-        if (libraryItem.getTenant() == null || libraryItem.getTenant().getId() == null || !libraryItem.getTenant().getId().equals(tenantId)) {
+        if (libraryItem.getTenant() == null || libraryItem.getTenant().getId() == null
+                || !libraryItem.getTenant().getId().equals(tenantId)) {
             log.warn("Access denied to checklist library item id={} for tenantId={}", libraryItem.getId(), tenantId);
             throw new UnauthorizedException("Library item does not belong to current organization");
         }
     }
 
     private void ensureChecklistItemOwnedByTenant(ChecklistItemInstance item, Long tenantId) {
-        if (item.getChecklist() == null || item.getChecklist().getTenant() == null || item.getChecklist().getTenant().getId() == null
+        if (item.getChecklist() == null || item.getChecklist().getTenant() == null
+                || item.getChecklist().getTenant().getId() == null
                 || !item.getChecklist().getTenant().getId().equals(tenantId)) {
             log.warn("Access denied to checklist item id={} for tenantId={}", item.getId(), tenantId);
             throw new UnauthorizedException("Checklist item does not belong to current organization");

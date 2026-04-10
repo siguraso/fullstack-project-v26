@@ -32,14 +32,15 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.enums.ChecklistStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistInstanceMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistInstanceRepository;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.ChecklistTodaySummaryDTO;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.DashboardOverviewDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.entity.Deviation;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationSeverity;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.mapper.DeviationMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository.DeviationRepository;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.dto.ChecklistTodaySummaryDTO;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.dto.DashboardOverviewDTO;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.service.DashboardService;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.entity.AlcoholComplianceLog;
@@ -52,24 +53,24 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZ
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DashboardServiceTest {
 
-    private ChecklistInstanceRepository checklistInstanceRepository;
-    @Mock
-    private ChecklistInstanceMapper checklistInstanceMapper;
-    @Mock
-    private DeviationRepository deviationRepository;
-    @Mock
-    private DeviationMapper deviationMapper;
-    @Mock
-    private TemperatureLogRepository temperatureLogRepository;
-    @Mock
-    private AlcoholLogRepository alcoholLogRepository;
+        private ChecklistInstanceRepository checklistInstanceRepository;
+        @Mock
+        private ChecklistInstanceMapper checklistInstanceMapper;
+        @Mock
+        private DeviationRepository deviationRepository;
+        @Mock
+        private DeviationMapper deviationMapper;
+        @Mock
+        private TemperatureLogRepository temperatureLogRepository;
+        @Mock
+        private AlcoholLogRepository alcoholLogRepository;
 
-    private DashboardService dashboardService;
+        private DashboardService dashboardService;
         private List<ChecklistInstance> checklistQueryResult;
 
-    @BeforeEach
-    void setUpTenant() {
-        TenantContext.setCurrentOrg(99L);
+        @BeforeEach
+        void setUpTenant() {
+                TenantContext.setCurrentOrg(99L);
                 checklistQueryResult = List.of();
                 checklistInstanceRepository = mock(ChecklistInstanceRepository.class, invocation -> {
                         Object[] args = invocation.getArguments();
@@ -88,208 +89,209 @@ class DashboardServiceTest {
                                 deviationMapper,
                                 temperatureLogRepository,
                                 alcoholLogRepository);
-    }
+        }
 
-    @AfterEach
-    void clearTenant() {
-        TenantContext.clear();
-    }
+        @AfterEach
+        void clearTenant() {
+                TenantContext.clear();
+        }
 
-    @Test
-    void testBuildSummaryPendingAndActivity() {
-        ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
-        ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
-        List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
-        checklistQueryResult = todayChecklists;
+        @Test
+        void testBuildSummaryPendingAndActivity() {
+                ChecklistInstance completedChecklist = checklist(ChecklistStatus.COMPLETED, false, true);
+                ChecklistInstance pendingChecklist = checklist(ChecklistStatus.IN_PROGRESS, true);
+                List<ChecklistInstance> todayChecklists = List.of(completedChecklist, pendingChecklist);
+                checklistQueryResult = todayChecklists;
 
-        ChecklistInstanceDTO pendingDto = new ChecklistInstanceDTO();
-        pendingDto.setId(42L);
-        when(checklistInstanceMapper.toDto(eq(pendingChecklist))).thenReturn(pendingDto);
+                ChecklistInstanceDTO pendingDto = new ChecklistInstanceDTO();
+                pendingDto.setId(42L);
+                when(checklistInstanceMapper.toDto(eq(pendingChecklist))).thenReturn(pendingDto);
 
-        Deviation activeDeviation = deviation(1L, "Open deviation", LocalDateTime.of(2026, 4, 7, 11, 0));
-        Deviation criticalDeviation = deviation(2L, "Critical deviation", LocalDateTime.of(2026, 4, 7, 8, 30));
-        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(anyLong(), anyList()))
-                .thenReturn(List.of(activeDeviation));
-        when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                anyLong(),
-                anyList(),
-                eq(DeviationSeverity.CRITICAL)))
-                .thenReturn(List.of(criticalDeviation));
-        when(deviationRepository.findByTenantId(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(activeDeviation)));
+                Deviation activeDeviation = deviation(1L, "Open deviation", LocalDateTime.of(2026, 4, 7, 11, 0));
+                Deviation criticalDeviation = deviation(2L, "Critical deviation", LocalDateTime.of(2026, 4, 7, 8, 30));
+                when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(anyLong(), anyList()))
+                                .thenReturn(List.of(activeDeviation));
+                when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
+                                anyLong(),
+                                anyList(),
+                                eq(DeviationSeverity.CRITICAL)))
+                                .thenReturn(List.of(criticalDeviation));
+                when(deviationRepository.findByTenantId(anyLong(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(List.of(activeDeviation)));
 
-        when(deviationMapper.toDTO(any(Deviation.class))).thenAnswer(invocation -> {
-            Deviation d = invocation.getArgument(0);
-            DeviationDTO dto = new DeviationDTO();
-            dto.setId(d.getId());
-            dto.setTitle(d.getTitle());
-            return dto;
-        });
+                when(deviationMapper.toDTO(any(Deviation.class))).thenAnswer(invocation -> {
+                        Deviation d = invocation.getArgument(0);
+                        DeviationDTO dto = new DeviationDTO();
+                        dto.setId(d.getId());
+                        dto.setTitle(d.getTitle());
+                        return dto;
+                });
 
-        TemperatureComplianceLog temperatureLog = temperatureLog(
-                10L,
-                "Fridge check",
-                4.2,
-                "Cold Room",
-                LocalDateTime.of(2026, 4, 7, 9, 0),
-                user("", "", "chefuser", "chef@example.com"));
-        AlcoholComplianceLog alcoholLog = alcoholLog(
-                11L,
-                "ID control",
-                "ID was checked",
-                LocalDateTime.of(2026, 4, 7, 10, 0),
-                null);
+                TemperatureComplianceLog temperatureLog = temperatureLog(
+                                10L,
+                                "Fridge check",
+                                4.2,
+                                "Cold Room",
+                                LocalDateTime.of(2026, 4, 7, 9, 0),
+                                user("", "", "chefuser", "chef@example.com"));
+                AlcoholComplianceLog alcoholLog = alcoholLog(
+                                11L,
+                                "ID control",
+                                "ID was checked",
+                                LocalDateTime.of(2026, 4, 7, 10, 0),
+                                null);
 
-        when(temperatureLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(temperatureLog)));
-        when(alcoholLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(alcoholLog)));
+                when(temperatureLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(List.of(temperatureLog)));
+                when(alcoholLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(List.of(alcoholLog)));
 
-        DashboardOverviewDTO overview = dashboardService.getOverview();
+                DashboardOverviewDTO overview = dashboardService.getOverview();
 
-        ChecklistTodaySummaryDTO summary = overview.getChecklistsToday();
-        assertNotNull(summary);
-        assertEquals(
-                2,
-                summary.getTotalChecklists(),
-                "Expected mocked checklist data to be used. If this is 0 in CI, the repository stub likely does not match the method invoked by DashboardService.");
-        assertEquals(1, summary.getCompletedChecklists());
-        assertEquals(3, summary.getTotalItems());
-        assertEquals(2, summary.getCompletedItems());
+                ChecklistTodaySummaryDTO summary = overview.getChecklistsToday();
+                assertNotNull(summary);
+                assertEquals(
+                                2,
+                                summary.getTotalChecklists(),
+                                "Expected mocked checklist data to be used. If this is 0 in CI, the repository stub likely does not match the method invoked by DashboardService.");
+                assertEquals(1, summary.getCompletedChecklists());
+                assertEquals(3, summary.getTotalItems());
+                assertEquals(2, summary.getCompletedItems());
 
-        assertEquals(1, overview.getPendingChecklists().size());
-        assertEquals(42L, overview.getPendingChecklists().getFirst().getId());
-        assertEquals(1, overview.getActiveDeviations().size());
-        assertEquals(1, overview.getCriticalAlerts().size());
+                assertEquals(1, overview.getPendingChecklists().size());
+                assertEquals(42L, overview.getPendingChecklists().getFirst().getId());
+                assertEquals(1, overview.getActiveDeviations().size());
+                assertEquals(1, overview.getCriticalAlerts().size());
 
-        assertEquals(3, overview.getTeamActivity().size());
-        assertEquals("DEVIATION_CREATED", overview.getTeamActivity().get(0).getType());
-        assertEquals("ALCOHOL_LOG", overview.getTeamActivity().get(1).getType());
-        assertEquals("TEMPERATURE_LOG", overview.getTeamActivity().get(2).getType());
-        assertEquals("Ada Lovelace", overview.getTeamActivity().get(0).getActor());
-        assertEquals("System", overview.getTeamActivity().get(1).getActor());
-        assertEquals("chefuser", overview.getTeamActivity().get(2).getActor());
-        assertEquals(
-                "Logged 4.2 C for zone Cold Room",
-                overview.getTeamActivity().get(2).getDescription());
-    }
+                assertEquals(3, overview.getTeamActivity().size());
+                assertEquals("DEVIATION_CREATED", overview.getTeamActivity().get(0).getType());
+                assertEquals("ALCOHOL_LOG", overview.getTeamActivity().get(1).getType());
+                assertEquals("TEMPERATURE_LOG", overview.getTeamActivity().get(2).getType());
+                assertEquals("Ada Lovelace", overview.getTeamActivity().get(0).getActor());
+                assertEquals("System", overview.getTeamActivity().get(1).getActor());
+                assertEquals("chefuser", overview.getTeamActivity().get(2).getActor());
+                assertEquals(
+                                "Logged 4.2 C for zone Cold Room",
+                                overview.getTeamActivity().get(2).getDescription());
+        }
 
-    @Test
-    void testSortActivityByTimeAndLimitTo20Items() {
+        @Test
+        void testSortActivityByTimeAndLimitTo20Items() {
                 checklistQueryResult = List.of();
-        when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(anyLong(), anyList()))
-                .thenReturn(List.of());
-        when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                anyLong(),
-                anyList(),
-                eq(DeviationSeverity.CRITICAL)))
-                .thenReturn(List.of());
+                when(deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(anyLong(), anyList()))
+                                .thenReturn(List.of());
+                when(deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
+                                anyLong(),
+                                anyList(),
+                                eq(DeviationSeverity.CRITICAL)))
+                                .thenReturn(List.of());
 
-        List<TemperatureComplianceLog> temperatureLogs = new ArrayList<>();
-        List<AlcoholComplianceLog> alcoholLogs = new ArrayList<>();
-        List<Deviation> deviations = new ArrayList<>();
-        LocalDateTime base = LocalDateTime.of(2026, 4, 7, 0, 0);
+                List<TemperatureComplianceLog> temperatureLogs = new ArrayList<>();
+                List<AlcoholComplianceLog> alcoholLogs = new ArrayList<>();
+                List<Deviation> deviations = new ArrayList<>();
+                LocalDateTime base = LocalDateTime.of(2026, 4, 7, 0, 0);
 
-        for (int i = 0; i < 15; i++) {
-            temperatureLogs.add(temperatureLog(
-                    100L + i,
-                    "Temp " + i,
-                    3.0 + i,
-                    "Zone",
-                    base.plusMinutes(i),
-                    null));
-            alcoholLogs.add(alcoholLog(
-                    200L + i,
-                    "Alcohol " + i,
-                    "Desc",
-                    base.plusMinutes(30 + i),
-                    null));
-            deviations.add(deviation(300L + i, "Deviation " + i, base.plusMinutes(60 + i)));
+                for (int i = 0; i < 15; i++) {
+                        temperatureLogs.add(temperatureLog(
+                                        100L + i,
+                                        "Temp " + i,
+                                        3.0 + i,
+                                        "Zone",
+                                        base.plusMinutes(i),
+                                        null));
+                        alcoholLogs.add(alcoholLog(
+                                        200L + i,
+                                        "Alcohol " + i,
+                                        "Desc",
+                                        base.plusMinutes(30 + i),
+                                        null));
+                        deviations.add(deviation(300L + i, "Deviation " + i, base.plusMinutes(60 + i)));
+                }
+
+                when(temperatureLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(temperatureLogs));
+                when(alcoholLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(alcoholLogs));
+                when(deviationRepository.findByTenantId(anyLong(), any(Pageable.class)))
+                                .thenReturn(new PageImpl<>(deviations));
+
+                DashboardOverviewDTO overview = dashboardService.getOverview();
+
+                assertEquals(20, overview.getTeamActivity().size());
+
+                List<String> occurredAt = overview.getTeamActivity().stream()
+                                .map(activity -> activity.getOccurredAt())
+                                .toList();
+                for (int i = 0; i < occurredAt.size() - 1; i++) {
+                        LocalDateTime current = LocalDateTime.parse(occurredAt.get(i));
+                        LocalDateTime next = LocalDateTime.parse(occurredAt.get(i + 1));
+                        assertTrue(!current.isBefore(next));
+                }
         }
 
-        when(temperatureLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(temperatureLogs));
-        when(alcoholLogRepository.findAllByTenantId(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(alcoholLogs));
-        when(deviationRepository.findByTenantId(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(deviations));
+        private ChecklistInstance checklist(ChecklistStatus status, boolean... completedFlags) {
+                ChecklistInstance checklist = new ChecklistInstance();
+                checklist.setStatus(status);
 
-        DashboardOverviewDTO overview = dashboardService.getOverview();
-
-        assertEquals(20, overview.getTeamActivity().size());
-
-        List<String> occurredAt = overview.getTeamActivity().stream()
-                .map(activity -> activity.getOccurredAt())
-                .toList();
-        for (int i = 0; i < occurredAt.size() - 1; i++) {
-            LocalDateTime current = LocalDateTime.parse(occurredAt.get(i));
-            LocalDateTime next = LocalDateTime.parse(occurredAt.get(i + 1));
-            assertTrue(!current.isBefore(next));
+                List<ChecklistItemInstance> items = new ArrayList<>();
+                for (boolean flag : completedFlags) {
+                        ChecklistItemInstance item = new ChecklistItemInstance();
+                        item.setCompleted(flag);
+                        items.add(item);
+                }
+                checklist.setItems(items);
+                return checklist;
         }
-    }
 
-    private ChecklistInstance checklist(ChecklistStatus status, boolean... completedFlags) {
-        ChecklistInstance checklist = new ChecklistInstance();
-        checklist.setStatus(status);
-
-        List<ChecklistItemInstance> items = new ArrayList<>();
-        for (boolean flag : completedFlags) {
-            ChecklistItemInstance item = new ChecklistItemInstance();
-            item.setCompleted(flag);
-            items.add(item);
+        private Deviation deviation(Long id, String title, LocalDateTime createdAt) {
+                Deviation deviation = new Deviation();
+                deviation.setId(id);
+                deviation.setTitle(title);
+                deviation.setIssueDescription("Deviation details");
+                deviation.setSeverity(DeviationSeverity.CRITICAL);
+                deviation.setStatus(DeviationStatus.OPEN);
+                deviation.setCreatedAt(createdAt);
+                deviation.setCreatedBy(user("Ada", "Lovelace", "ada", "ada@example.com"));
+                return deviation;
         }
-        checklist.setItems(items);
-        return checklist;
-    }
 
-    private Deviation deviation(Long id, String title, LocalDateTime createdAt) {
-        Deviation deviation = new Deviation();
-        deviation.setId(id);
-        deviation.setTitle(title);
-        deviation.setIssueDescription("Deviation details");
-        deviation.setSeverity(DeviationSeverity.CRITICAL);
-        deviation.setStatus(DeviationStatus.OPEN);
-        deviation.setCreatedAt(createdAt);
-        deviation.setCreatedBy(user("Ada", "Lovelace", "ada", "ada@example.com"));
-        return deviation;
-    }
+        private TemperatureComplianceLog temperatureLog(
+                        Long id,
+                        String title,
+                        Double temperature,
+                        String zoneName,
+                        LocalDateTime recordedAt,
+                        User recordedBy) {
+                TemperatureZone zone = new TemperatureZone();
+                zone.setName(zoneName);
 
-    private TemperatureComplianceLog temperatureLog(
-            Long id,
-            String title,
-            Double temperature,
-            String zoneName,
-            LocalDateTime recordedAt,
-            User recordedBy) {
-        TemperatureZone zone = new TemperatureZone();
-        zone.setName(zoneName);
+                TemperatureComplianceLog log = new TemperatureComplianceLog();
+                log.setId(id);
+                log.setTitle(title);
+                log.setTemperatureCelsius(temperature);
+                log.setTemperatureZone(zone);
+                log.setRecordedAt(recordedAt);
+                log.setRecordedBy(recordedBy);
+                return log;
+        }
 
-        TemperatureComplianceLog log = new TemperatureComplianceLog();
-        log.setId(id);
-        log.setTitle(title);
-        log.setTemperatureCelsius(temperature);
-        log.setTemperatureZone(zone);
-        log.setRecordedAt(recordedAt);
-        log.setRecordedBy(recordedBy);
-        return log;
-    }
+        private AlcoholComplianceLog alcoholLog(Long id, String title, String description, LocalDateTime recordedAt,
+                        User by) {
+                AlcoholComplianceLog log = new AlcoholComplianceLog();
+                log.setId(id);
+                log.setTitle(title);
+                log.setDescription(description);
+                log.setRecordedAt(recordedAt);
+                log.setRecordedBy(by);
+                return log;
+        }
 
-    private AlcoholComplianceLog alcoholLog(Long id, String title, String description, LocalDateTime recordedAt, User by) {
-        AlcoholComplianceLog log = new AlcoholComplianceLog();
-        log.setId(id);
-        log.setTitle(title);
-        log.setDescription(description);
-        log.setRecordedAt(recordedAt);
-        log.setRecordedBy(by);
-        return log;
-    }
-
-    private User user(String firstName, String lastName, String username, String email) {
-        User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUsername(username);
-        user.setEmail(email);
-        return user;
-    }
+        private User user(String firstName, String lastName, String username, String email) {
+                User user = new User();
+                user.setFirstName(firstName);
+                user.setLastName(lastName);
+                user.setUsername(username);
+                user.setEmail(email);
+                return user;
+        }
 }

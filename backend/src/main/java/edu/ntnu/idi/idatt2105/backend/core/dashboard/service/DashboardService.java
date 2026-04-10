@@ -1,4 +1,4 @@
-package edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.service;
+package edu.ntnu.idi.idatt2105.backend.core.dashboard.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,14 +17,14 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.enums.ChecklistStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.mapper.ChecklistInstanceMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.repository.ChecklistInstanceRepository;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.ChecklistTodaySummaryDTO;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.DashboardActivityDTO;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.DashboardOverviewDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.entity.Deviation;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationSeverity;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.enums.DeviationStatus;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.mapper.DeviationMapper;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.repository.DeviationRepository;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.dto.ChecklistTodaySummaryDTO;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.dto.DashboardActivityDTO;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.dto.DashboardOverviewDTO;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.entity.AlcoholComplianceLog;

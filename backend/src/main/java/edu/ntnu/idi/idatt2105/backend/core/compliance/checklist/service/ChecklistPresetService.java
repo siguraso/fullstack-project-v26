@@ -12,7 +12,8 @@ import lombok.RequiredArgsConstructor;
 /**
  * Service for retrieving global checklist preset items.
  *
- * <p>Presets are read-only reference data seeded from Mattilsynet IK requirements.
+ * <p>
+ * Presets are read-only reference data seeded from Mattilsynet IK requirements.
  * They are not tenant-scoped — all authenticated users see the same catalogue.
  */
 @Service
@@ -23,7 +24,8 @@ public class ChecklistPresetService {
 
     /**
      * Returns all presets ordered by tab and sort order.
-     * The frontend groups the flat list by {@code tab} and then by {@code groupLabel}.
+     * The frontend groups the flat list by {@code tab} and then by
+     * {@code groupLabel}.
      *
      * @return ordered list of preset DTOs
      */
