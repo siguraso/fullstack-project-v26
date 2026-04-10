@@ -5,27 +5,47 @@ import DeviationTable from './components/DeviationTable.vue'
 import DeviationDetailsDialog from './components/DeviationDetailsDialog.vue'
 import { useDeviationStore } from '@/stores/deviation'
 import type { Deviation } from '@/interfaces/Deviation.interface'
+import { createLogger } from '@/services/util/logger'
 
 const store = useDeviationStore()
 const isDetailsOpen = ref(false)
 const selectedDeviation = ref<Deviation | null>(null)
+const logger = createLogger('deviation-view')
+
+function getDeviationCount() {
+  return Array.isArray(store.deviations) ? store.deviations.length : 0
+}
 
 onMounted(() => {
-  store.fetchDeviations()
+  logger.info('view mounted')
+  void store.fetchDeviations().then(() => {
+    logger.info('deviation load completed', {
+      deviationCount: getDeviationCount(),
+      hasError: Boolean(store.error),
+    })
+  })
 })
 
 function openDetails(deviation: Deviation) {
   selectedDeviation.value = deviation
   isDetailsOpen.value = true
+  logger.info('deviation details opened', { deviationId: deviation.id, status: deviation.status })
 }
 
 function closeDetails() {
   isDetailsOpen.value = false
   selectedDeviation.value = null
+  logger.info('deviation details closed')
 }
 
 async function handleResolved() {
+  logger.info('deviation refresh after resolve started', {
+    selectedDeviationId: selectedDeviation.value?.id ?? null,
+  })
   await store.fetchDeviations()
+  logger.info('deviation refresh after resolve succeeded', {
+    deviationCount: getDeviationCount(),
+  })
   closeDetails()
 }
 </script>
