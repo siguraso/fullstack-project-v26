@@ -7,11 +7,13 @@ import AlcoholLogTable from './components/AlcoholLogTable.vue'
 import AlcoholLogDetailsDialog from './components/AlcoholLogDetailsDialog.vue'
 import { fetchAlcoholLogs } from '@/services/alcoholLog'
 import type { AlcoholLog } from '@/interfaces/AlcoholLog.interface'
+import { createLogger } from '@/services/util/logger'
 
 const route = useRoute()
 const logs = ref<AlcoholLog[]>([])
 const isLoadingLogs = ref(false)
 const error = ref('')
+const logger = createLogger('alcohol-log-view')
 
 const isDetailsOpen = ref(false)
 const selectedLog = ref<AlcoholLog | null>(null)
@@ -20,20 +22,24 @@ const formPreset = computed(() =>
 )
 
 async function loadLogs() {
+  logger.info('alcohol log load started', { preset: formPreset.value })
   isLoadingLogs.value = true
   error.value = ''
 
   try {
     logs.value = await fetchAlcoholLogs()
+    logger.info('alcohol log load succeeded', { logCount: logs.value.length })
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to fetch alcohol logs'
-    console.error('Failed to fetch alcohol logs', err)
+    logger.error('alcohol log load failed', err, { preset: formPreset.value })
   } finally {
     isLoadingLogs.value = false
+    logger.log('alcohol log loading state updated', { loading: isLoadingLogs.value })
   }
 }
 
 onMounted(() => {
+  logger.info('view mounted', { preset: formPreset.value })
   void loadLogs()
 })
 
@@ -58,6 +64,11 @@ function unlockBodyScroll() {
 watch(
   isDetailsOpen,
   (isOpen) => {
+    logger.log('details dialog visibility changed', {
+      isOpen,
+      selectedLogId: selectedLog.value?.id ?? null,
+    })
+
     if (isOpen) {
       lockBodyScroll()
       return
@@ -69,21 +80,25 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  logger.info('view unmounted')
   unlockBodyScroll()
 })
 
 function handleAlcoholLogCreated(log: AlcoholLog) {
   logs.value = [log, ...logs.value]
+  logger.info('alcohol log appended', { logId: log.id, totalLogs: logs.value.length })
 }
 
 function openDetails(log: AlcoholLog) {
   selectedLog.value = log
   isDetailsOpen.value = true
+  logger.info('alcohol log details opened', { logId: log.id })
 }
 
 function closeDetails() {
   isDetailsOpen.value = false
   selectedLog.value = null
+  logger.info('alcohol log details closed')
 }
 </script>
 

@@ -11,6 +11,7 @@ import { createAlcoholLog } from '@/services/alcoholLog'
 import { computed, ref, watch } from 'vue'
 import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
 import { useDeviationStore } from '@/stores/deviation'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   preset?: string | null
@@ -44,6 +45,7 @@ const error = ref<string>('')
 const isDeviationModalOpen = ref(false)
 const pendingAlcoholPayload = ref<AlcoholLogInput | null>(null)
 const pendingCreatedLog = ref<AlcoholLog | null>(null)
+const logger = createLogger('alcohol-log-form')
 
 const shouldShowIdChecked = computed(() =>
   ['AGE_VERIFICATION', 'SERVICE_REFUSAL', 'INCIDENT'].includes(logType.value),
@@ -56,6 +58,8 @@ const shouldShowEstimatedAge = computed(() =>
 )
 
 watch(logType, () => {
+  logger.log('alcohol log type changed', { logType: logType.value || null })
+
   if (!shouldShowIdChecked.value) {
     idChecked.value = false
   }
@@ -76,6 +80,7 @@ function applyPreset(preset?: string | null) {
 
   logType.value = 'AGE_VERIFICATION'
   idChecked.value = true
+  logger.info('alcohol form preset applied', { preset })
 }
 
 watch(() => props.preset, applyPreset, { immediate: true })
@@ -88,6 +93,7 @@ function resetAlcoholForm() {
   idChecked.value = false
   serviceRefused.value = false
   estimatedAge.value = null
+  logger.info('alcohol form reset')
 }
 
 function buildPayload(): AlcoholLogInput | null {
@@ -154,19 +160,25 @@ function clearDeviationFlowState() {
   pendingAlcoholPayload.value = null
   pendingCreatedLog.value = null
   deviationStore.error = null
+  logger.info('alcohol deviation flow state cleared')
 }
 
 async function submitRegularLog(payload: AlcoholLogInput) {
   error.value = ''
   isSubmitting.value = true
+  logger.info('alcohol log submit started', {
+    logType: payload.logType,
+    status: payload.status,
+  })
 
   try {
     const createdLog = await createAlcoholLog(payload)
     emit('created', createdLog)
     resetAlcoholForm()
+    logger.info('alcohol log submit succeeded', { logId: createdLog.id })
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to create alcohol log'
-    console.error('Failed to create alcohol log', err)
+    logger.error('alcohol log submit failed', err, { logType: payload.logType })
   } finally {
     isSubmitting.value = false
   }
@@ -174,12 +186,16 @@ async function submitRegularLog(payload: AlcoholLogInput) {
 
 function closeDeviationModal() {
   if (isSubmitting.value) {
+    logger.warn('alcohol deviation modal close blocked because submit is in progress')
     return
   }
 
   if (pendingCreatedLog.value) {
     deviationStore.error =
       'The alcohol log has already been saved. Complete the deviation before closing this dialog.'
+    logger.warn('alcohol deviation modal close blocked because log already exists', {
+      logId: pendingCreatedLog.value.id,
+    })
     return
   }
 
@@ -191,11 +207,13 @@ async function createLog() {
 
   if (!title.value.trim()) {
     error.value = 'Title is required'
+    logger.warn('alcohol log submit skipped because title was missing')
     return
   }
 
   if (!logType.value) {
     error.value = 'Log type is required'
+    logger.warn('alcohol log submit skipped because log type was missing')
     return
   }
 
@@ -203,6 +221,7 @@ async function createLog() {
 
   if (!payload) {
     error.value = 'Unable to build alcohol log payload'
+    logger.warn('alcohol log payload build failed')
     return
   }
 
@@ -211,6 +230,10 @@ async function createLog() {
     pendingCreatedLog.value = null
     seedDeviationForm(payload)
     isDeviationModalOpen.value = true
+    logger.info('alcohol deviation flow opened', {
+      logType: payload.logType,
+      status: payload.status,
+    })
     return
   }
 
@@ -219,11 +242,17 @@ async function createLog() {
 
 async function submitAlcoholDeviation() {
   if (!pendingAlcoholPayload.value || !deviationStore.validateForm()) {
+    logger.warn('alcohol deviation submit skipped', {
+      hasPendingPayload: Boolean(pendingAlcoholPayload.value),
+    })
     return
   }
 
   error.value = ''
   isSubmitting.value = true
+  logger.info('alcohol deviation submit started', {
+    logType: pendingAlcoholPayload.value.logType,
+  })
 
   try {
     let createdLog = pendingCreatedLog.value
@@ -231,6 +260,7 @@ async function submitAlcoholDeviation() {
     if (!createdLog) {
       createdLog = await createAlcoholLog(pendingAlcoholPayload.value)
       pendingCreatedLog.value = createdLog
+      logger.info('alcohol log created during deviation flow', { logId: createdLog.id })
     }
 
     const createdDeviation = await deviationStore.createDeviation({ logId: createdLog.id })
@@ -244,9 +274,15 @@ async function submitAlcoholDeviation() {
     emit('created', createdLog)
     resetAlcoholForm()
     clearDeviationFlowState()
+    logger.info('alcohol deviation submit succeeded', {
+      logId: createdLog.id,
+      deviationId: createdDeviation.id,
+    })
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to create alcohol log'
-    console.error('Failed to create alcohol log', err)
+    logger.error('alcohol deviation submit failed', err, {
+      logType: pendingAlcoholPayload.value.logType,
+    })
   } finally {
     isSubmitting.value = false
   }

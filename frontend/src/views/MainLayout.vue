@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import Sidebar from '@/components/Sidebar.vue'
+import { createLogger } from '@/services/util/logger'
 
 const LOGIN_TRANSITION_STATE_KEY = 'loginTransition'
 const LOGIN_SHELL_ENTER_DURATION_MS = 640
@@ -12,32 +13,50 @@ const route = useRoute()
 const playLoginShellEnter = ref(false)
 const isMobileShell = ref(false)
 const isSidebarOpen = ref(false)
+const logger = createLogger('main-layout')
 
 let clearAnimationTimer: number | undefined
 let handleWindowResize: (() => void) | null = null
 
 function closeSidebar() {
+  if (!isSidebarOpen.value) {
+    logger.warn('sidebar close skipped because sidebar was already closed')
+    return
+  }
+
   isSidebarOpen.value = false
+  logger.info('sidebar closed')
 }
 
 function toggleSidebar() {
   if (!isMobileShell.value) {
+    logger.warn('sidebar toggle ignored because shell was not mobile')
     return
   }
 
   isSidebarOpen.value = !isSidebarOpen.value
+  logger.info('sidebar toggled', { isOpen: isSidebarOpen.value })
 }
 
 function syncShellMode() {
+  const wasMobile = isMobileShell.value
   isMobileShell.value = window.innerWidth <= MOBILE_SHELL_BREAKPOINT_PX
 
   if (!isMobileShell.value) {
     closeSidebar()
   }
+
+  if (wasMobile !== isMobileShell.value) {
+    logger.info('shell mode updated', {
+      isMobileShell: isMobileShell.value,
+      viewportWidth: window.innerWidth,
+    })
+  }
 }
 
 function handleShellKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
+    logger.info('escape key pressed; attempting sidebar close')
     closeSidebar()
   }
 }
@@ -52,6 +71,7 @@ function clearLoginTransitionFlag() {
   const state = window.history.state as Record<string, unknown> | null
 
   if (!state || state[LOGIN_TRANSITION_STATE_KEY] !== 'success') {
+    logger.warn('login transition flag clear skipped because flag was absent')
     return
   }
 
@@ -61,15 +81,18 @@ function clearLoginTransitionFlag() {
 
   // Preserve vue-router's own history bookkeeping while dropping the one-shot animation flag.
   window.history.replaceState(nextState, '', window.location.href)
+  logger.info('login transition flag cleared')
 }
 
 onMounted(() => {
+  logger.info('layout mounted', { route: route.fullPath })
   handleWindowResize = syncShellMode
   syncShellMode()
   window.addEventListener('resize', handleWindowResize)
   window.addEventListener('keydown', handleShellKeydown)
 
   if (!hasLoginTransitionFlag()) {
+    logger.info('layout mounted without login transition animation')
     return
   }
 
@@ -77,9 +100,13 @@ onMounted(() => {
 
   window.requestAnimationFrame(() => {
     playLoginShellEnter.value = true
+    logger.info('login transition animation started', {
+      durationMs: LOGIN_SHELL_ENTER_DURATION_MS,
+    })
 
     clearAnimationTimer = window.setTimeout(() => {
       playLoginShellEnter.value = false
+      logger.info('login transition animation completed')
     }, LOGIN_SHELL_ENTER_DURATION_MS)
   })
 })
@@ -94,17 +121,24 @@ onBeforeUnmount(() => {
   if (handleWindowResize) {
     window.removeEventListener('resize', handleWindowResize)
   }
+
+  logger.info('layout unmounted')
 })
 
 watch(
   () => route.fullPath,
-  () => {
+  (nextPath, previousPath) => {
+    logger.info('route changed inside shell', {
+      previousPath,
+      nextPath,
+    })
     closeSidebar()
   },
 )
 
 watch([isMobileShell, isSidebarOpen], ([mobile, open]) => {
   document.body.style.overflow = mobile && open ? 'hidden' : ''
+  logger.log('shell body overflow updated', { mobile, open })
 })
 </script>
 

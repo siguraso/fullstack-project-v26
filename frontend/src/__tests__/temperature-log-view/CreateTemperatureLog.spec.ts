@@ -104,6 +104,13 @@ describe('CreateTemperatureLog', () => {
 
     await wrapper.get('button.create-btn').trigger('click')
 
+    expect(console.warn).toHaveBeenCalledWith(
+      '[frontend][create-temperature-log] temperature log submit skipped because required fields were missing',
+      {
+        selectedZoneId: null,
+        temperature: null,
+      },
+    )
     expect(wrapper.text()).toContain('Please select a storage unit and enter a temperature.')
     expect(createTemperatureLog).not.toHaveBeenCalled()
   })

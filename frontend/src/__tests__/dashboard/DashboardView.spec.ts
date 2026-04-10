@@ -128,6 +128,9 @@ describe('DashboardView', () => {
     await flushPromises()
 
     expect(mocks.getDashboardOverview).toHaveBeenCalledTimes(1)
+    expect(console.info).toHaveBeenCalledWith('[frontend][dashboard-view] dashboard load started', {
+      source: 'mount',
+    })
     expect(wrapper.get('h1').text()).toBe('Dashboard')
     expect(wrapper.get('[data-test="alerts"]').text()).toContain('1')
     expect(wrapper.get('[data-test="completion"]').text()).toBe('2/5')
@@ -144,6 +147,13 @@ describe('DashboardView', () => {
     const wrapper = mountDashboardView()
     await flushPromises()
 
+    expect(console.error).toHaveBeenCalledWith('[frontend][dashboard-view] dashboard load failed', {
+      source: 'mount',
+      error: {
+        name: 'Error',
+        message: 'Failed to load dashboard overview.',
+      },
+    })
     expect(wrapper.find('[data-test="alerts"]').exists()).toBe(false)
     expect(wrapper.get('[data-test="completion"]').text()).toBe('0/0')
     expect(wrapper.get('[data-test="deviation-card"]').text()).toBe('0|0|0')

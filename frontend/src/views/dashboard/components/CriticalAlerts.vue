@@ -3,6 +3,7 @@ import Card from '@/components/ui/Card.vue'
 import { resolveDeviation } from '@/services/deviation'
 import { TriangleAlert } from '@lucide/vue'
 import { getAuthSession } from '@/services/auth'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   alerts: any[]
@@ -12,13 +13,16 @@ const emit = defineEmits(['resolved'])
 
 const session = getAuthSession()
 const canResolveAlerts = session?.role === 'ADMIN' || session?.role === 'MANAGER'
+const logger = createLogger('critical-alerts')
 
 async function handleResolve(id: number) {
+  logger.info('critical alert resolve started', { id, canResolveAlerts })
   try {
     await resolveDeviation(id)
     emit('resolved')
+    logger.info('critical alert resolve succeeded', { id })
   } catch (e) {
-    console.error('Failed to resolve alert', e)
+    logger.error('critical alert resolve failed', e, { id })
   }
 }
 </script>

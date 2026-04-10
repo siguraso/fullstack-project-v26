@@ -20,6 +20,7 @@ import DocumentPreviewDialog from './components/DocumentPreviewDialog.vue'
 import DocumentsTable from './components/DocumentsTable.vue'
 import DocumentsToolbar from './components/DocumentsToolbar.vue'
 import { documentAreaOptions, normalizeDocumentTag } from './documents.helpers'
+import { createLogger } from '@/services/util/logger'
 
 const documents = ref<DocumentSummary[]>([])
 const isLoading = ref(false)
@@ -41,6 +42,7 @@ const activeDownloadId = ref<number | null>(null)
 const previewDocument = ref<DocumentSummary | null>(null)
 const isPreviewOpen = ref(false)
 let searchDebounceHandle: number | null = null
+const logger = createLogger('documents-view')
 
 const canManage = computed(() => {
   const role = getAuthSession()?.role
@@ -62,15 +64,22 @@ function buildFilters() {
 }
 
 async function loadDocuments() {
+  logger.info('document load started', buildFilters())
   isLoading.value = true
   loadError.value = ''
 
   try {
     documents.value = await fetchDocuments(buildFilters())
+    logger.info('document load succeeded', {
+      ...buildFilters(),
+      documentCount: documents.value.length,
+    })
   } catch (error) {
     loadError.value = error instanceof Error ? error.message : 'Failed to load documents.'
+    logger.error('document load failed', error, buildFilters())
   } finally {
     isLoading.value = false
+    logger.log('document loading state updated', { loading: isLoading.value })
   }
 }
 
@@ -78,6 +87,11 @@ function scheduleReload() {
   if (searchDebounceHandle !== null) {
     window.clearTimeout(searchDebounceHandle)
   }
+
+  logger.info('document reload scheduled', {
+    ...buildFilters(),
+    delayMs: 220,
+  })
 
   searchDebounceHandle = window.setTimeout(() => {
     void loadDocuments()
@@ -89,15 +103,22 @@ function addFilterTag(tag: string) {
 
   if (!normalized || selectedTags.value.includes(normalized)) {
     filterTagDraft.value = ''
+    logger.warn('filter tag add skipped', {
+      tag,
+      normalized,
+      alreadySelected: Boolean(normalized && selectedTags.value.includes(normalized)),
+    })
     return
   }
 
   selectedTags.value = [...selectedTags.value, normalized]
   filterTagDraft.value = ''
+  logger.info('filter tag added', { tag: normalized, selectedTagCount: selectedTags.value.length })
 }
 
 function removeFilterTag(tag: string) {
   selectedTags.value = selectedTags.value.filter((entry) => entry !== tag)
+  logger.info('filter tag removed', { tag, selectedTagCount: selectedTags.value.length })
 }
 
 function openCreateForm() {
@@ -107,9 +128,11 @@ function openCreateForm() {
   formError.value = ''
   isLoadingDetail.value = false
   isFormOpen.value = true
+  logger.info('document create form opened', { defaultArea: selectedArea.value })
 }
 
 async function openEditForm(documentId: number) {
+  logger.info('document edit form opened', { documentId })
   isEditing.value = true
   editingDocumentId.value = documentId
   editingDocument.value = null
@@ -119,8 +142,10 @@ async function openEditForm(documentId: number) {
 
   try {
     editingDocument.value = await getDocumentById(documentId)
+    logger.info('document detail load succeeded', { documentId })
   } catch (error) {
     formError.value = error instanceof Error ? error.message : 'Failed to load document.'
+    logger.error('document detail load failed', error, { documentId })
   } finally {
     isLoadingDetail.value = false
   }
@@ -132,16 +157,25 @@ function closeForm() {
   formError.value = ''
   editingDocumentId.value = null
   editingDocument.value = null
+  logger.info('document form closed')
 }
 
 async function saveForm(payload: DocumentUpsertPayload) {
   if (!canManage.value) {
+    logger.warn('document save skipped because current user cannot manage documents')
     return
   }
 
   successMessage.value = ''
   formError.value = ''
   isSaving.value = true
+  logger.info('document save started', {
+    isEditing: isEditing.value,
+    documentId: editingDocumentId.value,
+    area: payload.area,
+    tagCount: payload.tags.length,
+    hasFile: Boolean(payload.file),
+  })
 
   try {
     if (isEditing.value && editingDocumentId.value !== null) {
@@ -154,8 +188,16 @@ async function saveForm(payload: DocumentUpsertPayload) {
 
     closeForm()
     await loadDocuments()
+    logger.info('document save succeeded', {
+      isEditing: isEditing.value,
+      documentId: editingDocumentId.value,
+    })
   } catch (error) {
     formError.value = error instanceof Error ? error.message : 'Failed to save document.'
+    logger.error('document save failed', error, {
+      isEditing: isEditing.value,
+      documentId: editingDocumentId.value,
+    })
   } finally {
     isSaving.value = false
   }
@@ -163,11 +205,15 @@ async function saveForm(payload: DocumentUpsertPayload) {
 
 async function deleteSelectedDocument(document: DocumentSummary) {
   if (!canManage.value) {
+    logger.warn('document delete skipped because current user cannot manage documents', {
+      documentId: document.id,
+    })
     return
   }
 
   const confirmed = window.confirm(`Delete "${document.title}"?`)
   if (!confirmed) {
+    logger.warn('document delete cancelled', { documentId: document.id })
     return
   }
 
@@ -179,8 +225,13 @@ async function deleteSelectedDocument(document: DocumentSummary) {
     await deleteDocument(document.id)
     successMessage.value = 'Document deleted.'
     documents.value = documents.value.filter((entry) => entry.id !== document.id)
+    logger.info('document delete succeeded', {
+      documentId: document.id,
+      remainingDocuments: documents.value.length,
+    })
   } catch (error) {
     loadError.value = error instanceof Error ? error.message : 'Failed to delete document.'
+    logger.error('document delete failed', error, { documentId: document.id })
   } finally {
     isDeletingId.value = null
   }
@@ -189,11 +240,14 @@ async function deleteSelectedDocument(document: DocumentSummary) {
 async function downloadDocument(document: DocumentSummary) {
   activeDownloadId.value = document.id
   loadError.value = ''
+  logger.info('document download started', { documentId: document.id, title: document.title })
 
   try {
     await downloadDocumentFile(document)
+    logger.info('document download succeeded', { documentId: document.id })
   } catch (error) {
     loadError.value = error instanceof Error ? error.message : 'Failed to download document.'
+    logger.error('document download failed', error, { documentId: document.id })
   } finally {
     activeDownloadId.value = null
   }
@@ -202,14 +256,17 @@ async function downloadDocument(document: DocumentSummary) {
 function openPreview(document: DocumentSummary) {
   previewDocument.value = document
   isPreviewOpen.value = true
+  logger.info('document preview opened', { documentId: document.id, mimeType: document.mimeType })
 }
 
 function closePreview() {
   isPreviewOpen.value = false
   previewDocument.value = null
+  logger.info('document preview closed')
 }
 
 watch([selectedArea, searchQuery, selectedTags], () => {
+  logger.log('document filters changed', buildFilters())
   scheduleReload()
 })
 
@@ -217,9 +274,12 @@ onBeforeUnmount(() => {
   if (searchDebounceHandle !== null) {
     window.clearTimeout(searchDebounceHandle)
   }
+
+  logger.info('view unmounted')
 })
 
 onMounted(() => {
+  logger.info('view mounted', { canManage: canManage.value })
   void loadDocuments()
 })
 </script>

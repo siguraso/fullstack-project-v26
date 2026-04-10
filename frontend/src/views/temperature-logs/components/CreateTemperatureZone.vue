@@ -2,6 +2,7 @@
 import Card from '@/components/ui/Card.vue'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { ref } from 'vue'
+import { createLogger } from '@/services/util/logger'
 
 const emit = defineEmits<{
   (event: 'close'): void
@@ -11,12 +12,19 @@ const emit = defineEmits<{
 const name = ref('')
 const lowerLimit = ref(0)
 const upperLimit = ref(5)
+const logger = createLogger('create-temperature-zone')
 
 function closeOverlay() {
+  logger.info('create zone dialog closed')
   emit('close')
 }
 
 function createZone() {
+  logger.info('create zone emitted', {
+    name: name.value,
+    lowerLimitCelsius: lowerLimit.value,
+    upperLimitCelsius: upperLimit.value,
+  })
   emit('create', {
     name: name.value,
     lowerLimitCelsius: lowerLimit.value,

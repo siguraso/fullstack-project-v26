@@ -7,27 +7,45 @@ import TeamActivity from './components/TeamActivity.vue'
 import CriticalAlerts from './components/CriticalAlerts.vue'
 import { onMounted, ref } from 'vue'
 import { getDashboardOverview } from '@/services/dashboard'
+import { createLogger } from '@/services/util/logger'
 
 const dashboard = ref<any>(null)
 const loading = ref(true)
+const logger = createLogger('dashboard-view')
 
-onMounted(async () => {
+async function loadDashboard(source: 'mount' | 'reload') {
+  logger.info('dashboard load started', { source })
+
   try {
     dashboard.value = await getDashboardOverview()
-  } catch {
+    logger.info('dashboard load succeeded', {
+      source,
+      criticalAlerts: dashboard.value?.criticalAlerts?.length ?? 0,
+      pendingChecklists: dashboard.value?.pendingChecklists?.length ?? 0,
+      teamActivity: dashboard.value?.teamActivity?.length ?? 0,
+    })
+  } catch (error) {
     dashboard.value = null
+    logger.error('dashboard load failed', error, { source })
   } finally {
     loading.value = false
+    logger.log('dashboard loading state updated', {
+      source,
+      loading: loading.value,
+      hasDashboard: Boolean(dashboard.value),
+    })
   }
+}
+
+onMounted(() => {
+  logger.info('view mounted')
+  void loadDashboard('mount')
 })
 
 async function reloadDashboard() {
+  logger.info('dashboard reload scheduled', { delayMs: 250 })
   setTimeout(async () => {
-    try {
-      dashboard.value = await getDashboardOverview()
-    } catch {
-      dashboard.value = null
-    }
+    await loadDashboard('reload')
   }, 250)
 }
 </script>

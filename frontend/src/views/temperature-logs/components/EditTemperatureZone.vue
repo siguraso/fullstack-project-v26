@@ -2,6 +2,7 @@
 import Card from '@/components/ui/Card.vue'
 import type { TemperatureZone } from '@/interfaces/TemperatureZone.interface'
 import { ref } from 'vue'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   zone: TemperatureZone
@@ -12,8 +13,10 @@ const emit = defineEmits<{
   (event: 'save', updatedZone: TemperatureZone): void
   (event: 'delete', zoneId: number): void
 }>()
+const logger = createLogger('edit-temperature-zone')
 
 function closeOverlay() {
+  logger.info('edit zone dialog closed', { zoneId: props.zone.id })
   emit('close')
 }
 
@@ -25,10 +28,17 @@ function saveChanges() {
     upperLimitCelsius: upperLimit.value,
     active: props.zone.active,
   }
+  logger.info('edit zone save emitted', {
+    zoneId: updatedZone.id,
+    name: updatedZone.name,
+    lowerLimitCelsius: updatedZone.lowerLimitCelsius,
+    upperLimitCelsius: updatedZone.upperLimitCelsius,
+  })
   emit('save', updatedZone)
 }
 
 function deleteZone() {
+  logger.warn('edit zone delete emitted', { zoneId: props.zone.id })
   emit('delete', props.zone.id)
 }
 
