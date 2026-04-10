@@ -85,7 +85,6 @@ async function toggleTask(id: number, completed: boolean) {
             :taskTitle="task.taskTitle"
             :taskType="task.taskType"
             :dueDate="task.dueDate"
-            :icon="task.icon"
             :completed="task.completed"
             @toggle="toggleTask"
           />

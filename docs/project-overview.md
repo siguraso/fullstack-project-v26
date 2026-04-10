@@ -108,7 +108,7 @@ Reference documentation is available in docs/api-contract.md, covering:
 
 ### Endpoints
 
-All endpoints can be viewed through Swagger UI when running directly on your machine:
+All endpoints can be viewed through Swagger UI when running directly on your machine (_does NOT work when running through docker!_):
 
 localhost:8080/swagger_ui.html
 

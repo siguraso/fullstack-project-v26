@@ -106,3 +106,7 @@ $ npm run test:unit
 ```
 
 (_The Vitest plugin is required to run the unit tests, so you have to install it if you are prompted to._)
+
+## Docs
+
+View documentation in the docs/ directory in the project root.

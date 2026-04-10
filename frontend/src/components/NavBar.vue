@@ -335,7 +335,8 @@ onBeforeUnmount(() => {
 
   .spacer-line,
   .storename,
-  .user-label {
+  .user-label,
+  .user-role {
     display: none;
   }
 
