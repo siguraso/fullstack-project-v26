@@ -6,6 +6,7 @@ import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException
 import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
 import edu.ntnu.idi.idatt2105.backend.common.security.JwtService;
+import edu.ntnu.idi.idatt2105.backend.core.invitation.dto.InviteLinkResponse;
 import edu.ntnu.idi.idatt2105.backend.core.invitation.dto.InviteValidationResponse;
 import edu.ntnu.idi.idatt2105.backend.core.invitation.entity.Invitation;
 import edu.ntnu.idi.idatt2105.backend.core.invitation.repository.InvitationRepository;
@@ -83,6 +84,40 @@ public class InvitationService {
 	emailService.sendHtmlEmail(email, subject, htmlBody);
 
 	log.info("Invitation sent for tenantId={} recipient={}", currentTenantId, maskEmail(email));
+  }
+
+  /**
+   * Generates a staff invitation link without sending an email. The URL can be
+   * shared manually with the recipient.
+   *
+   * @param email the recipient's email address
+   * @return an {@link InviteLinkResponse} containing the invite URL
+   * @throws ValidationException if the email already belongs to an existing user
+   */
+  @Transactional
+  public InviteLinkResponse generateInviteLink(String email) {
+    log.info("Generating invite link for {}", maskEmail(email));
+    if (userRepository.existsByEmail(email)) {
+      log.warn("Invite link rejected: user already exists for {}", maskEmail(email));
+      throw new ValidationException("Email already exists: " + email);
+    }
+
+    Long currentTenantId = TenantContext.getCurrentOrg();
+    Tenant tenant = tenantRepository.findById(currentTenantId)
+        .orElseThrow(() -> new ResourceNotFoundException("Tenant ID not found"));
+
+    String token = jwtService.generateInviteToken(email, currentTenantId);
+    String inviteUrl = buildInviteUrl(token);
+
+    Invitation invitation = new Invitation();
+    invitation.setTenant(tenant);
+    invitation.setEmail(email);
+    invitation.setToken(token);
+    invitation.setExpiresAt(resolveTokenExpiry(token));
+    invitationRepository.save(invitation);
+
+    log.info("Invite link generated for tenantId={} recipient={}", currentTenantId, maskEmail(email));
+    return new InviteLinkResponse(inviteUrl);
   }
 
   /**
