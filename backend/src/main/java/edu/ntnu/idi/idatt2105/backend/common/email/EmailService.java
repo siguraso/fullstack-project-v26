@@ -1,5 +1,6 @@
 package edu.ntnu.idi.idatt2105.backend.common.email;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -82,12 +83,12 @@ public class EmailService {
     headers.setContentType(MediaType.APPLICATION_JSON);
     headers.setBearerAuth(resendApiKey);
 
-    Map<String, Object> payload = Map.of(
-        "from", resendFromEmail,
-        "to", List.of(to),
-        "subject", subject,
-        "text", textBody != null ? textBody : "",
-        "html", htmlBody != null ? htmlBody : "");
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("from", resendFromEmail);
+    payload.put("to", List.of(to));
+    payload.put("subject", subject);
+    if (textBody != null) payload.put("text", textBody);
+    if (htmlBody != null) payload.put("html", htmlBody);
 
     ResponseEntity<String> response = restTemplate.exchange(
         resendBaseUrl + "/emails",

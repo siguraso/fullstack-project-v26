@@ -82,7 +82,7 @@ describe('Settings view', () => {
 
     cy.contains('button', 'Invite Staff').click()
     cy.get('input[placeholder="new.staff@example.com"]').type('new.staff@example.com')
-    cy.contains('button', 'Send').click()
+    cy.contains('button', 'Send invite email').click()
 
     cy.wait('@sendInvite')
     cy.contains('Invitation sent to new.staff@example.com.').should('be.visible')

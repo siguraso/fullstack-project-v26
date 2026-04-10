@@ -5,6 +5,7 @@ import OrganisationProfileCard from '@/views/settings/components/OrganisationPro
 import StaffRolesCard from '@/views/settings/components/StaffRolesCard.vue'
 import {
   deactivateUser,
+  generateInviteLink,
   getCurrentTenant,
   sendStaffInvite,
   getUser,
@@ -61,6 +62,8 @@ const userEditorError = ref('')
 const deactivatingUserId = ref<number | null>(null)
 const inviteEmail = ref('')
 const isSendingInvite = ref(false)
+const isGeneratingLink = ref(false)
+const generatedLink = ref('')
 const isInvitePopupOpen = ref(false)
 const logger = createLogger('settings-view')
 
@@ -282,6 +285,28 @@ async function sendInviteForTesting() {
   }
 }
 
+async function generateInviteLinkForEmail() {
+  const email = inviteEmail.value.trim()
+  if (!email) {
+    inviteError.value = 'Enter an email address before generating a link.'
+    return
+  }
+
+  isGeneratingLink.value = true
+  inviteError.value = ''
+  generatedLink.value = ''
+
+  try {
+    generatedLink.value = await generateInviteLink(email)
+    logger.info('invite link generated', { emailDomain: email.split('@')[1] ?? null })
+  } catch (error) {
+    inviteError.value = toErrorMessage(error, 'Unable to generate invite link.')
+    logger.error('invite link generation failed', error)
+  } finally {
+    isGeneratingLink.value = false
+  }
+}
+
 function toggleInvitePopup() {
   isInvitePopupOpen.value = !isInvitePopupOpen.value
   logger.info('invite popup toggled', { isOpen: isInvitePopupOpen.value })
@@ -289,6 +314,7 @@ function toggleInvitePopup() {
   if (!isInvitePopupOpen.value) {
     inviteError.value = ''
     inviteEmail.value = ''
+    generatedLink.value = ''
   }
 }
 
@@ -388,7 +414,7 @@ async function saveSelectedUser() {
 }
 
 async function deactivateSelectedUser(user: User) {
-  const confirmed = window.confirm(`Deactivate ${fullName(user)}? They will lose active access.`)
+  const confirmed = globalThis.confirm(`Deactivate ${fullName(user)}? They will lose active access.`)
 
   if (!confirmed) {
     logger.warn('user deactivation cancelled', { userId: user.id })
@@ -456,11 +482,14 @@ onMounted(() => {
         :role-options="roleOptions"
         :is-invite-popup-open="isInvitePopupOpen"
         :is-sending-invite="isSendingInvite"
+        :is-generating-link="isGeneratingLink"
+        :generated-link="generatedLink"
         :users-error="usersError"
         :staff-success="staffSuccess"
         :filtered-users="filteredUsers"
         @toggle-invite-popup="toggleInvitePopup"
         @send-invite="sendInviteForTesting"
+        @generate-link="generateInviteLinkForEmail"
         @edit-user="openUserEditor"
       />
     </section>

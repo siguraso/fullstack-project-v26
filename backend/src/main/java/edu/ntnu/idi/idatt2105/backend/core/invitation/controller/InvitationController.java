@@ -1,6 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.core.invitation.controller;
 
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
+import edu.ntnu.idi.idatt2105.backend.core.invitation.dto.InviteLinkResponse;
 import edu.ntnu.idi.idatt2105.backend.core.invitation.dto.InviteRequest;
 import edu.ntnu.idi.idatt2105.backend.core.invitation.dto.InviteValidationResponse;
 import edu.ntnu.idi.idatt2105.backend.core.invitation.service.InvitationService;
@@ -44,6 +45,21 @@ public class InvitationController {
   public ResponseEntity<ApiResponse<Void>> sendInvite(@Valid @RequestBody InviteRequest request) {
 	invitationService.sendStaffInvite(request.email());
 	return ResponseEntity.ok(ApiResponse.ok("Invitation sent"));
+  }
+
+  /**
+   * Generates a staff invitation link and returns it directly without sending
+   * an email. Useful when email delivery is unavailable.
+   *
+   * @param request the invitation request containing the recipient email
+   * @return a 200 OK response containing the invite URL
+   */
+  @PostMapping("/invitations/link")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<ApiResponse<InviteLinkResponse>> generateInviteLink(
+      @Valid @RequestBody InviteRequest request) {
+    InviteLinkResponse response = invitationService.generateInviteLink(request.email());
+    return ResponseEntity.ok(ApiResponse.ok("Invite link generated", response));
   }
 
   /**

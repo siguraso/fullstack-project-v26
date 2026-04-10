@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Pencil, UserRound } from '@lucide/vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
@@ -14,6 +14,8 @@ const props = defineProps<{
   isInvitePopupOpen: boolean
   inviteEmail: string
   isSendingInvite: boolean
+  isGeneratingLink: boolean
+  generatedLink: string
   usersError: string
   staffSuccess: string
   filteredUsers: User[]
@@ -26,6 +28,7 @@ const emit = defineEmits<{
   'update:inviteEmail': [value: string]
   toggleInvitePopup: []
   sendInvite: []
+  generateLink: []
   editUser: [user: User]
 }>()
 
@@ -48,6 +51,16 @@ const inviteEmailModel = computed({
   get: () => props.inviteEmail,
   set: (value: string) => emit('update:inviteEmail', value),
 })
+
+const inviteMode = ref<'email' | 'link'>('email')
+const copied = ref(false)
+
+function copyLink() {
+  navigator.clipboard.writeText(props.generatedLink).then(() => {
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  })
+}
 
 function fullName(user: Pick<User, 'firstName' | 'lastName'>) {
   return `${user.firstName} ${user.lastName}`.trim()
@@ -98,24 +111,57 @@ function fullName(user: Pick<User, 'firstName' | 'lastName'>) {
 
         <transition name="invite-popup">
           <div v-if="props.isInvitePopupOpen" class="invite-popup">
+            <div class="invite-mode-tabs">
+              <button
+                type="button"
+                :class="['mode-tab', { active: inviteMode === 'email' }]"
+                @click="inviteMode = 'email'"
+              >Send email</button>
+              <button
+                type="button"
+                :class="['mode-tab', { active: inviteMode === 'link' }]"
+                @click="inviteMode = 'link'"
+              >Get link</button>
+            </div>
+
             <label class="field invite-popup-field">
               <span>Email address</span>
               <input
                 v-model="inviteEmailModel"
                 type="email"
                 placeholder="new.staff@example.com"
-                @keyup.enter="emit('sendInvite')"
+                @keyup.enter="inviteMode === 'email' ? emit('sendInvite') : emit('generateLink')"
               />
             </label>
 
-            <button
-              type="button"
-              class="primary-button"
-              :disabled="props.isSendingInvite || props.inviteEmail.trim().length === 0"
-              @click="emit('sendInvite')"
-            >
-              {{ props.isSendingInvite ? 'Sending...' : 'Send' }}
-            </button>
+            <template v-if="inviteMode === 'email'">
+              <button
+                type="button"
+                class="primary-button"
+                :disabled="props.isSendingInvite || props.inviteEmail.trim().length === 0"
+                @click="emit('sendInvite')"
+              >
+                {{ props.isSendingInvite ? 'Sending...' : 'Send invite email' }}
+              </button>
+            </template>
+
+            <template v-else>
+              <button
+                type="button"
+                class="primary-button"
+                :disabled="props.isGeneratingLink || props.inviteEmail.trim().length === 0"
+                @click="emit('generateLink')"
+              >
+                {{ props.isGeneratingLink ? 'Generating...' : 'Generate link' }}
+              </button>
+
+              <div v-if="props.generatedLink" class="generated-link-box">
+                <input type="text" :value="props.generatedLink" readonly class="link-input" />
+                <button type="button" class="copy-button" @click="copyLink">
+                  {{ copied ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+            </template>
           </div>
         </transition>
       </div>
@@ -266,6 +312,62 @@ function fullName(user: Pick<User, 'firstName' | 'lastName'>) {
 
 .invite-popup-field {
   gap: 6px;
+}
+
+.invite-mode-tabs {
+  display: flex;
+  gap: 4px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.mode-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  height: auto;
+}
+
+.mode-tab.active {
+  background: #ffffff;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.generated-link-box {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.link-input {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: #f7f7f8;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  min-width: 0;
+}
+
+.copy-button {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  height: auto;
 }
 
 :deep(.invite-popup-enter-active),
