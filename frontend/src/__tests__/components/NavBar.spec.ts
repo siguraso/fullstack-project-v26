@@ -64,6 +64,7 @@ beforeEach(() => {
   mocks.getAuthSession.mockReturnValue({
     email: 'ada@example.com',
     fullName: 'Ada Lovelace',
+    role: 'ADMIN',
   })
 })
 
@@ -84,6 +85,7 @@ describe('NavBar', () => {
     expect(wrapper.text()).toContain('Regula')
     expect(wrapper.text()).toContain('Northwind Market')
     expect(wrapper.text()).toContain('Ada Lovelace')
+    expect(wrapper.text()).toContain('Admin')
     expect(wrapper.get('[data-test="avatar"]').text()).toBe('Ada Lovelace|30')
     expect(wrapper.get('.menu-toggle').classes()).toContain('menu-toggle-active')
 
