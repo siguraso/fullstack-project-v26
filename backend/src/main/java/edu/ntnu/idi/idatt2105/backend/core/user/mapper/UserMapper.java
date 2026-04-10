@@ -4,9 +4,18 @@ import edu.ntnu.idi.idatt2105.backend.core.user.dto.UserResponse;
 import org.springframework.stereotype.Component;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
 
+/**
+ * Mapper that converts {@link User} entities to {@link UserResponse} DTOs.
+ */
 @Component
 public class UserMapper {
 
+  /**
+   * Converts a user entity to its response DTO representation.
+   *
+   * @param user the user entity
+   * @return the corresponding {@link UserResponse}
+   */
   public UserResponse toResponse(User user) {
     UserResponse dto = new UserResponse();
     dto.setId(user.getId());

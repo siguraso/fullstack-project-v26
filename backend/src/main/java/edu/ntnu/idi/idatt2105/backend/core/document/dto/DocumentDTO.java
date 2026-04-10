@@ -8,6 +8,14 @@ import edu.ntnu.idi.idatt2105.backend.core.document.enums.DocumentArea;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 import lombok.Data;
 
+/**
+ * DTO representing a document in the system.
+ *
+ * <p>
+ * Used to transfer document metadata to the frontend, including file
+ * information, ownership details, and categorization.
+ * </p>
+ */
 @Data
 public class DocumentDTO {
     private Long id;

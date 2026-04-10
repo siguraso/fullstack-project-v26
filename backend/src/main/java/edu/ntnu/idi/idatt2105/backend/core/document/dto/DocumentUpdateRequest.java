@@ -11,6 +11,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * Request DTO used to update an existing document.
+ *
+ * <p>
+ * Contains updated metadata such as title, description, area, and tags.
+ * Optionally allows replacing the existing file with a new upload.
+ * </p>
+ */
 @Data
 public class DocumentUpdateRequest {
     @NotBlank(message = "Title is required")

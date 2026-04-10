@@ -7,28 +7,35 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Request DTO used to create a new tenant (organization).
+ *
+ * <p>
+ * Contains core organization details such as name, registration number,
+ * location, and contact information.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TenantCreateRequest {
-    
+
     @NotBlank(message = "Tenant name is required")
     private String name;
-    
+
     @NotBlank(message = "Tenant number is required")
     @Pattern(regexp = "^\\d{9}$", message = "Tenant number must be exactly 9 digits")
     private String orgNumber;
-    
+
     private String address;
-    
+
     private String city;
-    
+
     @NotBlank(message = "Country is required")
     private String country;
-    
+
     @Email(message = "Contact email must be a valid email address")
     private String contactEmail;
-    
+
     private String contactPhone;
 }
-

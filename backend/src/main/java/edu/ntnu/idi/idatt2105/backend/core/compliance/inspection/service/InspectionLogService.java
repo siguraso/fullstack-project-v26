@@ -27,6 +27,14 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.repository.Temperatu
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for aggregating compliance data from all modules into a unified
+ * inspection log view.
+ * <p>
+ * Combines deviations, temperature logs and alcohol logs for the current
+ * tenant and exposes them as a flat list, a filtered subset or aggregated
+ * statistics.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,6 +45,12 @@ public class InspectionLogService {
     private final TemperatureLogRepository temperatureLogRepository;
     private final AlcoholLogRepository alcoholLogRepository;
 
+    /**
+     * Returns all inspection logs for the current tenant across deviations,
+     * temperature logs and alcohol logs, sorted newest first.
+     *
+     * @return a flat list of {@link InspectionLogDTO} objects
+     */
     public List<InspectionLogDTO> getInspectionLogs() {
         Long tenantId = TenantContext.getCurrentOrg();
 
@@ -59,6 +73,14 @@ public class InspectionLogService {
                 .toList();
     }
 
+    /**
+     * Returns inspection logs for the current tenant filtered by the given
+     * criteria. Empty filter fields are treated as "match all".
+     *
+     * @param filter optional filters for log type, severity, status and date
+     *               range
+     * @return a filtered, newest-first list of {@link InspectionLogDTO} objects
+     */
     public List<InspectionLogDTO> getFilteredLogs(InspectionExportFilter filter) {
         Long tenantId = TenantContext.getCurrentOrg();
 
@@ -98,6 +120,13 @@ public class InspectionLogService {
                 .toList();
     }
 
+    /**
+     * Calculates aggregated statistics for all compliance modules for the
+     * current tenant.
+     *
+     * @return an {@link InspectionStatsDTO} with counts by status, severity
+     *         and module
+     */
     public InspectionStatsDTO getStats() {
         Long tenantId = TenantContext.getCurrentOrg();
 

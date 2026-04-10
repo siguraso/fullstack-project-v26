@@ -13,6 +13,14 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/**
+ * Represents an invitation sent to a user to join a tenant.
+ *
+ * <p>
+ * An invitation contains a unique token, recipient email, expiration time,
+ * and status indicating whether it has been accepted.
+ * </p>
+ */
 @Data
 @Entity
 @Table(name = "invitations")

@@ -29,6 +29,13 @@ import edu.ntnu.idi.idatt2105.backend.core.document.service.DocumentDownloadResu
 import edu.ntnu.idi.idatt2105.backend.core.document.service.DocumentService;
 import jakarta.validation.Valid;
 
+/**
+ * REST controller for managing documents in the document library.
+ * <p>
+ * Provides endpoints for searching, retrieving, uploading, updating and
+ * deleting tenant-scoped documents, as well as downloading their binary
+ * content.
+ */
 @RestController
 @RequestMapping("/api/documents")
 public class DocumentController {
@@ -38,6 +45,14 @@ public class DocumentController {
         this.service = service;
     }
 
+    /**
+     * Searches documents for the current tenant with optional filters.
+     *
+     * @param area  optional document area to filter by
+     * @param query optional free-text search term matched against title
+     * @param tags  optional list of tags; all provided tags must match
+     * @return a list of matching {@link DocumentDTO} objects
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<DocumentDTO>>> searchDocuments(
@@ -47,12 +62,25 @@ public class DocumentController {
         return ResponseEntity.ok(ApiResponse.ok(service.searchDocuments(area, query, tags)));
     }
 
+    /**
+     * Retrieves a single document by its identifier.
+     *
+     * @param id the document identifier
+     * @return the {@link DocumentDTO} for the requested document
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<DocumentDTO>> getDocument(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getDocument(id)));
     }
 
+    /**
+     * Downloads the binary content of a document as an attachment. The
+     * {@code Content-Type} header is resolved from the stored MIME type.
+     *
+     * @param id the document identifier
+     * @return the raw file bytes with appropriate content headers
+     */
     @GetMapping("/{id}/download")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<byte[]> downloadDocument(@PathVariable Long id) {
@@ -71,12 +99,25 @@ public class DocumentController {
                 .body(result.content());
     }
 
+    /**
+     * Uploads a new document with its associated metadata.
+     *
+     * @param request multipart form containing the file and metadata fields
+     * @return a 201 Created response with the persisted {@link DocumentDTO}
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<DocumentDTO>> createDocument(@Valid @ModelAttribute DocumentCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.createDocument(request)));
     }
 
+    /**
+     * Updates the metadata or file content of an existing document.
+     *
+     * @param id      identifier of the document to update
+     * @param request multipart form with updated metadata and optional new file
+     * @return the updated {@link DocumentDTO}
+     */
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<DocumentDTO>> updateDocument(
@@ -85,6 +126,12 @@ public class DocumentController {
         return ResponseEntity.ok(ApiResponse.ok(service.updateDocument(id, request)));
     }
 
+    /**
+     * Permanently deletes a document and its stored file content.
+     *
+     * @param id identifier of the document to delete
+     * @return a 204 No Content response on success
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {

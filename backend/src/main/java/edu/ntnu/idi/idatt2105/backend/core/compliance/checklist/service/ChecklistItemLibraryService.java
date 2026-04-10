@@ -17,6 +17,13 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for managing the reusable checklist item library for the current
+ * tenant.
+ * <p>
+ * Library items act as reusable definitions that can be referenced by
+ * checklist templates. Items in use by at least one template cannot be deleted.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +34,13 @@ public class ChecklistItemLibraryService {
     private final ChecklistItemLibraryMapper mapper;
     private final ChecklistItemTemplateRepository itemTemplateRepo;
 
+    /**
+     * Creates a new checklist item definition in the library for the current
+     * tenant.
+     *
+     * @param request DTO with title, description, category and priority
+     * @return the persisted {@link ChecklistItemLibraryDTO}
+     */
     public ChecklistItemLibraryDTO create(ChecklistItemLibraryDTO request) {
         Long tenantId = TenantContext.getCurrentOrg();
         log.info("Creating checklist library item for tenantId={} category={}", tenantId, request.getCategory());
@@ -45,6 +59,12 @@ public class ChecklistItemLibraryService {
         return mapper.toDto(savedItem);
     }
 
+    /**
+     * Returns all checklist item definitions in the library for the current
+     * tenant.
+     *
+     * @return a list of {@link ChecklistItemLibraryDTO} objects
+     */
     public List<ChecklistItemLibraryDTO> getAll() {
         Long tenantId = TenantContext.getCurrentOrg();
         List<ChecklistItemLibraryDTO> items = repo.findByTenantId(tenantId)
@@ -55,6 +75,13 @@ public class ChecklistItemLibraryService {
         return items;
     }
 
+    /**
+     * Updates an existing checklist item definition in the library.
+     *
+     * @param id      identifier of the item to update
+     * @param request DTO with updated title, description, category and priority
+     * @return the updated {@link ChecklistItemLibraryDTO}
+     */
     public ChecklistItemLibraryDTO update(Long id, ChecklistItemLibraryDTO request) {
         log.info("Updating checklist library item id={}", id);
         ChecklistItemLibrary item = repo.findById(id)
@@ -71,6 +98,11 @@ public class ChecklistItemLibraryService {
         return mapper.toDto(savedItem);
     }
 
+    /**
+     * Deletes a checklist item definition from the library.
+     *
+     * @param id identifier of the item to delete
+     */
     public void delete(Long id) {
         log.info("Deleting checklist library item id={}", id);
         ChecklistItemLibrary item = repo.findById(id)
@@ -81,6 +113,13 @@ public class ChecklistItemLibraryService {
         log.info("Deleted checklist library item id={}", id);
     }
 
+    /**
+     * Checks whether a library item is currently referenced by any checklist
+     * template.
+     *
+     * @param id identifier of the library item to check
+     * @return {@code true} if the item is in use by at least one template
+     */
     public boolean isItemInUse(Long id) {
         boolean inUse = itemTemplateRepo.existsByLibraryItem_Id(id);
         log.debug("Checklist library item id={} inUse={}", id, inUse);

@@ -30,6 +30,13 @@ import edu.ntnu.idi.idatt2105.backend.core.user.entity.User;
 import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for managing documents in the tenant document library.
+ * <p>
+ * Handles creation, retrieval, update, download and deletion of documents.
+ * File content is stored via {@link DocumentContentStore}. All operations are
+ * tenant-scoped and enforce file type and size validation.
+ */
 @Service
 @Transactional
 @Slf4j
@@ -82,6 +89,15 @@ public class DocumentService {
         this.maxFileSizeBytes = maxFileSizeBytes;
     }
 
+    /**
+     * Searches documents for the current tenant with optional area, text and
+     * tag filters.
+     *
+     * @param area  optional area to restrict results to
+     * @param query optional free-text search matched against the document title
+     * @param tags  optional tags; all provided tags must match
+     * @return a list of matching {@link DocumentDTO} objects
+     */
     @Transactional(readOnly = true)
     public List<DocumentDTO> searchDocuments(DocumentArea area, String query, List<String> tags) {
         Long tenantId = TenantContext.getCurrentOrg();
@@ -100,11 +116,25 @@ public class DocumentService {
                 .toList();
     }
 
+    /**
+     * Retrieves a single document by its identifier, scoped to the current
+     * tenant.
+     *
+     * @param id the document identifier
+     * @return the {@link DocumentDTO} for the requested document
+     */
     @Transactional(readOnly = true)
     public DocumentDTO getDocument(Long id) {
         return mapper.toDTO(getAuthorizedDocument(id));
     }
 
+    /**
+     * Uploads a new document and stores its binary content. Validates file
+     * type, size and required metadata before persisting.
+     *
+     * @param request multipart form data with file and metadata
+     * @return the persisted {@link DocumentDTO}
+     */
     public DocumentDTO createDocument(DocumentCreateRequest request) {
         validateCreateRequest(request);
 
@@ -129,6 +159,14 @@ public class DocumentService {
         return mapper.toDTO(saved);
     }
 
+    /**
+     * Updates a document's metadata and optionally replaces its stored file
+     * content.
+     *
+     * @param id      identifier of the document to update
+     * @param request updated metadata and optional new file
+     * @return the updated {@link DocumentDTO}
+     */
     public DocumentDTO updateDocument(Long id, DocumentUpdateRequest request) {
         validateUpdateRequest(request);
 
@@ -153,6 +191,13 @@ public class DocumentService {
         return mapper.toDTO(saved);
     }
 
+    /**
+     * Retrieves the binary content of a document for download.
+     *
+     * @param id the document identifier
+     * @return a {@link DocumentDownloadResult} with filename, MIME type and
+     *         raw bytes
+     */
     @Transactional(readOnly = true)
     public DocumentDownloadResult downloadDocument(Long id) {
         Document document = getAuthorizedDocument(id);
@@ -160,6 +205,11 @@ public class DocumentService {
         return new DocumentDownloadResult(document.getOriginalFilename(), document.getMimeType(), content);
     }
 
+    /**
+     * Permanently deletes a document and its stored binary content.
+     *
+     * @param id identifier of the document to delete
+     */
     public void deleteDocument(Long id) {
         Document document = getAuthorizedDocument(id);
         contentStore.delete(id);
@@ -284,13 +334,16 @@ public class DocumentService {
 
     private User resolveAuthenticatedUser(Long tenantId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() == null) {
+        if (authentication == null) {
             throw new UnauthorizedException("Authenticated user is required");
         }
 
-        String email = authentication.getPrincipal() instanceof String string
-                ? string
-                : authentication.getPrincipal().toString();
+        Object principal = authentication.getPrincipal();
+        if (principal == null) {
+            throw new UnauthorizedException("Authenticated user is required");
+        }
+
+        String email = principal instanceof String string ? string : principal.toString();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("Authenticated user was not found"));

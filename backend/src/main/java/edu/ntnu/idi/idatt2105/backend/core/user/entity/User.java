@@ -24,6 +24,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a user within a tenant.
+ *
+ * <p>
+ * Users belong to a tenant (organization) and are assigned a role
+ * that determines their permissions. This entity stores authentication
+ * credentials, personal information, and lifecycle metadata.
+ * </p>
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")

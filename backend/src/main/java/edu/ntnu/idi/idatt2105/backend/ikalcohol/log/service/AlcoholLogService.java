@@ -26,6 +26,13 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.mapper.AlcoholLogMapper;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.repository.AlcoholLogRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for managing alcohol compliance logs in the IK Alcohol module.
+ * <p>
+ * Extends {@link BaseComplianceLogService} with alcohol-specific creation
+ * logic including automatic status resolution for service refusals and
+ * incidents. All operations are tenant-scoped.
+ */
 @Service
 @Transactional
 @Slf4j
@@ -52,6 +59,13 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         return repository;
     }
 
+    /**
+     * Creates a new alcohol compliance log entry for the current tenant.
+     * The log status is derived from the request type and refusal flag.
+     *
+     * @param request the log details including type, status and refusal fields
+     * @return the persisted {@link AlcoholLogDTO}
+     */
     public AlcoholLogDTO createLog(AlcoholLogCreateRequest request) {
         Long tenantId = TenantContext.getCurrentOrg();
         log.info("Creating alcohol compliance log for tenantId={} type={}", tenantId, request.getLogType());
@@ -68,12 +82,25 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         return mapper.toDTO(savedLog);
     }
 
+    /**
+     * Convenience method to record a service refusal. Sets the
+     * {@code serviceRefused} flag and delegates to {@link #createLog}.
+     *
+     * @param request the log details for the refusal event
+     * @return the persisted {@link AlcoholLogDTO}
+     */
     public AlcoholLogDTO recordRefusal(AlcoholLogCreateRequest request) {
         log.info("Recording alcohol service refusal for current tenant");
         request.setServiceRefused(true);
         return createLog(request);
     }
 
+    /**
+     * Returns all alcohol compliance logs for the current tenant as DTOs,
+     * with actor names resolved from the user repository if needed.
+     *
+     * @return a list of {@link AlcoholLogDTO} objects
+     */
     @Transactional(readOnly = true)
     public List<AlcoholLogDTO> getAllForCurrentOrgAsDTO() {
         Long tenantId = TenantContext.getCurrentOrg();
@@ -82,6 +109,13 @@ public class AlcoholLogService extends BaseComplianceLogService<AlcoholComplianc
         return logs;
     }
 
+    /**
+     * Retrieves a single alcohol compliance log as a DTO, with actor name
+     * resolved if missing.
+     *
+     * @param id the log identifier
+     * @return the {@link AlcoholLogDTO} for the requested entry
+     */
     @Transactional(readOnly = true)
     public AlcoholLogDTO getByIdAsDTO(Long id) {
         log.debug("Fetching alcohol log id={}", id);

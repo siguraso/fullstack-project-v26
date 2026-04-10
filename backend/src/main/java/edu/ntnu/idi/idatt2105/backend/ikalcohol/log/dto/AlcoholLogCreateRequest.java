@@ -7,6 +7,14 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Request DTO used to create a new alcohol compliance log.
+ *
+ * <p>
+ * Extends {@link BaseLogCreateRequest} with alcohol-specific fields such as
+ * log type, ID verification, service refusal, and estimated age.
+ * </p>
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AlcoholLogCreateRequest extends BaseLogCreateRequest {

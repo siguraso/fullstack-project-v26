@@ -3,6 +3,14 @@ package edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.log.enums.ComplianceModule;
 import lombok.Data;
 
+/**
+ * DTO representing a deviation in the system.
+ *
+ * <p>
+ * Used to transfer deviation data to the frontend, including
+ * lifecycle details, responsible parties, and resolution information.
+ * </p>
+ */
 @Data
 public class DeviationDTO {
 

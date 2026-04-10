@@ -11,12 +11,32 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.log.repository.BaseComplia
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Abstract base service providing common CRUD operations for compliance log
+ * entities.
+ * <p>
+ * Concrete subclasses supply the repository via {@link #getRepository()} and
+ * may add module-specific creation logic. All operations enforce tenant
+ * ownership.
+ *
+ * @param <T> the concrete compliance log entity type
+ */
 @Transactional
 @Slf4j
 public abstract class BaseComplianceLogService<T extends BaseComplianceLog> {
 
+    /**
+     * Returns the repository used for persistence of the concrete log type.
+     *
+     * @return the {@link BaseComplianceLogRepository} for type {@code T}
+     */
     protected abstract BaseComplianceLogRepository<T> getRepository();
 
+    /**
+     * Returns all compliance logs for the current tenant.
+     *
+     * @return a list of all log entities belonging to the current organisation
+     */
     @Transactional(readOnly = true)
     public List<T> getAllForCurrentOrg() {
         Long tenantId = TenantContext.getCurrentOrg();
@@ -25,6 +45,13 @@ public abstract class BaseComplianceLogService<T extends BaseComplianceLog> {
         return logs;
     }
 
+    /**
+     * Retrieves a single compliance log by its identifier, enforcing that it
+     * belongs to the current tenant.
+     *
+     * @param id the log identifier
+     * @return the log entity
+     */
     @Transactional(readOnly = true)
     public T getById(Long id) {
         log.debug("Fetching compliance log id={}", id);
@@ -40,6 +67,12 @@ public abstract class BaseComplianceLogService<T extends BaseComplianceLog> {
         return entity;
     }
 
+    /**
+     * Deletes a compliance log entry, enforcing that it belongs to the current
+     * tenant.
+     *
+     * @param id identifier of the log to delete
+     */
     public void delete(Long id) {
         log.info("Deleting compliance log id={}", id);
         T entity = getRepository().findById(id)

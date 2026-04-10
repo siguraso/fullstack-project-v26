@@ -34,178 +34,232 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.repository.Temperatu
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service that assembles the compliance dashboard overview for the current
+ * tenant.
+ * <p>
+ * Aggregates data from checklists, deviations, temperature logs and alcohol
+ * logs into a single {@link DashboardOverviewDTO} suitable for the dashboard
+ * landing page.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class DashboardService {
 
-        private static final int ACTIVITY_LIMIT = 20;
-        private static final int SOURCE_FETCH_LIMIT = 20;
+    private static final int ACTIVITY_LIMIT = 20;
+    private static final int SOURCE_FETCH_LIMIT = 20;
 
-        private final ChecklistInstanceRepository checklistInstanceRepository;
-        private final ChecklistInstanceMapper checklistInstanceMapper;
-        private final DeviationRepository deviationRepository;
-        private final DeviationMapper deviationMapper;
-        private final TemperatureLogRepository temperatureLogRepository;
-        private final AlcoholLogRepository alcoholLogRepository;
+    private final ChecklistInstanceRepository checklistInstanceRepository;
+    private final ChecklistInstanceMapper checklistInstanceMapper;
+    private final DeviationRepository deviationRepository;
+    private final DeviationMapper deviationMapper;
+    private final TemperatureLogRepository temperatureLogRepository;
+    private final AlcoholLogRepository alcoholLogRepository;
 
-        public DashboardOverviewDTO getOverview() {
-                Long tenantId = TenantContext.getCurrentOrg();
+    /**
+     * Builds a full dashboard overview for the current tenant including
+     * today's checklist summary, pending checklists, active deviations,
+     * critical alerts, and the most recent team activity across all
+     * compliance modules.
+     *
+     * @return a populated {@link DashboardOverviewDTO}
+     */
+    public DashboardOverviewDTO getOverview() {
+        Long tenantId = TenantContext.getCurrentOrg();
 
-                List<ChecklistInstance> todayChecklists = checklistInstanceRepository
-                                .findTodayWithItems(tenantId, LocalDate.now());
-                List<DeviationStatus> activeStatuses = List.of(DeviationStatus.OPEN, DeviationStatus.IN_PROGRESS);
+        List<ChecklistInstance> todayChecklists = getTodayChecklists(tenantId);
+        List<Deviation> activeDeviations = getActiveDeviations(tenantId);
+        List<Deviation> criticalDeviations = getCriticalDeviations(tenantId);
 
-                List<Deviation> activeDeviationEntities = deviationRepository
-                                .findByTenantIdAndStatusInOrderByCreatedAtDesc(tenantId, activeStatuses);
-                List<Deviation> criticalDeviationEntities = deviationRepository
-                                .findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
-                                                tenantId,
-                                                activeStatuses,
-                                                DeviationSeverity.CRITICAL);
+        DashboardOverviewDTO overview = new DashboardOverviewDTO();
+        overview.setChecklistsToday(buildChecklistTodaySummary(todayChecklists));
+        overview.setPendingChecklists(buildPendingChecklists(todayChecklists));
+        overview.setActiveDeviations(mapDeviations(activeDeviations));
+        overview.setCriticalAlerts(mapDeviations(criticalDeviations));
+        overview.setTeamActivity(buildTeamActivity(tenantId));
 
-                List<TemperatureComplianceLog> recentTemperatureLogs = temperatureLogRepository
-                                .findAllByTenantId(
-                                                tenantId,
-                                                PageRequest.of(0, SOURCE_FETCH_LIMIT,
-                                                                Sort.by(Sort.Direction.DESC, "recordedAt")))
-                                .getContent();
-                List<AlcoholComplianceLog> recentAlcoholLogs = alcoholLogRepository
-                                .findAllByTenantId(
-                                                tenantId,
-                                                PageRequest.of(0, SOURCE_FETCH_LIMIT,
-                                                                Sort.by(Sort.Direction.DESC, "recordedAt")))
-                                .getContent();
-                List<Deviation> recentDeviationEntities = deviationRepository
-                                .findByTenantId(
-                                                tenantId,
-                                                PageRequest.of(0, SOURCE_FETCH_LIMIT,
-                                                                Sort.by(Sort.Direction.DESC, "createdAt")))
-                                .getContent();
+        return overview;
+    }
 
-                DashboardOverviewDTO overview = new DashboardOverviewDTO();
-                overview.setChecklistsToday(buildChecklistTodaySummary(todayChecklists));
-                overview.setPendingChecklists(buildPendingChecklists(todayChecklists));
-                overview.setActiveDeviations(activeDeviationEntities.stream().map(deviationMapper::toDTO).toList());
-                overview.setCriticalAlerts(criticalDeviationEntities.stream().map(deviationMapper::toDTO).toList());
-                overview.setTeamActivity(
-                                buildTeamActivity(recentTemperatureLogs, recentAlcoholLogs, recentDeviationEntities));
+    private List<ChecklistInstance> getTodayChecklists(Long tenantId) {
+        return checklistInstanceRepository.findTodayWithItems(tenantId, LocalDate.now());
+    }
 
-                return overview;
+    private List<Deviation> getActiveDeviations(Long tenantId) {
+        return deviationRepository.findByTenantIdAndStatusInOrderByCreatedAtDesc(
+                tenantId,
+                List.of(DeviationStatus.OPEN, DeviationStatus.IN_PROGRESS));
+    }
+
+    private List<Deviation> getCriticalDeviations(Long tenantId) {
+        return deviationRepository.findByTenantIdAndStatusInAndSeverityOrderByCreatedAtDesc(
+                tenantId,
+                List.of(DeviationStatus.OPEN, DeviationStatus.IN_PROGRESS),
+                DeviationSeverity.CRITICAL);
+    }
+
+    private List<edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO> mapDeviations(
+            List<Deviation> deviations) {
+        return deviations.stream().map(deviationMapper::toDTO).toList();
+    }
+
+    private ChecklistTodaySummaryDTO buildChecklistTodaySummary(List<ChecklistInstance> checklists) {
+        int totalChecklists = checklists.size();
+        int completedChecklists = (int) checklists.stream()
+                .filter(checklist -> checklist.getStatus() == ChecklistStatus.COMPLETED)
+                .count();
+        int totalItems = checklists.stream()
+                .map(ChecklistInstance::getItems)
+                .mapToInt(List::size)
+                .sum();
+        int completedItems = (int) checklists.stream()
+                .flatMap(checklist -> checklist.getItems().stream())
+                .filter(ChecklistItemInstance::isCompleted)
+                .count();
+
+        ChecklistTodaySummaryDTO summary = new ChecklistTodaySummaryDTO();
+        summary.setTotalChecklists(totalChecklists);
+        summary.setCompletedChecklists(completedChecklists);
+        summary.setTotalItems(totalItems);
+        summary.setCompletedItems(completedItems);
+
+        return summary;
+    }
+
+    private List<ChecklistInstanceDTO> buildPendingChecklists(List<ChecklistInstance> checklists) {
+        return checklists.stream()
+                .filter(checklist -> checklist.getStatus() != ChecklistStatus.COMPLETED)
+                .map(checklistInstanceMapper::toDto)
+                .toList();
+    }
+
+    private List<DashboardActivityDTO> buildTeamActivity(Long tenantId) {
+
+        List<ActivityItem> activity = new ArrayList<>();
+
+        activity.addAll(buildTemperatureActivities(tenantId));
+        activity.addAll(buildAlcoholActivities(tenantId));
+        activity.addAll(buildDeviationActivities(tenantId));
+
+        return activity.stream()
+                .sorted(Comparator.comparing(ActivityItem::occurredAt).reversed())
+                .limit(ACTIVITY_LIMIT)
+                .map(ActivityItem::dto)
+                .toList();
+    }
+
+    private List<ActivityItem> buildTemperatureActivities(Long tenantId) {
+        List<TemperatureComplianceLog> logs = temperatureLogRepository
+                .findAllByTenantId(
+                        tenantId,
+                        PageRequest.of(0, SOURCE_FETCH_LIMIT, Sort.by(Sort.Direction.DESC, "recordedAt")))
+                .getContent();
+
+        return logs.stream()
+                .map(log -> new ActivityItem(
+                        log.getRecordedAt(),
+                        createTemperatureActivity(log)))
+                .toList();
+    }
+
+    private List<ActivityItem> buildAlcoholActivities(Long tenantId) {
+        List<AlcoholComplianceLog> logs = alcoholLogRepository
+                .findAllByTenantId(
+                        tenantId,
+                        PageRequest.of(0, SOURCE_FETCH_LIMIT, Sort.by(Sort.Direction.DESC, "recordedAt")))
+                .getContent();
+
+        return logs.stream()
+                .map(log -> new ActivityItem(
+                        log.getRecordedAt(),
+                        createAlcoholActivity(log)))
+                .toList();
+    }
+
+    private List<ActivityItem> buildDeviationActivities(Long tenantId) {
+        List<Deviation> deviations = deviationRepository
+                .findByTenantId(
+                        tenantId,
+                        PageRequest.of(0, SOURCE_FETCH_LIMIT, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .getContent();
+
+        return deviations.stream()
+                .map(dev -> new ActivityItem(
+                        dev.getCreatedAt(),
+                        createDeviationActivity(dev)))
+                .toList();
+    }
+
+    private DashboardActivityDTO createTemperatureActivity(TemperatureComplianceLog log) {
+        DashboardActivityDTO dto = new DashboardActivityDTO();
+        dto.setType("TEMPERATURE_LOG");
+        dto.setTitle(log.getTitle());
+        dto.setDescription("Logged " + log.getTemperatureCelsius() + " C for zone "
+                + log.getTemperatureZone().getName());
+        dto.setActor(resolveActorName(log.getRecordedBy()));
+        dto.setOccurredAt(log.getRecordedAt().toString());
+        dto.setReferenceId(log.getId());
+        return dto;
+    }
+
+    private DashboardActivityDTO createAlcoholActivity(AlcoholComplianceLog log) {
+        DashboardActivityDTO dto = new DashboardActivityDTO();
+        dto.setType("ALCOHOL_LOG");
+        dto.setTitle(log.getTitle());
+        dto.setDescription(log.getDescription());
+        dto.setActor(resolveActorName(log.getRecordedBy()));
+        dto.setOccurredAt(log.getRecordedAt().toString());
+        dto.setReferenceId(log.getId());
+        return dto;
+    }
+
+    private DashboardActivityDTO createDeviationActivity(Deviation deviation) {
+        DashboardActivityDTO dto = new DashboardActivityDTO();
+        dto.setType("DEVIATION_CREATED");
+        dto.setTitle(deviation.getTitle());
+        dto.setDescription(summarizeDeviation(deviation));
+        dto.setActor(resolveActorName(deviation.getCreatedBy()));
+        dto.setOccurredAt(deviation.getCreatedAt().toString());
+        dto.setReferenceId(deviation.getId());
+        return dto;
+    }
+
+    private String resolveActorName(User user) {
+        if (user == null) {
+            return "System";
         }
 
-        private ChecklistTodaySummaryDTO buildChecklistTodaySummary(List<ChecklistInstance> checklists) {
-                int totalChecklists = checklists.size();
-                int completedChecklists = (int) checklists.stream()
-                                .filter(checklist -> checklist.getStatus() == ChecklistStatus.COMPLETED)
-                                .count();
-                int totalItems = checklists.stream()
-                                .map(ChecklistInstance::getItems)
-                                .mapToInt(List::size)
-                                .sum();
-                int completedItems = (int) checklists.stream()
-                                .flatMap(checklist -> checklist.getItems().stream())
-                                .filter(ChecklistItemInstance::isCompleted)
-                                .count();
-
-                ChecklistTodaySummaryDTO summary = new ChecklistTodaySummaryDTO();
-                summary.setTotalChecklists(totalChecklists);
-                summary.setCompletedChecklists(completedChecklists);
-                summary.setTotalItems(totalItems);
-                summary.setCompletedItems(completedItems);
-
-                return summary;
+        String fullName = (user.getFirstName() + " " + user.getLastName()).trim();
+        if (!fullName.isBlank()) {
+            return fullName;
         }
 
-        private List<ChecklistInstanceDTO> buildPendingChecklists(List<ChecklistInstance> checklists) {
-                return checklists.stream()
-                                .filter(checklist -> checklist.getStatus() != ChecklistStatus.COMPLETED)
-                                .map(checklistInstanceMapper::toDto)
-                                .toList();
+        if (user.getUsername() != null && !user.getUsername().isBlank()) {
+            return user.getUsername();
         }
 
-        private List<DashboardActivityDTO> buildTeamActivity(
-                        List<TemperatureComplianceLog> temperatureLogs,
-                        List<AlcoholComplianceLog> alcoholLogs,
-                        List<Deviation> deviations) {
-                List<ActivityItem> activity = new ArrayList<>();
-
-                for (TemperatureComplianceLog log : temperatureLogs) {
-                        DashboardActivityDTO dto = new DashboardActivityDTO();
-                        dto.setType("TEMPERATURE_LOG");
-                        dto.setTitle(log.getTitle());
-                        dto.setDescription("Logged " + log.getTemperatureCelsius() + " C for zone "
-                                        + log.getTemperatureZone().getName());
-                        dto.setActor(resolveActorName(log.getRecordedBy()));
-                        dto.setOccurredAt(log.getRecordedAt().toString());
-                        dto.setReferenceId(log.getId());
-                        activity.add(new ActivityItem(log.getRecordedAt(), dto));
-                }
-
-                for (AlcoholComplianceLog log : alcoholLogs) {
-                        DashboardActivityDTO dto = new DashboardActivityDTO();
-                        dto.setType("ALCOHOL_LOG");
-                        dto.setTitle(log.getTitle());
-                        dto.setDescription(log.getDescription());
-                        dto.setActor(resolveActorName(log.getRecordedBy()));
-                        dto.setOccurredAt(log.getRecordedAt().toString());
-                        dto.setReferenceId(log.getId());
-                        activity.add(new ActivityItem(log.getRecordedAt(), dto));
-                }
-
-                for (Deviation deviation : deviations) {
-                        DashboardActivityDTO dto = new DashboardActivityDTO();
-                        dto.setType("DEVIATION_CREATED");
-                        dto.setTitle(deviation.getTitle());
-                        dto.setDescription(summarizeDeviation(deviation));
-                        dto.setActor(resolveActorName(deviation.getCreatedBy()));
-                        dto.setOccurredAt(deviation.getCreatedAt().toString());
-                        dto.setReferenceId(deviation.getId());
-                        activity.add(new ActivityItem(deviation.getCreatedAt(), dto));
-                }
-
-                return activity.stream()
-                                .sorted(Comparator.comparing(ActivityItem::occurredAt).reversed())
-                                .limit(ACTIVITY_LIMIT)
-                                .map(ActivityItem::dto)
-                                .toList();
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            return user.getEmail();
         }
 
-        private String resolveActorName(User user) {
-                if (user == null) {
-                        return "System";
-                }
+        return "System";
+    }
 
-                String fullName = (user.getFirstName() + " " + user.getLastName()).trim();
-                if (!fullName.isBlank()) {
-                        return fullName;
-                }
-
-                if (user.getUsername() != null && !user.getUsername().isBlank()) {
-                        return user.getUsername();
-                }
-
-                if (user.getEmail() != null && !user.getEmail().isBlank()) {
-                        return user.getEmail();
-                }
-
-                return "System";
+    private String summarizeDeviation(Deviation deviation) {
+        if (deviation.getIssueDescription() != null && !deviation.getIssueDescription().isBlank()) {
+            return deviation.getIssueDescription();
         }
 
-        private String summarizeDeviation(Deviation deviation) {
-                if (deviation.getIssueDescription() != null && !deviation.getIssueDescription().isBlank()) {
-                        return deviation.getIssueDescription();
-                }
-
-                if (deviation.getImmediateAction() != null && !deviation.getImmediateAction().isBlank()) {
-                        return deviation.getImmediateAction();
-                }
-
-                return "Deviation recorded";
+        if (deviation.getImmediateAction() != null && !deviation.getImmediateAction().isBlank()) {
+            return deviation.getImmediateAction();
         }
 
-        private record ActivityItem(LocalDateTime occurredAt, DashboardActivityDTO dto) {
-        }
+        return "Deviation recorded";
+    }
+
+    private record ActivityItem(LocalDateTime occurredAt, DashboardActivityDTO dto) {
+    }
 
 }

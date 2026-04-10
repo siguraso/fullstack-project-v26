@@ -20,6 +20,13 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.service.AlcoholLogService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REST controller for managing alcohol compliance logs in the IK Alcohol
+ * module.
+ * <p>
+ * Provides endpoints for creating, retrieving and deleting alcohol compliance
+ * log entries scoped to the current tenant.
+ */
 @RestController
 @RequestMapping("/api/ikalcohol/logs")
 @Slf4j
@@ -31,24 +38,49 @@ public class AlcoholLogController {
         this.service = service;
     }
 
+    /**
+     * Creates a new alcohol compliance log entry for the current tenant.
+     *
+     * @param request the log details including log type, status and optional
+     *                refusal information
+     * @return a 201 Created response containing the persisted
+     *         {@link AlcoholLogDTO}
+     */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<AlcoholLogDTO>> createLog(@Valid @RequestBody AlcoholLogCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(service.createLog(request)));
     }
 
+    /**
+     * Returns all alcohol compliance logs for the current tenant.
+     *
+     * @return a list of {@link AlcoholLogDTO} objects
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<AlcoholLogDTO>>> getLogs() {
         return ResponseEntity.ok(ApiResponse.ok(service.getAllForCurrentOrgAsDTO()));
     }
 
+    /**
+     * Retrieves a single alcohol compliance log by its identifier.
+     *
+     * @param id the log identifier
+     * @return the {@link AlcoholLogDTO} for the requested entry
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<AlcoholLogDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getByIdAsDTO(id)));
     }
 
+    /**
+     * Deletes an alcohol compliance log entry.
+     *
+     * @param id identifier of the log to delete
+     * @return a 204 No Content response on success
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

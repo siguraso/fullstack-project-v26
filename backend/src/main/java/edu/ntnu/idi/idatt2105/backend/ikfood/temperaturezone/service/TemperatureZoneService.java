@@ -18,6 +18,13 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.repository.Temperat
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for managing temperature zones in the IK Food module.
+ * <p>
+ * Temperature zones define monitored areas (e.g. fridges, freezers) with
+ * acceptable temperature ranges. Zones are soft-deleted when removed so that
+ * existing log history remains intact.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,6 +35,14 @@ public class TemperatureZoneService {
     private final TenantRepository tenantRepository;
     private final TemperatureZoneMapper temperatureZoneMapper;
 
+    /**
+     * Creates a new temperature zone for the current tenant.
+     *
+     * @param request the zone details including name and temperature limits
+     * @return the persisted {@link TemperatureZoneDTO}
+     * @throws ValidationException if a zone with the same name already exists
+     *                             or the limits are invalid
+     */
     public TemperatureZoneDTO create(CreateTemperatureZoneRequest request) {
         log.info("Creating temperature zone for current tenant: name={}", request.getName());
         validateLimits(request.getLowerLimitCelsius(), request.getUpperLimitCelsius());
@@ -53,6 +68,11 @@ public class TemperatureZoneService {
         return temperatureZoneMapper.toDTO(savedZone);
     }
 
+    /**
+     * Returns all active temperature zones for the current tenant.
+     *
+     * @return a list of {@link TemperatureZoneDTO} objects
+     */
     @Transactional(readOnly = true)
     public List<TemperatureZoneDTO> getForCurrentTenant() {
         Long tenantId = TenantContext.getCurrentOrg();
@@ -63,6 +83,15 @@ public class TemperatureZoneService {
         return zones;
     }
 
+    /**
+     * Updates a temperature zone's name and temperature limits.
+     *
+     * @param id      identifier of the zone to update
+     * @param request the updated zone details
+     * @return the updated {@link TemperatureZoneDTO}
+     * @throws ValidationException if the new name conflicts with another active
+     *                             zone or the limits are invalid
+     */
     public TemperatureZoneDTO update(Long id, CreateTemperatureZoneRequest request) {
         log.info("Updating temperature zone id={}", id);
         validateLimits(request.getLowerLimitCelsius(), request.getUpperLimitCelsius());
@@ -88,6 +117,12 @@ public class TemperatureZoneService {
         return temperatureZoneMapper.toDTO(savedZone);
     }
 
+    /**
+     * Soft-deletes a temperature zone by marking it as inactive. Existing
+     * temperature logs referencing the zone are preserved.
+     *
+     * @param id identifier of the zone to delete
+     */
     public void delete(Long id) {
         Long tenantId = TenantContext.getCurrentOrg();
         log.info("Soft deleting temperature zone id={} for tenantId={}", id, tenantId);

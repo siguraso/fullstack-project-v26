@@ -6,9 +6,20 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistIte
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistTemplateDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.template.ChecklistTemplate;
 
+/**
+ * Mapper that converts {@link ChecklistTemplate} entities to
+ * {@link ChecklistTemplateDTO} objects.
+ */
 @Component
 public class ChecklistTemplateMapper {
 
+    /**
+     * Converts a checklist template entity to its DTO representation,
+     * including all template item snapshots.
+     *
+     * @param entity the checklist template entity
+     * @return the corresponding {@link ChecklistTemplateDTO}
+     */
     public ChecklistTemplateDTO toDto(ChecklistTemplate entity) {
         ChecklistTemplateDTO dto = new ChecklistTemplateDTO();
 

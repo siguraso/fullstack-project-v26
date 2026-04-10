@@ -6,6 +6,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * Request DTO used to update an existing user.
+ *
+ * <p>
+ * Contains updated personal information and role assignment.
+ * All fields are required when performing a full update.
+ * </p>
+ */
 @Data
 public class UserUpdateRequest {
 
@@ -25,4 +33,3 @@ public class UserUpdateRequest {
   @NotNull(message = "Role is required")
   private UserRole role;
 }
-

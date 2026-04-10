@@ -5,9 +5,19 @@ import org.springframework.stereotype.Component;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.dto.DeviationDTO;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.deviation.entity.Deviation;
 
+/**
+ * Mapper that converts {@link Deviation} entities to {@link DeviationDTO}
+ * objects.
+ */
 @Component
 public class DeviationMapper {
 
+    /**
+     * Converts a deviation entity to its DTO representation.
+     *
+     * @param entity the deviation entity
+     * @return the corresponding {@link DeviationDTO}
+     */
     public DeviationDTO toDTO(Deviation entity) {
         DeviationDTO dto = new DeviationDTO();
 

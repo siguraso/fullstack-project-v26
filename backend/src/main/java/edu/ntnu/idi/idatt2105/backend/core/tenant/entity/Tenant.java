@@ -19,6 +19,14 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+/**
+ * Represents a tenant (organization) in the system.
+ *
+ * <p>
+ * A tenant encapsulates organizational data such as name, contact details,
+ * and lifecycle metadata. All domain data in the system is scoped per tenant.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

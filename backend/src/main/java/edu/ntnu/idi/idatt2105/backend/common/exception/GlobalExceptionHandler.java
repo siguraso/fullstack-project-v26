@@ -24,7 +24,12 @@ public class GlobalExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-  // 404
+  /**
+   * Handles {@link ResourceNotFoundException}, returning HTTP 404.
+   *
+   * @param ex the exception
+   * @return a 404 response with the exception message
+   */
   @ExceptionHandler(ResourceNotFoundException.class)
   public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
     log.warn("Resource not found: {}", ex.getMessage());
@@ -33,7 +38,12 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getMessage()));
   }
 
-  // 403
+  /**
+   * Handles {@link UnauthorizedException}, returning HTTP 403.
+   *
+   * @param ex the exception
+   * @return a 403 response with the exception message
+   */
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<ApiResponse<Void>> handleUnauthorized(UnauthorizedException ex) {
     log.warn("Unauthorized access attempt: {}", ex.getMessage());
@@ -42,6 +52,12 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getMessage()));
   }
 
+  /**
+   * Handles Spring Security {@link AccessDeniedException}, returning HTTP 403.
+   *
+   * @param ex the exception
+   * @return a 403 response with a generic access-denied message
+   */
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
     log.warn("Access denied: {}", ex.getMessage());
@@ -50,7 +66,13 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("Access denied"));
   }
 
-  // 401
+  /**
+   * Handles {@link BadCredentialsException} from a failed login attempt,
+   * returning HTTP 401.
+   *
+   * @param ex the exception
+   * @return a 401 response with a generic invalid-credentials message
+   */
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
     log.warn("Bad credentials: {}", ex.getMessage());
@@ -59,8 +81,12 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("Invalid email or password"));
   }
 
-  // 400
-
+  /**
+   * Handles {@link ValidationException}, returning HTTP 400.
+   *
+   * @param ex the exception
+   * @return a 400 response with the validation error message
+   */
   @ExceptionHandler(ValidationException.class)
   public ResponseEntity<ApiResponse<Void>> handleValidation(ValidationException ex) {
     log.warn("Validation error: {}", ex.getMessage());
@@ -69,6 +95,12 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(ex.getMessage()));
   }
 
+  /**
+   * Handles {@link IllegalArgumentException}, returning HTTP 400.
+   *
+   * @param ex the exception
+   * @return a 400 response with the exception message
+   */
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
     log.warn("Illegal argument: {}", ex.getMessage());
@@ -97,7 +129,12 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("Validation failed", fieldErrors));
   }
 
-  // 500
+  /**
+   * Catch-all handler for any unhandled exception, returning HTTP 500.
+   *
+   * @param ex the exception
+   * @return a 500 response with a generic error message
+   */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {
     log.error("Unexpected error", ex);

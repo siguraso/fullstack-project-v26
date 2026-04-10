@@ -12,6 +12,13 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * JPA entity representing an alcohol compliance log entry in the IK Alcohol
+ * module.
+ * <p>
+ * Extends {@link BaseComplianceLog} with alcohol-specific fields such as log
+ * type, ID check result, service refusal flag and estimated age.
+ */
 @Entity
 @Table(name = "alcohol_compliance_logs")
 @Getter

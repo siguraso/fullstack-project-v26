@@ -17,6 +17,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 
+/**
+ * JPA mapped superclass containing the shared fields for all compliance log
+ * entity types (temperature, alcohol, etc.).
+ * <p>
+ * Subclasses inherit tenant association, recorder, module, title, description,
+ * status and an auto-set {@code recordedAt} timestamp.
+ */
 @MappedSuperclass
 public abstract class BaseComplianceLog {
 

@@ -20,6 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service for managing users within a tenant organisation.
+ * <p>
+ * All operations are scoped to the current tenant. Supports listing, creation,
+ * update and soft-deactivation of user accounts.
+ */
 @Service
 @Slf4j
 public class UserService {
@@ -37,6 +43,11 @@ public class UserService {
     this.passwordEncoder = passwordEncoder;
   }
 
+  /**
+   * Returns all users belonging to the current tenant.
+   *
+   * @return a list of {@link UserResponse} objects
+   */
   @Transactional(readOnly = true)
   public List<UserResponse> getAllUsers() {
     Long tenantId = TenantContext.getCurrentOrg();
@@ -48,6 +59,12 @@ public class UserService {
     return users;
   }
 
+  /**
+   * Retrieves a single user by their identifier, scoped to the current tenant.
+   *
+   * @param id the user identifier
+   * @return the {@link UserResponse} for the requested user
+   */
   @Transactional(readOnly = true)
   public UserResponse getUserById(Long id) {
     log.debug("Fetching user by id={} for current tenant", id);
@@ -55,6 +72,15 @@ public class UserService {
     return userMapper.toResponse(user);
   }
 
+  /**
+   * Updates a user's profile fields and role.
+   *
+   * @param id  identifier of the user to update
+   * @param dto the updated user details
+   * @return the updated {@link UserResponse}
+   * @throws ValidationException if the new email already belongs to another
+   *                             user
+   */
   public UserResponse updateUser(Long id, UserUpdateRequest dto) {
     log.info("Updating user id={} for current tenant", id);
     User user = getCurrentTenantUser(id);
@@ -75,6 +101,13 @@ public class UserService {
     return userMapper.toResponse(saved);
   }
 
+  /**
+   * Creates a new user in the current tenant organisation.
+   *
+   * @param dto the creation request with name, credentials and role
+   * @return the persisted {@link UserResponse}
+   * @throws ValidationException if the email or username is already in use
+   */
   public UserResponse createUser(UserCreateRequest dto) {
     Long currentTenantId = TenantContext.getCurrentOrg();
     log.info("Creating user in tenantId={} with requested role={}", currentTenantId, dto.getRole());
@@ -108,6 +141,11 @@ public class UserService {
     return userMapper.toResponse(saved);
   }
 
+  /**
+   * Soft-deactivates a user, preventing login without removing the account.
+   *
+   * @param id identifier of the user to deactivate
+   */
   public void deactivateUser(Long id) {
     log.info("Deactivating user id={} for current tenant", id);
     User user = getCurrentTenantUser(id);

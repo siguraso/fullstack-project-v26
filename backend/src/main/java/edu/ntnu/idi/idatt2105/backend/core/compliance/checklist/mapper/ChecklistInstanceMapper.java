@@ -7,9 +7,21 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.dto.ChecklistIte
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistInstance;
 import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.entity.instance.ChecklistItemInstance;
 
+/**
+ * Mapper that converts {@link ChecklistInstance} entities to
+ * {@link ChecklistInstanceDTO} objects.
+ */
 @Component
 public class ChecklistInstanceMapper {
 
+    /**
+     * Converts a checklist instance entity to its DTO representation,
+     * including all nested item instances.
+     *
+     * @param entity the checklist instance entity; returns {@code null} if
+     *               {@code entity} is {@code null}
+     * @return the corresponding {@link ChecklistInstanceDTO}
+     */
     public ChecklistInstanceDTO toDto(ChecklistInstance entity) {
         if (entity == null)
             return null;

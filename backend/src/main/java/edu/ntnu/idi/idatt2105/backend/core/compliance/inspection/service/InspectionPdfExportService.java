@@ -14,6 +14,14 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.inspection.dto.InspectionL
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service that generates PDF inspection reports using Thymeleaf for HTML
+ * templating and Flying Saucer (xhtmlrenderer) for PDF rendering.
+ * <p>
+ * Delegates log retrieval and filtering to {@link InspectionLogService} and
+ * processes the {@code inspection-report} Thymeleaf template before converting
+ * the resulting XHTML to a PDF byte array.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +30,14 @@ public class InspectionPdfExportService {
     private final InspectionLogService inspectionLogService;
     private final TemplateEngine templateEngine;
 
+    /**
+     * Generates a PDF report containing all inspection logs matching the given
+     * filter, rendered via the {@code inspection-report} Thymeleaf template.
+     *
+     * @param filter optional filters for type, severity, status and date range
+     * @return a PDF document as a byte array
+     * @throws IllegalStateException if PDF rendering or writing fails
+     */
     public byte[] generatePdf(InspectionExportFilter filter) {
         List<InspectionLogDTO> logs = inspectionLogService.getFilteredLogs(filter);
 
@@ -41,7 +57,7 @@ public class InspectionPdfExportService {
             return out.toByteArray();
         } catch (Exception e) {
             log.error("Failed to generate inspection PDF", e);
-            throw new RuntimeException("PDF generation failed", e);
+            throw new IllegalStateException("PDF generation failed", e);
         }
     }
 }
