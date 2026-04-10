@@ -11,9 +11,21 @@ import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogCreateRequest;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.dto.AlcoholLogDTO;
 import edu.ntnu.idi.idatt2105.backend.ikalcohol.log.entity.AlcoholComplianceLog;
 
+/**
+ * Mapper for converting between {@link AlcoholComplianceLog} entities,
+ * {@link AlcoholLogDTO} data objects and {@link AlcoholLogCreateRequest}
+ * requests.
+ */
 @Component
 public class AlcoholLogMapper extends BaseComplianceLogMapper<AlcoholComplianceLog, AlcoholLogDTO> {
 
+    /**
+     * Converts an alcohol compliance log entity to its DTO representation.
+     *
+     * @param entity the entity to convert; returns {@code null} if
+     *               {@code entity} is {@code null}
+     * @return the corresponding {@link AlcoholLogDTO}
+     */
     public AlcoholLogDTO toDTO(AlcoholComplianceLog entity) {
         if (entity == null) {
             return null;
@@ -28,6 +40,15 @@ public class AlcoholLogMapper extends BaseComplianceLogMapper<AlcoholComplianceL
         return dto;
     }
 
+    /**
+     * Creates an {@link AlcoholComplianceLog} entity from a creation request.
+     *
+     * @param request    the creation request
+     * @param tenant     the tenant to associate the log with
+     * @param recordedBy the user recording the log
+     * @param status     the resolved log status
+     * @return a new, unpersisted {@link AlcoholComplianceLog} entity
+     */
     public AlcoholComplianceLog toEntity(AlcoholLogCreateRequest request, Tenant tenant, User recordedBy,
             LogStatus status) {
         AlcoholComplianceLog entity = new AlcoholComplianceLog();

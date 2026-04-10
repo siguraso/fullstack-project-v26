@@ -25,6 +25,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.AntPathMatcher;
 
+/**
+ * Service for sending and validating staff invitation tokens.
+ * <p>
+ * Generates a time-limited JWT invite token, persists the invitation record,
+ * and delivers the invite URL to the recipient via email. Validation checks
+ * token integrity and returns the associated email and organisation.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,6 +48,14 @@ public class InvitationService {
   @Value("${email.invite.path:/invite/accept}")
   private String invitePath;
 
+  /**
+   * Sends a staff invitation email to the given address. Generates a JWT
+   * invite token, persists the invitation and emails the registration link.
+   *
+   * @param email the recipient's email address
+   * @throws ValidationException if the email already belongs to an existing
+   *                             user
+   */
   @Transactional
   public void sendStaffInvite(String email) {
 	log.info("Sending staff invitation for {}", maskEmail(email));
@@ -70,6 +85,15 @@ public class InvitationService {
 	log.info("Invitation sent for tenantId={} recipient={}", currentTenantId, maskEmail(email));
   }
 
+  /**
+   * Validates an invitation token and returns the associated email and
+   * organisation identifier if the token is valid and not expired.
+   *
+   * @param token the JWT invite token from the registration link
+   * @return an {@link InviteValidationResponse} with validation details
+   * @throws UnauthorizedException if the token is invalid or missing
+   *                               organisation context
+   */
   @Transactional(readOnly = true)
   public InviteValidationResponse validateInviteToken(String token) {
 	log.info("Validating invite token");

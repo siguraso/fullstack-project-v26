@@ -9,6 +9,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Stores the binary content of a document.
+ *
+ * <p>
+ * This entity separates large file data from the main {@link Document}
+ * entity to optimize performance and avoid loading heavy binary data
+ * when only metadata is needed.
+ * </p>
+ */
 @Entity
 @Table(name = "document_blob_contents")
 @Data

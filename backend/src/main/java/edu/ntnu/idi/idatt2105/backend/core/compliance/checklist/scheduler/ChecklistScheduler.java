@@ -14,6 +14,14 @@ import edu.ntnu.idi.idatt2105.backend.core.compliance.checklist.service.Checklis
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Scheduled job that generates daily checklist instances for all active
+ * templates.
+ * <p>
+ * Runs every day at 06:00 and creates an instance from each active template
+ * whose frequency matches the current day (daily, weekly on Monday, monthly
+ * on the first of the month), provided no instance already exists for today.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -23,7 +31,12 @@ public class ChecklistScheduler {
     private final ChecklistInstanceRepository instanceRepo;
     private final ChecklistService checklistService;
 
-    @Scheduled(cron = "0 0 6 * * *") // hver dag kl 06
+    /**
+     * Scans all active checklist templates and generates instances for those
+     * whose frequency is due today. Skips templates that already have an
+     * instance for the current date.
+     */
+    @Scheduled(cron = "0 0 6 * * *")
     public void generateChecklists() {
         log.info("Starting scheduled checklist generation");
 

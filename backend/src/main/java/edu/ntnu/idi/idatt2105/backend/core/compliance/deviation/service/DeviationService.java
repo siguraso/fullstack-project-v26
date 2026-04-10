@@ -29,6 +29,14 @@ import edu.ntnu.idi.idatt2105.backend.core.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for creating and managing compliance deviations for the current
+ * tenant.
+ * <p>
+ * Deviations can be raised manually through the API or automatically when a
+ * critical compliance log entry is recorded. All write operations enforce
+ * tenant ownership.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,6 +47,13 @@ public class DeviationService {
     private final UserRepository userRepository;
     private final DeviationMapper mapper;
 
+    /**
+     * Creates a new deviation for the current tenant from a manual report.
+     *
+     * @param request the deviation details including title, module, severity
+     *                and initial status
+     * @return the persisted {@link DeviationDTO}
+     */
     public DeviationDTO create(CreateDeviationRequest request) {
         Long tenantId = TenantContext.getCurrentOrg();
         log.info("Creating deviation for tenantId={} module={} severity={} status={}",
@@ -78,6 +93,11 @@ public class DeviationService {
         return mapper.toDTO(savedDeviation);
     }
 
+    /**
+     * Returns all deviations for the current tenant, newest first.
+     *
+     * @return a list of {@link DeviationDTO} objects
+     */
     public List<DeviationDTO> getForCurrentTenant() {
         Long tenantId = TenantContext.getCurrentOrg();
         List<DeviationDTO> deviations = deviationRepo.findByTenantId(tenantId).stream().map(mapper::toDTO).toList();
@@ -85,6 +105,14 @@ public class DeviationService {
         return deviations;
     }
 
+    /**
+     * Updates a deviation's status and, if resolved, sets the resolved
+     * timestamp.
+     *
+     * @param id      identifier of the deviation to update
+     * @param request the fields to update, such as status
+     * @return the updated {@link DeviationDTO}
+     */
     public DeviationDTO update(Long id, UpdateDeviationRequest request) {
         Long tenantId = TenantContext.getCurrentOrg();
         log.info("Updating deviation id={} for tenantId={} requestedStatus={}", id, tenantId, request.getStatus());
@@ -105,6 +133,12 @@ public class DeviationService {
         return mapper.toDTO(savedDeviation);
     }
 
+    /**
+     * Automatically creates a critical deviation from a compliance log entry.
+     * Used when a critical status is recorded in a temperature or alcohol log.
+     *
+     * @param complianceLog the compliance log that triggered the deviation
+     */
     public void createFromLog(BaseComplianceLog complianceLog) {
         log.info("Creating deviation from compliance log id={} module={} status={}",
                 complianceLog.getId(), complianceLog.getModule(), complianceLog.getStatus());

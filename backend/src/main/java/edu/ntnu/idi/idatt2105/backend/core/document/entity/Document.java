@@ -29,6 +29,15 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a document uploaded within a tenant.
+ *
+ * <p>
+ * Stores metadata about uploaded files including ownership, categorization,
+ * and file details. Documents are scoped per tenant and can be tagged for
+ * search and organization.
+ * </p>
+ */
 @Entity
 @Table(name = "documents")
 @EntityListeners(AuditingEntityListener.class)
@@ -67,10 +76,8 @@ public class Document {
     private User uploadedBy;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "document_tags",
-            joinColumns = @JoinColumn(name = "document_id"),
-            uniqueConstraints = @UniqueConstraint(columnNames = {"document_id", "tag"}))
+    @CollectionTable(name = "document_tags", joinColumns = @JoinColumn(name = "document_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+            "document_id", "tag" }))
     @Column(name = "tag", nullable = false, length = 80)
     private Set<String> tags = new LinkedHashSet<>();
 

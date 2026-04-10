@@ -2,10 +2,17 @@ package edu.ntnu.idi.idatt2105.backend.core.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import edu.ntnu.idi.idatt2105.backend.core.user.entity.UserRole;
 
+/**
+ * Request DTO used to create a new user.
+ *
+ * <p>
+ * Contains user credentials, personal information, and role assignment.
+ * Typically used by admins or during onboarding flows.
+ * </p>
+ */
 @Data
 public class UserCreateRequest {
 

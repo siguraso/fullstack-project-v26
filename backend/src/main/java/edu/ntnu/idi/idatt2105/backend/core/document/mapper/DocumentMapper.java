@@ -7,8 +7,20 @@ import org.springframework.stereotype.Component;
 import edu.ntnu.idi.idatt2105.backend.core.document.dto.DocumentDTO;
 import edu.ntnu.idi.idatt2105.backend.core.document.entity.Document;
 
+/**
+ * Mapper that converts {@link Document} entities to {@link DocumentDTO}
+ * objects.
+ */
 @Component
 public class DocumentMapper {
+
+    /**
+     * Converts a document entity to its DTO representation, including
+     * uploader details and a sorted tag list.
+     *
+     * @param entity the document entity
+     * @return the corresponding {@link DocumentDTO}
+     */
     public DocumentDTO toDTO(Document entity) {
         DocumentDTO dto = new DocumentDTO();
         dto.setId(entity.getId());

@@ -24,6 +24,15 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZ
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.repository.TemperatureZoneRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for recording and managing temperature compliance logs in the IK
+ * Food module.
+ * <p>
+ * Extends {@link BaseComplianceLogService} with temperature-specific creation
+ * logic. The log status ({@code OK} or {@code WARNING}) is automatically
+ * derived by comparing the measured temperature against the zone's configured
+ * limits.
+ */
 @Service
 @Transactional
 @Slf4j
@@ -53,6 +62,15 @@ public class TemperatureLogService extends BaseComplianceLogService<TemperatureC
         return repository;
     }
 
+    /**
+     * Records a new temperature compliance log for the current tenant. The
+     * status is set to {@code WARNING} if the temperature falls outside the
+     * zone's limits, otherwise {@code OK}.
+     *
+     * @param request the log details including zone identifier and measured
+     *                temperature
+     * @return the persisted {@link TemperatureLogDTO}
+     */
     public TemperatureLogDTO createLog(TemperatureLogCreateRequest request) {
         Long tenantId = TenantContext.getCurrentOrg();
         log.info("Creating temperature compliance log for tenantId={} zoneId={}", tenantId, request.getTemperatureZoneId());

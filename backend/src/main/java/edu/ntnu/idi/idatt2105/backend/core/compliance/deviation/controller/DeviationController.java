@@ -22,6 +22,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REST controller for managing compliance deviations.
+ * <p>
+ * Provides endpoints for creating, listing and updating deviations for the
+ * current tenant. Deviations can originate from manual reports or be
+ * automatically generated from critical compliance log entries.
+ */
 @RestController
 @RequestMapping("/api/deviations")
 @RequiredArgsConstructor
@@ -30,6 +37,14 @@ public class DeviationController {
 
     private final DeviationService service;
 
+    /**
+     * Creates a new deviation for the current tenant.
+     *
+     * @param request the deviation details including title, module, severity
+     *                and status
+     * @return a 201 Created response containing the persisted
+     *         {@link DeviationDTO}
+     */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<DeviationDTO>> create(
@@ -39,19 +54,30 @@ public class DeviationController {
                 .body(ApiResponse.ok(service.create(request)));
     }
 
+    /**
+     * Retrieves all deviations for the current tenant, ordered newest first.
+     *
+     * @return a list of {@link DeviationDTO} objects
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<DeviationDTO>>> getForCurrentTenant() {
-
         return ResponseEntity.ok(ApiResponse.ok(service.getForCurrentTenant()));
     }
 
+    /**
+     * Updates an existing deviation, typically used to change status or add
+     * resolution details.
+     *
+     * @param id      identifier of the deviation to update
+     * @param request fields to update, such as status or resolution notes
+     * @return the updated {@link DeviationDTO}
+     */
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<DeviationDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDeviationRequest request) {
-
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, request)));
     }
 }

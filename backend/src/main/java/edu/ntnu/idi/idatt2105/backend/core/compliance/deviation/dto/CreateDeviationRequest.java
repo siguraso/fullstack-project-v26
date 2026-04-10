@@ -10,6 +10,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * Request DTO used to create a new deviation.
+ *
+ * <p>
+ * Contains all information required to register a compliance deviation,
+ * including metadata (module, severity, category, status) and detailed
+ * description fields for investigation and resolution.
+ * </p>
+ */
 @Data
 public class CreateDeviationRequest {
 

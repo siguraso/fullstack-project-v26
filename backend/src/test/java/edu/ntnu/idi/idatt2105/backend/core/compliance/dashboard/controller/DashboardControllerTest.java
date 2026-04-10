@@ -17,8 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import edu.ntnu.idi.idatt2105.backend.common.dto.ApiResponse;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.dto.DashboardOverviewDTO;
-import edu.ntnu.idi.idatt2105.backend.core.compliance.dashboard.service.DashboardService;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.controller.DashboardController;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.dto.DashboardOverviewDTO;
+import edu.ntnu.idi.idatt2105.backend.core.dashboard.service.DashboardService;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardControllerTest {

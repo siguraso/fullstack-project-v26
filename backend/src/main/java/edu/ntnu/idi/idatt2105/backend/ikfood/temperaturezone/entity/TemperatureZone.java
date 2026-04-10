@@ -11,6 +11,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * Represents a temperature zone within a tenant.
+ *
+ * <p>
+ * A temperature zone defines a named storage or handling area
+ * (e.g., fridge, freezer) with acceptable temperature limits.
+ * It is used to validate temperature logs for compliance.
+ * </p>
+ */
 @Entity
 @Data
 @Table(name = "temperature_zones")

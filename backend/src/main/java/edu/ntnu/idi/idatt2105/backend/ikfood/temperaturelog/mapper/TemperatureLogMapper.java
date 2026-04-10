@@ -12,9 +12,22 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto.TemperatureLogDT
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.entity.TemperatureComplianceLog;
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZone;
 
+/**
+ * Mapper for converting between {@link TemperatureComplianceLog} entities,
+ * {@link TemperatureLogDTO} data objects and
+ * {@link TemperatureLogCreateRequest} requests.
+ */
 @Component
 public class TemperatureLogMapper extends BaseComplianceLogMapper<TemperatureComplianceLog, TemperatureLogDTO> {
 
+    /**
+     * Converts a temperature compliance log entity to its DTO representation,
+     * including zone limits and recorder details.
+     *
+     * @param entity the entity to convert; returns {@code null} if
+     *               {@code entity} is {@code null}
+     * @return the corresponding {@link TemperatureLogDTO}
+     */
     public TemperatureLogDTO toDTO(TemperatureComplianceLog entity) {
         if (entity == null) {
             return null;
@@ -36,6 +49,17 @@ public class TemperatureLogMapper extends BaseComplianceLogMapper<TemperatureCom
         return dto;
     }
 
+    /**
+     * Creates a {@link TemperatureComplianceLog} entity from a creation
+     * request.
+     *
+     * @param request    the creation request with temperature and zone details
+     * @param tenant     the tenant to associate the log with
+     * @param recordedBy the user recording the temperature
+     * @param zone       the temperature zone being logged
+     * @param status     the resolved log status based on zone limits
+     * @return a new, unpersisted {@link TemperatureComplianceLog} entity
+     */
     public TemperatureComplianceLog toEntity(
             TemperatureLogCreateRequest request,
             Tenant tenant,

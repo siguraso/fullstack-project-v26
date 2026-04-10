@@ -10,6 +10,15 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Represents a temperature compliance log entry.
+ *
+ * <p>
+ * Extends {@link BaseComplianceLog} with temperature-specific data,
+ * capturing a measurement for a given {@link TemperatureZone}.
+ * Used to monitor compliance with defined temperature limits.
+ * </p>
+ */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity

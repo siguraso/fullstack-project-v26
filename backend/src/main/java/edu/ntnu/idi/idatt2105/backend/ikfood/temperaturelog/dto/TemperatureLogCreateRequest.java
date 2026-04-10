@@ -2,7 +2,17 @@ package edu.ntnu.idi.idatt2105.backend.ikfood.temperaturelog.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+/**
+ * Request DTO used to create a new temperature compliance log.
+ *
+ * <p>
+ * Captures a temperature measurement for a specific zone,
+ * along with an optional note for context or deviations.
+ * </p>
+ */
+@Data
 public class TemperatureLogCreateRequest {
 
     @NotNull
@@ -14,29 +24,4 @@ public class TemperatureLogCreateRequest {
     @Size(max = 2000)
     private String note;
 
-    public Long getTemperatureZoneId() {
-        return temperatureZoneId;
-    }
-
-    public void setTemperatureZoneId(Long temperatureZoneId) {
-        this.temperatureZoneId = temperatureZoneId;
-    }
-
-    public Double getTemperatureCelsius() {
-        return temperatureCelsius;
-    }
-
-    public void setTemperatureCelsius(Double temperatureCelsius) {
-        this.temperatureCelsius = temperatureCelsius;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
 }
-
-

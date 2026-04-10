@@ -4,9 +4,20 @@ import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.dto.TemperatureZone
 import edu.ntnu.idi.idatt2105.backend.ikfood.temperaturezone.entity.TemperatureZone;
 import org.springframework.stereotype.Component;
 
+/**
+ * Mapper that converts {@link TemperatureZone} entities to
+ * {@link TemperatureZoneDTO} objects.
+ */
 @Component
 public class TemperatureZoneMapper {
 
+    /**
+     * Converts a temperature zone entity to its DTO representation.
+     *
+     * @param zone the temperature zone entity; returns {@code null} if
+     *             {@code zone} is {@code null}
+     * @return the corresponding {@link TemperatureZoneDTO}
+     */
     public TemperatureZoneDTO toDTO(TemperatureZone zone) {
         if (zone == null) {
             return null;

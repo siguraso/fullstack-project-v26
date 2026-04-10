@@ -21,6 +21,20 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * Represents a compliance deviation within a tenant.
+ *
+ * <p>
+ * A deviation captures an incident where compliance requirements are not met.
+ * It tracks the full lifecycle from discovery and reporting to investigation,
+ * corrective actions, and final resolution.
+ * </p>
+ *
+ * <p>
+ * Deviations are categorized, prioritized by severity, and linked to
+ * responsible users and optionally related compliance logs.
+ * </p>
+ */
 @Entity
 @Data
 @Table(name = "deviations")

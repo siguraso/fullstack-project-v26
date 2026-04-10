@@ -17,16 +17,33 @@ import edu.ntnu.idi.idatt2105.backend.core.tenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for managing tenant organisations.
+ * <p>
+ * Provides CRUD operations and name-based search for tenants. The
+ * {@code getCurrentTenant()} method resolves the organisation from the
+ * authenticated user's {@link edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext}.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class TenantService {
 
+    private static final String TENANT_NOT_FOUND_LOG = "Tenant not found with ID: {}";
+    private static final String TENANT_NOT_FOUND_MSG = "Tenant not found with ID: ";
+
     private final TenantRepository tenantRepository;
     private final TenantMapper tenantMapper;
 
-
+    /**
+     * Creates a new tenant organisation.
+     *
+     * @param request the creation request including organisation number and
+     *                contact details
+     * @return the persisted {@link TenantDTO}
+     * @throws ValidationException if the organisation number already exists
+     */
     public TenantDTO createTenant(TenantCreateRequest request) {
         log.info("Creating new tenant with org number: {}", request.getOrgNumber());
 
@@ -47,34 +64,50 @@ public class TenantService {
     }
 
 
+    /**
+     * Retrieves a tenant by its identifier.
+     *
+     * @param id the tenant identifier
+     * @return the {@link TenantDTO} for the requested tenant
+     */
     @Transactional(readOnly = true)
     public TenantDTO getTenantById(Long id) {
         log.debug("Fetching tenant with ID: {}", id);
 
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("Tenant not found with ID: {}", id);
-                    return new ResourceNotFoundException("Tenant not found with ID: " + id);
+                    log.warn(TENANT_NOT_FOUND_LOG, id);
+                    return new ResourceNotFoundException(TENANT_NOT_FOUND_MSG + id);
                 });
 
         return tenantMapper.toDTO(tenant);
     }
 
 
+    /**
+     * Returns the tenant of the currently authenticated user.
+     *
+     * @return the {@link TenantDTO} for the current tenant
+     */
     @Transactional(readOnly = true)
     public TenantDTO getCurrentTenant() {
         Long currentOrgId = TenantContext.getCurrentOrg();
 
         Tenant tenant = tenantRepository.findById(currentOrgId)
                 .orElseThrow(() -> {
-                    log.warn("Tenant not found with ID: {}", currentOrgId);
-                    return new ResourceNotFoundException("Tenant not found with ID: " + currentOrgId);
+                    log.warn(TENANT_NOT_FOUND_LOG, currentOrgId);
+                    return new ResourceNotFoundException(TENANT_NOT_FOUND_MSG + currentOrgId);
                 });
 
         return tenantMapper.toDTO(tenant);
     }
 
 
+    /**
+     * Returns all tenant organisations.
+     *
+     * @return a list of all {@link TenantDTO} objects
+     */
     @Transactional(readOnly = true)
     public List<TenantDTO> getAllTenants() {
         log.debug("Fetching all tenants");
@@ -88,6 +121,12 @@ public class TenantService {
     }
 
 
+    /**
+     * Searches for tenants whose name contains the given string.
+     *
+     * @param name the name fragment to search for
+     * @return a list of matching {@link TenantDTO} objects
+     */
     @Transactional(readOnly = true)
     public List<TenantDTO> searchTenantsByName(String name) {
         log.debug("Searching tenants with name containing: {}", name);
@@ -101,13 +140,22 @@ public class TenantService {
     }
 
 
+    /**
+     * Updates a tenant's details by its identifier.
+     *
+     * @param id      identifier of the tenant to update
+     * @param request the updated tenant fields
+     * @return the updated {@link TenantDTO}
+     * @throws ValidationException if the new organisation number is already in
+     *                             use by another tenant
+     */
     public TenantDTO updateTenant(Long id, TenantUpdateRequest request) {
         log.info("Updating tenant with ID: {}", id);
 
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("Tenant not found with ID: {}", id);
-                    return new ResourceNotFoundException("Tenant not found with ID: " + id);
+                    log.warn(TENANT_NOT_FOUND_LOG, id);
+                    return new ResourceNotFoundException(TENANT_NOT_FOUND_MSG + id);
                 });
 
         // Check if new org number is already taken by another tenant
@@ -128,16 +176,27 @@ public class TenantService {
     }
 
 
+    /**
+     * Updates the tenant of the currently authenticated user.
+     *
+     * @param request the updated tenant fields
+     * @return the updated {@link TenantDTO}
+     */
     public TenantDTO updateCurrentTenant(TenantUpdateRequest request) {
         return updateTenant(TenantContext.getCurrentOrg(), request);
     }
 
+    /**
+     * Permanently deletes a tenant by its identifier.
+     *
+     * @param id identifier of the tenant to delete
+     */
     public void deleteTenant(Long id) {
         log.info("Deleting tenants with ID: {}", id);
 
         if (!tenantRepository.existsById(id)) {
-            log.warn("Tenant not found with ID: {}", id);
-            throw new ResourceNotFoundException("Tenant not found with ID: " + id);
+            log.warn(TENANT_NOT_FOUND_LOG, id);
+            throw new ResourceNotFoundException(TENANT_NOT_FOUND_MSG + id);
         }
 
         tenantRepository.deleteById(id);
