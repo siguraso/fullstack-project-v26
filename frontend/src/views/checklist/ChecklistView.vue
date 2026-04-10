@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import ChecklistTaskItem from './components/ChecklistTaskItem.vue'
 import { getTodayChecklist, updateChecklistItem } from '@/services/checklist'
 import { useRouter } from 'vue-router'
+import { createLogger } from '@/services/util/logger'
 
 interface Task {
   id: number
@@ -20,10 +21,22 @@ interface ChecklistGroup {
 }
 
 const checklists = ref<ChecklistGroup[]>([])
+const logger = createLogger('checklist-view')
 
 onMounted(async () => {
-  const data = await getTodayChecklist()
-  checklists.value = Array.isArray(data) ? data : []
+  logger.info('view mounted')
+
+  try {
+    const data = await getTodayChecklist()
+    checklists.value = Array.isArray(data) ? data : []
+    logger.info('today checklist load succeeded', {
+      checklistCount: checklists.value.length,
+      taskCount: checklists.value.flatMap((group) => group.items).length,
+    })
+  } catch (error) {
+    checklists.value = []
+    logger.error('today checklist load failed', error)
+  }
 })
 
 const router = useRouter()
@@ -123,37 +136,51 @@ function findTask(id: number): Task | undefined {
 }
 
 function goToBuilder() {
+  logger.info('navigating to checklist builder')
   router.push('/checklist-builder')
 }
 
 async function handleToggle(id: number, completed: boolean) {
   const task = findTask(id)
-  if (!task) return
+  if (!task) {
+    logger.warn('task toggle skipped because task was not found', { id, completed })
+    return
+  }
+
+  logger.info('task toggle started', { id, completed })
   task.completed = completed
   try {
     await updateChecklistItem(id, completed)
-  } catch {
+    logger.info('task toggle succeeded', { id, completed })
+  } catch (error) {
     task.completed = !completed
+    logger.error('task toggle failed', error, { id, completed })
   }
 }
 
 async function completeAll() {
   const incomplete = allTasks.value.filter((t) => !t.completed)
+  logger.info('complete all started', { taskCount: incomplete.length })
   incomplete.forEach((t) => (t.completed = true))
   try {
     await Promise.all(incomplete.map((t) => updateChecklistItem(t.id, true)))
-  } catch {
+    logger.info('complete all succeeded', { taskCount: incomplete.length })
+  } catch (error) {
     incomplete.forEach((t) => (t.completed = false))
+    logger.error('complete all failed', error, { taskCount: incomplete.length })
   }
 }
 
 async function unCompleteAll() {
   const complete = allTasks.value.filter((t) => t.completed)
+  logger.info('reset all started', { taskCount: complete.length })
   complete.forEach((t) => (t.completed = false))
   try {
     await Promise.all(complete.map((t) => updateChecklistItem(t.id, false)))
-  } catch {
+    logger.info('reset all succeeded', { taskCount: complete.length })
+  } catch (error) {
     complete.forEach((t) => (t.completed = true))
+    logger.error('reset all failed', error, { taskCount: complete.length })
   }
 }
 </script>
