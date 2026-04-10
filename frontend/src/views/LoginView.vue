@@ -198,9 +198,6 @@ onMounted(() => {
                 <input v-model="form.remember" type="checkbox" :disabled="isSubmitting" />
                 <span>Remember me</span>
               </label>
-              <button type="button" class="link-button" :disabled="isSubmitting">
-                Forgot password?
-              </button>
             </div>
 
             <button class="submit-button" type="submit" :disabled="isSubmitting">
