@@ -38,7 +38,7 @@ $ npm install
 
 ## Running the application
 
-## Option 1: Run using Docker (recommended):
+### Option 1: Run using Docker (recommended):
 
 ```bash
 $ docker compose up
@@ -46,7 +46,7 @@ $ docker compose up
 
 This will run the entire application stack, where you can access the frontend through http://localhost:8080.
 
-## Option 2: Run locally:
+### Option 2: Run locally (used in further development):
 
 1. Run the frontend:
 
@@ -61,9 +61,44 @@ You can now access the frontend through the address prompted in the terminal.
 
 2. Run the backend:
 
-In a differetn terminal, navigate to the project root, and run:
+In a differetn terminal, navigate to the project root, and run using the Maven CLI:
 
 ```bash
 $ cd backend
-$ ./mvnw spring-boot:run
+$ mvn spring-boot:run
 ```
+
+## Testing
+
+### Backend testing
+
+Navigate to the backend and run:
+
+```bash
+$ cd backend
+$ mvn test
+```
+
+### Frontend tests:
+
+#### End to end tests
+
+To run the e2e tests navigate to the frontend and run:
+
+```bash
+$ cd frontend
+$ npm run test:e2e
+```
+
+(_The Cypress plugin is required to run the e2e tests, so you have to install it if you are prompted to._)
+
+#### Unit tests
+
+To run the unit tests navigate to the frontend and run:
+
+```bash
+$ cd frontend
+$ npm run test:unit
+```
+
+(_The Vitest plugin is required to run the unit tests, so you have to install it if you are prompted to._)
