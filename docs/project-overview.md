@@ -110,6 +110,8 @@ Reference documentation is available in docs/api-contract.md, covering:
 
 All endpoints can be viewed through Swagger UI when running directly on your machine:
 
+localhost:8080/swagger_ui.html
+
 ## Runtime and Configuration
 
 Default local backend configuration includes:
@@ -169,4 +171,21 @@ Useful frontend commands:
 - Add a health/readiness endpoint check summary to this overview.
 - Add CI status badges and test command matrix to root README.
 
-##
+## Test data
+
+The backend includes some test data, which can be viewed in the data.sql file in the backend resources. Here are some of the test users and their credentials:
+
+**User 1:**
+Email: sigurd@test.no
+Password: Password123
+User role: ADMIN
+
+**User 2:**
+Email: john@test.no
+Password: Sigurd123
+User role: MANAGER
+
+**User 3:**
+Email: jane@test.no
+Password: trygtpassord!
+User role: STAFF
