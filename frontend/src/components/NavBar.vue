@@ -24,6 +24,11 @@ const emit = defineEmits<{
 const session = getAuthSession()
 const fullName = computed(() => session?.fullName ?? 'Signed in user')
 const email = computed(() => session?.email ?? '')
+const roleLabel = computed(() => {
+  if (!session?.role) return ''
+
+  return `${session.role.slice(0, 1)}${session.role.slice(1).toLowerCase()}`
+})
 const tenantStore = useTenantStore()
 const storeName = computed(() => tenantStore.tenantName)
 const router = useRouter()
@@ -101,7 +106,10 @@ onBeforeUnmount(() => {
           <button type="button" class="user-menu-logout" @click="handleLogout">Log out</button>
         </div>
       </div>
-      <p class="user-label">{{ fullName }}</p>
+      <div class="user-identity">
+        <p class="user-label">{{ fullName }}</p>
+        <p v-if="roleLabel" class="user-role">{{ roleLabel }}</p>
+      </div>
     </div>
   </nav>
 </template>
@@ -139,6 +147,23 @@ onBeforeUnmount(() => {
 .user-label {
   margin: 0;
   font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.user-role {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.2;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
