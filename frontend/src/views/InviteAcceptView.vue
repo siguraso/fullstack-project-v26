@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { CheckCircle2, KeyRound, Mail, ShieldCheck, UserRound } from '@lucide/vue'
 import { register } from '@/services/auth'
 import { validateInviteToken } from '@/services/invitation'
+import { createLogger } from '@/services/util/logger'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +16,7 @@ const invitedEmail = ref('')
 const invitedOrgId = ref<number | null>(null)
 const errorMessage = ref('')
 const statusMessage = ref('')
+const logger = createLogger('invite-accept-view')
 
 const form = reactive({
   firstName: '',
@@ -63,6 +65,7 @@ function readTokenFromRoute() {
 }
 
 async function loadInvite() {
+  logger.info('invite validation started')
   isValidating.value = true
   errorMessage.value = ''
   statusMessage.value = ''
@@ -72,6 +75,7 @@ async function loadInvite() {
   if (!token || token.trim().length === 0) {
     errorMessage.value = 'This invitation link is missing its token.'
     isValidating.value = false
+    logger.warn('invite validation failed because token was missing')
     return
   }
 
@@ -83,8 +87,13 @@ async function loadInvite() {
     invitedOrgId.value = validation.organizationId
     statusMessage.value = 'Invitation verified. Fill in your details to activate your account.'
     document.title = 'Accept invitation · Regula'
+    logger.info('invite validation succeeded', {
+      organizationId: validation.organizationId,
+      hasEmail: Boolean(validation.email),
+    })
   } catch (error) {
     errorMessage.value = toErrorMessage(error, 'Invalid or expired invitation link.')
+    logger.error('invite validation failed', error)
   } finally {
     isValidating.value = false
   }
@@ -92,12 +101,21 @@ async function loadInvite() {
 
 async function acceptInvite() {
   if (isSubmitting.value || !invitedEmail.value || !inviteToken.value) {
+    logger.warn('invite accept skipped', {
+      isSubmitting: isSubmitting.value,
+      hasInviteEmail: Boolean(invitedEmail.value),
+      hasInviteToken: Boolean(inviteToken.value),
+    })
     return
   }
 
   isSubmitting.value = true
   errorMessage.value = ''
   statusMessage.value = ''
+  logger.info('invite accept started', {
+    organizationId: invitedOrgId.value,
+    remember: form.remember,
+  })
 
   try {
     await register(
@@ -113,14 +131,17 @@ async function acceptInvite() {
     )
 
     await router.push('/dashboard')
+    logger.info('invite accept succeeded')
   } catch (error) {
     errorMessage.value = toErrorMessage(error, 'Unable to accept the invitation right now.')
+    logger.error('invite accept failed', error, { organizationId: invitedOrgId.value })
   } finally {
     isSubmitting.value = false
   }
 }
 
 onMounted(() => {
+  logger.info('view mounted')
   void loadInvite()
 })
 </script>
