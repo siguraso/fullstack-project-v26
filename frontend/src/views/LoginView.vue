@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, reactive, ref, type CSSProperties } from 'vue'
+import { computed, onMounted, reactive, ref, type CSSProperties } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '@/services/auth'
 import { Key, Lock, Mail } from '@lucide/vue'
 import InfoCard from '@/components/ui/InfoCard.vue'
+import { createLogger } from '@/services/util/logger'
 
 const LOGIN_SUCCESS_ANIMATION_MS = 1120
 const REDUCED_MOTION_SUCCESS_ANIMATION_MS = 140
@@ -25,6 +26,7 @@ const cinematicOrigin = ref({
   x: 0,
   y: 0,
 })
+const logger = createLogger('login-view')
 
 const isSubmitting = computed(() => authPhase.value !== 'idle')
 const isSuccessAnimating = computed(() => authPhase.value === 'successAnimating')
@@ -62,11 +64,18 @@ function syncCinematicOrigin() {
 
 async function handleSubmit() {
   if (authPhase.value !== 'idle') {
+    logger.warn('login submit ignored because auth flow was already in progress', {
+      authPhase: authPhase.value,
+    })
     return
   }
 
   authPhase.value = 'submitting'
   feedbackMessage.value = ''
+  logger.info('login submit started', {
+    remember: form.remember,
+    hasEmail: Boolean(form.email.trim()),
+  })
 
   try {
     await login(
@@ -81,12 +90,16 @@ async function handleSubmit() {
     feedbackTone.value = 'error'
     feedbackMessage.value =
       error instanceof Error ? error.message : 'Unable to sign in right now. Please try again.'
+    logger.error('login submit failed', error, { remember: form.remember })
 
     return
   }
 
   syncCinematicOrigin()
   authPhase.value = 'successAnimating'
+  logger.info('login submit succeeded; starting success animation', {
+    animationDurationMs: getSuccessAnimationDuration(),
+  })
 
   await wait(getSuccessAnimationDuration())
 
@@ -97,21 +110,29 @@ async function handleSubmit() {
         loginTransition: 'success',
       },
     })
-  } catch {
+    logger.info('login navigation to dashboard succeeded')
+  } catch (error) {
     authPhase.value = 'idle'
     feedbackTone.value = 'error'
     feedbackMessage.value = 'Signed in, but we could not open the dashboard. Please try again.'
+    logger.error('login navigation to dashboard failed', error)
   }
 }
 
 async function goToRegister() {
   if (isSubmitting.value) {
+    logger.warn('invite guidance click ignored because submit was in progress')
     return
   }
 
   feedbackTone.value = 'info'
   feedbackMessage.value = 'Ask your administrator for an invitation to join your workspace.'
+  logger.info('invite guidance shown')
 }
+
+onMounted(() => {
+  logger.info('view mounted')
+})
 </script>
 
 <template>
