@@ -1,6 +1,7 @@
 package edu.ntnu.idi.idatt2105.backend.core.tenant.service;
 
 import edu.ntnu.idi.idatt2105.backend.common.exception.ResourceNotFoundException;
+import edu.ntnu.idi.idatt2105.backend.common.exception.UnauthorizedException;
 import edu.ntnu.idi.idatt2105.backend.common.exception.ValidationException;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext;
 import edu.ntnu.idi.idatt2105.backend.core.tenant.dto.TenantUpdateRequest;
@@ -22,7 +23,8 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Provides CRUD operations and name-based search for tenants. The
  * {@code getCurrentTenant()} method resolves the organisation from the
- * authenticated user's {@link edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext}.
+ * authenticated user's
+ * {@link edu.ntnu.idi.idatt2105.backend.core.tenant.context.TenantContext}.
  */
 @Slf4j
 @Service
@@ -63,7 +65,6 @@ public class TenantService {
         return tenantMapper.toDTO(savedTenant);
     }
 
-
     /**
      * Retrieves a tenant by its identifier.
      *
@@ -72,17 +73,17 @@ public class TenantService {
      */
     @Transactional(readOnly = true)
     public TenantDTO getTenantById(Long id) {
-        log.debug("Fetching tenant with ID: {}", id);
+        Long currentTenantId = TenantContext.getCurrentOrg();
+
+        if (!id.equals(currentTenantId)) {
+            throw new UnauthorizedException("Access denied");
+        }
 
         Tenant tenant = tenantRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn(TENANT_NOT_FOUND_LOG, id);
-                    return new ResourceNotFoundException(TENANT_NOT_FOUND_MSG + id);
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
 
         return tenantMapper.toDTO(tenant);
     }
-
 
     /**
      * Returns the tenant of the currently authenticated user.
@@ -102,44 +103,6 @@ public class TenantService {
         return tenantMapper.toDTO(tenant);
     }
 
-
-    /**
-     * Returns all tenant organisations.
-     *
-     * @return a list of all {@link TenantDTO} objects
-     */
-    @Transactional(readOnly = true)
-    public List<TenantDTO> getAllTenants() {
-        log.debug("Fetching all tenants");
-
-        List<Tenant> tenants = tenantRepository.findAll();
-        log.debug("Retrieved {} tenants", tenants.size());
-
-        return tenants.stream()
-                .map(tenantMapper::toDTO)
-                .toList();
-    }
-
-
-    /**
-     * Searches for tenants whose name contains the given string.
-     *
-     * @param name the name fragment to search for
-     * @return a list of matching {@link TenantDTO} objects
-     */
-    @Transactional(readOnly = true)
-    public List<TenantDTO> searchTenantsByName(String name) {
-        log.debug("Searching tenants with name containing: {}", name);
-
-        List<Tenant> tenants = tenantRepository.findByName(name);
-        log.debug("Found {} tenants matching name: {}", tenants.size(), name);
-
-        return tenants.stream()
-                .map(tenantMapper::toDTO)
-                .toList();
-    }
-
-
     /**
      * Updates a tenant's details by its identifier.
      *
@@ -152,6 +115,12 @@ public class TenantService {
     public TenantDTO updateTenant(Long id, TenantUpdateRequest request) {
         log.info("Updating tenant with ID: {}", id);
 
+        Long currentTenantId = TenantContext.getCurrentOrg();
+
+        if (!id.equals(currentTenantId)) {
+            throw new UnauthorizedException("Access denied");
+        }
+
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn(TENANT_NOT_FOUND_LOG, id);
@@ -160,10 +129,10 @@ public class TenantService {
 
         // Check if new org number is already taken by another tenant
         if (request.getOrgNumber() != null
-            && !request.getOrgNumber().equals(tenant.getOrgNumber())
-            && tenantRepository.findByOrgNumber(request.getOrgNumber()) != null) {
-                log.warn("Tenant number {} already exists", request.getOrgNumber());
-                throw new ValidationException("Tenant number already exists: " + request.getOrgNumber());
+                && !request.getOrgNumber().equals(tenant.getOrgNumber())
+                && tenantRepository.findByOrgNumber(request.getOrgNumber()) != null) {
+            log.warn("Tenant number {} already exists", request.getOrgNumber());
+            throw new ValidationException("Tenant number already exists: " + request.getOrgNumber());
         }
 
         // Update fields
@@ -174,7 +143,6 @@ public class TenantService {
 
         return tenantMapper.toDTO(updatedTenant);
     }
-
 
     /**
      * Updates the tenant of the currently authenticated user.
@@ -192,14 +160,15 @@ public class TenantService {
      * @param id identifier of the tenant to delete
      */
     public void deleteTenant(Long id) {
-        log.info("Deleting tenants with ID: {}", id);
+        Long currentTenantId = TenantContext.getCurrentOrg();
 
-        if (!tenantRepository.existsById(id)) {
-            log.warn(TENANT_NOT_FOUND_LOG, id);
-            throw new ResourceNotFoundException(TENANT_NOT_FOUND_MSG + id);
+        if (!id.equals(currentTenantId)) {
+            throw new UnauthorizedException("Access denied");
         }
 
-        tenantRepository.deleteById(id);
-        log.info("Tenant with ID {} deleted successfully", id);
+        Tenant tenant = tenantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
+
+        tenantRepository.delete(tenant);
     }
 }
