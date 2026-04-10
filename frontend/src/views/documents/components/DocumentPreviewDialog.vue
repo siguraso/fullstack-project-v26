@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, watch, computed } from 'vue'
 import type { DocumentSummary } from '@/interfaces/Document.interface'
 import { fetchDocumentFile } from '@/services/document'
 import { canPreviewDocument, formatDocumentBytes } from '../documents.helpers'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   isOpen: boolean
@@ -20,6 +21,7 @@ const previewError = ref('')
 const previewUrl = ref('')
 const previewTextContent = ref('')
 let activeRequestId = 0
+const logger = createLogger('document-preview-dialog')
 
 const previewMimeType = computed(() => props.document?.mimeType ?? '')
 const previewIsPdf = computed(() => previewMimeType.value === 'application/pdf')
@@ -47,9 +49,14 @@ function resetPreviewState() {
   previewError.value = ''
   previewTextContent.value = ''
   revokePreviewUrl()
+  logger.info('document preview state reset')
 }
 
 async function loadPreview(document: DocumentSummary) {
+  logger.info('document preview load started', {
+    documentId: document.id,
+    mimeType: document.mimeType,
+  })
   previewError.value = ''
   previewTextContent.value = ''
   revokePreviewUrl()
@@ -57,6 +64,10 @@ async function loadPreview(document: DocumentSummary) {
   if (!canPreviewDocument(document)) {
     previewError.value =
       'This file type cannot be previewed in the browser yet. Download it to inspect the contents.'
+    logger.warn('document preview load skipped because file type is unsupported', {
+      documentId: document.id,
+      mimeType: document.mimeType,
+    })
     return
   }
 
@@ -67,6 +78,9 @@ async function loadPreview(document: DocumentSummary) {
     const file = await fetchDocumentFile(document)
 
     if (requestId !== activeRequestId) {
+      logger.warn('document preview response ignored because request was stale', {
+        documentId: document.id,
+      })
       return
     }
 
@@ -82,12 +96,20 @@ async function loadPreview(document: DocumentSummary) {
     }
 
     previewUrl.value = window.URL.createObjectURL(file.blob)
+    logger.info('document preview load succeeded', {
+      documentId: document.id,
+      mode: previewIsPdf.value ? 'pdf' : previewIsImage.value ? 'image' : previewIsText.value ? 'text' : 'unknown',
+    })
   } catch (error) {
     if (requestId !== activeRequestId) {
+      logger.warn('document preview error ignored because request was stale', {
+        documentId: document.id,
+      })
       return
     }
 
     previewError.value = error instanceof Error ? error.message : 'Failed to load preview.'
+    logger.error('document preview load failed', error, { documentId: document.id })
   } finally {
     if (requestId === activeRequestId) {
       isPreviewLoading.value = false
@@ -95,11 +117,30 @@ async function loadPreview(document: DocumentSummary) {
   }
 }
 
+function closePreview() {
+  logger.info('document preview dialog closed', { documentId: props.document?.id ?? null })
+  emit('close')
+}
+
+function downloadCurrentDocument() {
+  if (!props.document) {
+    logger.warn('document preview download skipped because document was missing')
+    return
+  }
+
+  logger.info('document preview download requested', { documentId: props.document.id })
+  emit('download', props.document)
+}
+
 watch(
   [() => props.isOpen, () => props.document?.id],
   ([isOpen]) => {
     activeRequestId += 1
     resetPreviewState()
+    logger.info('document preview dialog visibility changed', {
+      isOpen,
+      documentId: props.document?.id ?? null,
+    })
 
     if (isOpen && props.document) {
       void loadPreview(props.document)
@@ -111,12 +152,13 @@ watch(
 onBeforeUnmount(() => {
   activeRequestId += 1
   revokePreviewUrl()
+  logger.info('document preview dialog unmounted')
 })
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="isOpen && document" class="overlay-backdrop" @click.self="emit('close')">
+    <div v-if="isOpen && document" class="overlay-backdrop" @click.self="closePreview">
       <section class="preview-card">
         <header class="document-form-header">
           <div>
@@ -128,11 +170,11 @@ onBeforeUnmount(() => {
               type="button"
               class="secondary-action"
               :disabled="activeDownloadId === document.id"
-              @click="emit('download', document)"
+              @click="downloadCurrentDocument"
             >
               {{ activeDownloadId === document.id ? 'Downloading…' : 'Download' }}
             </button>
-            <button type="button" class="close-button" @click="emit('close')">Close</button>
+            <button type="button" class="close-button" @click="closePreview">Close</button>
           </div>
         </header>
 
