@@ -68,6 +68,7 @@ const router = createRouter({
         {
           path: '/checklist-builder',
           component: ChecklistBuilderView,
+          meta: { allowedRoles: ['ADMIN', 'MANAGER'] },
         },
         {
           path: '/temperature-logs',

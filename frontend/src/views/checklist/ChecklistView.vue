@@ -4,6 +4,7 @@ import ChecklistTaskItem from './components/ChecklistTaskItem.vue'
 import { getTodayChecklist, updateChecklistItem } from '@/services/checklist'
 import { useRouter } from 'vue-router'
 import { createLogger } from '@/services/util/logger'
+import { getAuthSession } from '@/services/auth'
 
 interface Task {
   id: number
@@ -22,6 +23,11 @@ interface ChecklistGroup {
 
 const checklists = ref<ChecklistGroup[]>([])
 const logger = createLogger('checklist-view')
+
+const canManage = computed(() => {
+  const role = getAuthSession()?.role
+  return role === 'ADMIN' || role === 'MANAGER'
+})
 
 onMounted(async () => {
   logger.info('view mounted')
@@ -189,7 +195,7 @@ async function unCompleteAll() {
   <div class="checklist-page">
     <div class="page-header">
       <h1>Checklists</h1>
-      <button class="create-btn" @click="goToBuilder">+ New Checklist</button>
+      <button class="create-btn" v-if="canManage" @click="goToBuilder">+ New Checklist</button>
     </div>
 
     <!-- OVERALL HEADER -->
