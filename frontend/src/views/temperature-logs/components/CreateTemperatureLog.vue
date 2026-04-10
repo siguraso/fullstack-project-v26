@@ -7,6 +7,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { AlertTriangle, Edit2, X } from '@lucide/vue'
 import DeviationForm from '@/views/deviation/components/DeviationForm.vue'
 import { useDeviationStore } from '@/stores/deviation'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   temperatureZones: TemperatureZone[]
@@ -27,6 +28,7 @@ const statusMessageType = ref<'success' | 'error' | ''>('')
 const isDeviationModalOpen = ref(false)
 const pendingTemperaturePayload = ref<TemperatureLogInput | null>(null)
 const pendingCreatedLog = ref<TemperatureLog | null>(null)
+const logger = createLogger('create-temperature-log')
 
 const selectedZone = computed(
   () => props.temperatureZones.find((zone) => zone.id === selectedZoneId.value) ?? null,
@@ -53,6 +55,12 @@ function unlockBodyScroll() {
 watch(
   isDeviationModalOpen,
   (isOpen) => {
+    logger.log('deviation modal visibility changed', {
+      isOpen,
+      hasPendingPayload: Boolean(pendingTemperaturePayload.value),
+      hasCreatedLog: Boolean(pendingCreatedLog.value),
+    })
+
     if (isOpen) {
       lockBodyScroll()
       return
@@ -64,11 +72,16 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  logger.info('component unmounted')
   unlockBodyScroll()
 })
 
 function buildPayload(): TemperatureLogInput | null {
   if (!selectedZoneId.value || temperature.value === null) {
+    logger.warn('temperature payload build failed', {
+      selectedZoneId: selectedZoneId.value,
+      temperature: temperature.value,
+    })
     return null
   }
 
@@ -89,6 +102,7 @@ function resetTemperatureForm() {
   selectedZoneId.value = null
   temperature.value = null
   notes.value = ''
+  logger.info('temperature form reset')
 }
 
 function clearDeviationFlowState() {
@@ -96,6 +110,7 @@ function clearDeviationFlowState() {
   pendingTemperaturePayload.value = null
   pendingCreatedLog.value = null
   deviationStore.error = null
+  logger.info('temperature deviation flow state cleared')
 }
 
 function seedDeviationForm(zone: TemperatureZone, measuredTemperature: number, note: string) {
@@ -118,6 +133,10 @@ async function submitNormalTemperatureLog(payload: TemperatureLogInput) {
   statusMessage.value = ''
   statusMessageType.value = ''
   isSubmitting.value = true
+  logger.info('temperature log submit started', {
+    zoneId: payload.temperatureZoneId,
+    hasNote: Boolean(payload.note),
+  })
 
   try {
     const createdLog = await createTemperatureLog(payload)
@@ -125,11 +144,14 @@ async function submitNormalTemperatureLog(payload: TemperatureLogInput) {
     resetTemperatureForm()
     statusMessageType.value = 'success'
     statusMessage.value = 'Temperature log created successfully.'
+    logger.info('temperature log submit succeeded', { logId: createdLog.id })
   } catch (error) {
     statusMessageType.value = 'error'
     statusMessage.value =
       error instanceof Error ? error.message : 'Failed to create temperature log.'
-    console.error('Failed to create temperature log', error)
+    logger.error('temperature log submit failed', error, {
+      zoneId: payload.temperatureZoneId,
+    })
   } finally {
     isSubmitting.value = false
   }
@@ -137,12 +159,16 @@ async function submitNormalTemperatureLog(payload: TemperatureLogInput) {
 
 function closeDeviationModal() {
   if (isSubmitting.value) {
+    logger.warn('temperature deviation modal close blocked because submit is in progress')
     return
   }
 
   if (pendingCreatedLog.value) {
     deviationStore.error =
       'The temperature log has already been saved. Complete the deviation before closing this dialog.'
+    logger.warn('temperature deviation modal close blocked because log already exists', {
+      logId: pendingCreatedLog.value.id,
+    })
     return
   }
 
@@ -155,6 +181,10 @@ async function createLog() {
   if (!payload || !selectedZone.value || temperature.value === null) {
     statusMessageType.value = 'error'
     statusMessage.value = 'Please select a storage unit and enter a temperature.'
+    logger.warn('temperature log submit skipped because required fields were missing', {
+      selectedZoneId: selectedZoneId.value,
+      temperature: temperature.value,
+    })
     return
   }
 
@@ -165,6 +195,10 @@ async function createLog() {
     pendingCreatedLog.value = null
     seedDeviationForm(selectedZone.value, temperature.value, notes.value.trim())
     isDeviationModalOpen.value = true
+    logger.info('temperature deviation flow opened', {
+      zoneId: selectedZone.value.id,
+      measuredTemperature: temperature.value,
+    })
     return
   }
 
@@ -173,12 +207,18 @@ async function createLog() {
 
 async function submitTemperatureDeviation() {
   if (!pendingTemperaturePayload.value || !deviationStore.validateForm()) {
+    logger.warn('temperature deviation submit skipped', {
+      hasPendingPayload: Boolean(pendingTemperaturePayload.value),
+    })
     return
   }
 
   statusMessage.value = ''
   statusMessageType.value = ''
   isSubmitting.value = true
+  logger.info('temperature deviation submit started', {
+    zoneId: pendingTemperaturePayload.value.temperatureZoneId,
+  })
 
   try {
     let createdLog = pendingCreatedLog.value
@@ -186,6 +226,7 @@ async function submitTemperatureDeviation() {
     if (!createdLog) {
       createdLog = await createTemperatureLog(pendingTemperaturePayload.value)
       pendingCreatedLog.value = createdLog
+      logger.info('temperature log created during deviation flow', { logId: createdLog.id })
     }
 
     const createdDeviation = await deviationStore.createDeviation({ logId: createdLog.id })
@@ -205,13 +246,19 @@ async function submitTemperatureDeviation() {
     clearDeviationFlowState()
     statusMessageType.value = 'success'
     statusMessage.value = 'Temperature log and deviation created successfully.'
+    logger.info('temperature deviation submit succeeded', {
+      logId: createdLog.id,
+      deviationId: createdDeviation.id,
+    })
   } catch (error) {
     statusMessageType.value = 'error'
     statusMessage.value =
       error instanceof Error
         ? error.message
         : 'Failed to create the temperature log for this deviation.'
-    console.error('Failed to submit out-of-range temperature flow', error)
+    logger.error('temperature deviation submit failed', error, {
+      zoneId: pendingTemperaturePayload.value.temperatureZoneId,
+    })
   } finally {
     isSubmitting.value = false
   }
