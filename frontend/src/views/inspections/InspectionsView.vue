@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { getInspectionStats } from '@/services/inspection'
 import type { InspectionStats } from '@/interfaces/Inspection.interface'
 import ExportModal from '@/components/inspection/ExportModal.vue'
+import Card from '@/components/ui/Card.vue'
 import { Download } from '@lucide/vue'
 import { createLogger } from '@/services/util/logger'
 
@@ -197,58 +198,102 @@ const alcoholStatusChart = computed(() => ({
 
     <template v-else-if="stats">
       <div class="kpi-strip">
-        <div class="kpi">
-          <span class="kpi-value">{{ stats.deviationTotal }}</span>
-          <span class="kpi-label">Total Deviations</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-value">{{ stats.deviationOpen }}</span>
-          <span class="kpi-label">Open</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-value">{{ stats.deviationCritical }}</span>
-          <span class="kpi-label">Critical</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-value">{{ stats.temperatureTotal }}</span>
-          <span class="kpi-label">Temp. Logs</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-value">{{ stats.alcoholTotal }}</span>
-          <span class="kpi-label">Alcohol Logs</span>
-        </div>
+        <Card :header-disabled="true" class="kpi-card">
+          <template #card-content>
+            <div class="kpi">
+              <span class="kpi-value">{{ stats.deviationTotal }}</span>
+              <span class="kpi-label">Total Deviations</span>
+            </div>
+          </template>
+        </Card>
+
+        <Card :header-disabled="true" class="kpi-card">
+          <template #card-content>
+            <div class="kpi">
+              <span class="kpi-value">{{ stats.deviationOpen }}</span>
+              <span class="kpi-label">Open</span>
+            </div>
+          </template>
+        </Card>
+
+        <Card :header-disabled="true" class="kpi-card">
+          <template #card-content>
+            <div class="kpi">
+              <span class="kpi-value">{{ stats.deviationCritical }}</span>
+              <span class="kpi-label">Critical</span>
+            </div>
+          </template>
+        </Card>
+
+        <Card :header-disabled="true" class="kpi-card">
+          <template #card-content>
+            <div class="kpi">
+              <span class="kpi-value">{{ stats.temperatureTotal }}</span>
+              <span class="kpi-label">Temp. Logs</span>
+            </div>
+          </template>
+        </Card>
+
+        <Card :header-disabled="true" class="kpi-card">
+          <template #card-content>
+            <div class="kpi">
+              <span class="kpi-value">{{ stats.alcoholTotal }}</span>
+              <span class="kpi-label">Alcohol Logs</span>
+            </div>
+          </template>
+        </Card>
       </div>
 
       <div class="charts-row">
-        <div class="chart-card">
-          <p class="chart-title">Deviation Status</p>
-          <div class="chart-wrap">
-            <Doughnut :data="deviationStatusChart" :options="doughnutOptions" />
-          </div>
-        </div>
+        <Card class="chart-card">
+          <template #card-header>
+            <p class="chart-title">Deviation Status</p>
+          </template>
 
-        <div class="chart-card chart-card--wide">
-          <p class="chart-title">Deviation Severity</p>
-          <div class="chart-wrap">
-            <Bar :data="deviationSeverityChart" :options="barOptions" />
-          </div>
-        </div>
+          <template #card-content>
+            <div class="chart-wrap">
+              <Doughnut :data="deviationStatusChart" :options="doughnutOptions" />
+            </div>
+          </template>
+        </Card>
+
+        <Card class="chart-card chart-card--wide">
+          <template #card-header>
+            <p class="chart-title">Deviation Severity</p>
+          </template>
+
+          <template #card-content>
+            <div class="chart-wrap">
+              <Bar :data="deviationSeverityChart" :options="barOptions" />
+            </div>
+          </template>
+        </Card>
       </div>
 
       <div class="charts-row">
-        <div class="chart-card">
-          <p class="chart-title">Temperature Logs</p>
-          <div class="chart-wrap">
-            <Doughnut :data="temperatureStatusChart" :options="doughnutOptions" />
-          </div>
-        </div>
+        <Card class="chart-card">
+          <template #card-header>
+            <p class="chart-title">Temperature Logs</p>
+          </template>
 
-        <div class="chart-card">
-          <p class="chart-title">Alcohol Logs</p>
-          <div class="chart-wrap">
-            <Doughnut :data="alcoholStatusChart" :options="doughnutOptions" />
-          </div>
-        </div>
+          <template #card-content>
+            <div class="chart-wrap">
+              <Doughnut :data="temperatureStatusChart" :options="doughnutOptions" />
+            </div>
+          </template>
+        </Card>
+
+        <Card class="chart-card">
+          <template #card-header>
+            <p class="chart-title">Alcohol Logs</p>
+          </template>
+
+          <template #card-content>
+            <div class="chart-wrap">
+              <Doughnut :data="alcoholStatusChart" :options="doughnutOptions" />
+            </div>
+          </template>
+        </Card>
       </div>
     </template>
 
@@ -269,6 +314,8 @@ const alcoholStatusChart = computed(() => ({
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .export-btn {
@@ -292,19 +339,19 @@ const alcoholStatusChart = computed(() => ({
 
 .kpi-strip {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
+.kpi-card {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
 .kpi {
-  flex: 1;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: var(--shadow-soft);
 }
 
 .kpi-value {
@@ -321,22 +368,24 @@ const alcoholStatusChart = computed(() => ({
 
 .charts-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
-.chart-card,
-.kpi {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  box-shadow: none;
+.chart-card {
+  flex: 1 1 320px;
+  min-width: 0;
 }
 
 .chart-card--wide {
-  flex: 2;
+  flex: 2 1 420px;
 }
 
 .chart-title {
   color: #6b7280;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .chart-wrap {
@@ -364,6 +413,12 @@ const alcoholStatusChart = computed(() => ({
     flex-direction: column;
   }
 
+  .header-row > * {
+    width: 100%;
+  }
+
+  .kpi-card,
+  .chart-card,
   .chart-card--wide {
     flex: 1;
   }
