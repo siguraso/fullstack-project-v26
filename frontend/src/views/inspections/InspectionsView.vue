@@ -4,6 +4,7 @@ import { getInspectionStats } from '@/services/inspection'
 import type { InspectionStats } from '@/interfaces/Inspection.interface'
 import ExportModal from '@/components/inspection/ExportModal.vue'
 import { Download } from '@lucide/vue'
+import { createLogger } from '@/services/util/logger'
 
 import { Doughnut, Bar } from 'vue-chartjs'
 import {
@@ -21,18 +22,43 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const stats = ref<InspectionStats | null>(null)
 const loading = ref(true)
 const showExportModal = ref(false)
+const logger = createLogger('inspections-view')
 
 async function loadStats() {
+  logger.info('inspection stats load started')
   try {
     stats.value = await getInspectionStats()
-  } catch {
+    logger.info('inspection stats load succeeded', {
+      deviationTotal: stats.value?.deviationTotal ?? 0,
+      temperatureTotal: stats.value?.temperatureTotal ?? 0,
+      alcoholTotal: stats.value?.alcoholTotal ?? 0,
+    })
+  } catch (error) {
     stats.value = null
+    logger.error('inspection stats load failed', error)
   } finally {
     loading.value = false
+    logger.log('inspection stats loading state updated', {
+      loading: loading.value,
+      hasStats: Boolean(stats.value),
+    })
   }
 }
 
-onMounted(loadStats)
+onMounted(() => {
+  logger.info('view mounted')
+  void loadStats()
+})
+
+function openExportModal() {
+  showExportModal.value = true
+  logger.info('inspection export modal opened')
+}
+
+function closeExportModal() {
+  showExportModal.value = false
+  logger.info('inspection export modal closed')
+}
 
 const fill = {
   neutral: 'rgba(100, 116, 139, 0.18)',
@@ -161,7 +187,7 @@ const alcoholStatusChart = computed(() => ({
   <div class="inspections-view">
     <div class="header-row">
       <h1>Inspection Overview</h1>
-      <button class="export-btn" @click="showExportModal = true">
+      <button class="export-btn" @click="openExportModal">
         <Download :size="16" />
         Export to PDF
       </button>
@@ -228,7 +254,7 @@ const alcoholStatusChart = computed(() => ({
 
     <div v-else class="loading">Could not load inspection data.</div>
 
-    <ExportModal v-if="showExportModal" @close="showExportModal = false" />
+    <ExportModal v-if="showExportModal" @close="closeExportModal" />
   </div>
 </template>
 
