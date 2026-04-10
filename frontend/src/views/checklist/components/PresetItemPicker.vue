@@ -294,7 +294,8 @@ function handleAdd() {
 }
 
 .pip-tab:hover {
-  color: #0f172a;
+  color: #000000;
+  background-color: #e2e8f0;
 }
 
 .pip-tab-active {
@@ -411,7 +412,7 @@ function handleAdd() {
 }
 
 .pip-item-selected .pip-indicator {
-  background: #0f172a;
+  background: #727272;
   color: white;
 }
 
