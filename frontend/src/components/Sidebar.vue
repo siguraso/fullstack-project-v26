@@ -67,7 +67,12 @@ const complianceGroups: NavGroup[] = [
 const router = useRouter()
 const route = useRoute()
 const session = getAuthSession()
+const canAccessDocuments = session?.role === 'ADMIN' || session?.role === 'MANAGER'
 const canAccessSettings = session?.role === 'ADMIN'
+
+const visiblePrimaryItems = computed(() =>
+  primaryItems.filter((item) => item.label !== 'Documents' || canAccessDocuments),
+)
 
 const footerItems: NavItem[] = canAccessSettings
   ? [{ label: 'Settings', icon: Settings, to: '/settings' }]
@@ -139,7 +144,7 @@ async function logout() {
           <p class="nav-section-label">Overview</p>
 
           <ul class="nav-list">
-            <li v-for="item in primaryItems" :key="item.label">
+            <li v-for="item in visiblePrimaryItems" :key="item.label">
               <button
                 type="button"
                 class="nav-button"

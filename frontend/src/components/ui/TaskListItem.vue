@@ -4,7 +4,6 @@ interface TaskListItemProps {
   taskTitle: string
   taskType: string
   dueDate: Date
-  icon: any
   completed: boolean
 }
 
@@ -18,9 +17,6 @@ const props = defineProps<TaskListItemProps>()
 <template>
   <div class="task-item">
     <div class="task-description">
-      <div class="icon">
-        <component :is="props.icon" />
-      </div>
       <div class="task-header">
         <h3 class="task-title">{{ props.taskTitle }}</h3>
         <p class="task-subtext">Type: {{ props.taskType }}</p>

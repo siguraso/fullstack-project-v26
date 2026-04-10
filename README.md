@@ -2,6 +2,8 @@
 
 **A live portal for internal complaince control.**
 
+GitHub Repoistory: "https://github.com/siguraso/fullstack-project-v26"
+
 ## Contributors
 
 - Alexander Owren Elton
@@ -40,11 +42,13 @@ $ npm install
 
 ### Option 1: Run using Docker (recommended):
 
+In the project root run:
+
 ```bash
 $ docker compose up
 ```
 
-This will run the entire application stack, where you can access the frontend through http://localhost:8080.
+This will run the entire application stack, where you can access the frontend through http://localhost:8081.
 
 ### Option 2: Run locally (used in further development):
 
@@ -102,3 +106,7 @@ $ npm run test:unit
 ```
 
 (_The Vitest plugin is required to run the unit tests, so you have to install it if you are prompted to._)
+
+## Docs
+
+View documentation in the docs/ directory in the project root.
