@@ -10,6 +10,7 @@ import {
   createEmptyDocumentForm,
   normalizeDocumentTag,
 } from '../documents.helpers'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   isOpen: boolean
@@ -28,6 +29,7 @@ const emit = defineEmits<{
 
 const form = reactive(createEmptyDocumentForm())
 const formTagDraft = ref('')
+const logger = createLogger('document-form-dialog')
 
 function applyFormState() {
   const values = props.isEditing
@@ -40,6 +42,11 @@ function applyFormState() {
   form.tags = [...values.tags]
   form.file = values.file
   formTagDraft.value = ''
+  logger.info('document form state applied', {
+    isEditing: props.isEditing,
+    defaultArea: props.defaultArea,
+    tagCount: form.tags.length,
+  })
 }
 
 function addFormTag(tag: string) {
@@ -47,15 +54,22 @@ function addFormTag(tag: string) {
 
   if (!normalized || form.tags.includes(normalized)) {
     formTagDraft.value = ''
+    logger.warn('document form tag add skipped', {
+      tag,
+      normalized,
+      alreadySelected: Boolean(normalized && form.tags.includes(normalized)),
+    })
     return
   }
 
   form.tags = [...form.tags, normalized]
   formTagDraft.value = ''
+  logger.info('document form tag added', { tag: normalized, tagCount: form.tags.length })
 }
 
 function removeFormTag(tag: string) {
   form.tags = form.tags.filter((entry) => entry !== tag)
+  logger.info('document form tag removed', { tag, tagCount: form.tags.length })
 }
 
 function handleFormTagKeydown(event: KeyboardEvent) {
@@ -68,6 +82,15 @@ function handleFormTagKeydown(event: KeyboardEvent) {
 function onFileSelected(event: Event) {
   const input = event.target as HTMLInputElement
   form.file = input.files?.[0] ?? null
+  logger.info('document file selected', {
+    hasFile: Boolean(form.file),
+    fileName: form.file?.name ?? null,
+  })
+}
+
+function closeDialog() {
+  logger.info('document form dialog closed')
+  emit('close')
 }
 
 function submitForm() {
@@ -80,19 +103,33 @@ function submitForm() {
   }
 
   if (!payload.title) {
+    logger.warn('document form submit skipped because title was empty')
     return
   }
 
   if (!props.isEditing && !payload.file) {
+    logger.warn('document form submit skipped because file was missing')
     return
   }
 
+  logger.info('document form submitted', {
+    isEditing: props.isEditing,
+    area: payload.area,
+    tagCount: payload.tags.length,
+    hasFile: Boolean(payload.file),
+  })
   emit('submit', payload)
 }
 
 watch(
   [() => props.isOpen, () => props.isEditing, () => props.document, () => props.defaultArea],
   ([isOpen]) => {
+    logger.info('document form dialog visibility changed', {
+      isOpen,
+      isEditing: props.isEditing,
+      documentId: props.document?.id ?? null,
+    })
+
     if (!isOpen) {
       return
     }
@@ -105,7 +142,7 @@ watch(
 
 <template>
   <Teleport to="body">
-    <div v-if="isOpen" class="overlay-backdrop" @click.self="emit('close')">
+    <div v-if="isOpen" class="overlay-backdrop" @click.self="closeDialog">
       <section class="document-form-card">
         <header class="document-form-header">
           <div>
@@ -116,7 +153,7 @@ watch(
               }}
             </p>
           </div>
-          <button type="button" class="close-button" @click="emit('close')">Close</button>
+          <button type="button" class="close-button" @click="closeDialog">Close</button>
         </header>
 
         <p v-if="errorMessage" class="status error">{{ errorMessage }}</p>
@@ -175,7 +212,7 @@ watch(
           </p>
 
           <div class="form-actions">
-            <button type="button" class="secondary-action" @click="emit('close')">Cancel</button>
+            <button type="button" class="secondary-action" @click="closeDialog">Cancel</button>
             <button
               type="submit"
               class="primary-action"
@@ -237,6 +274,7 @@ watch(
   border-radius: 999px;
   border: 1px solid transparent;
   cursor: pointer;
+  color: #0f172a;
   transition:
     transform 140ms ease,
     background-color 140ms ease,
