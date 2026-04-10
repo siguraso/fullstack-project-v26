@@ -2,8 +2,9 @@
 import type { Deviation } from '@/interfaces/Deviation.interface'
 import InfoCard from '@/components/ui/InfoCard.vue'
 import { ScrollText } from '@lucide/vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { resolveDeviation } from '@/services/deviation'
+import { createLogger } from '@/services/util/logger'
 
 const props = defineProps<{
   deviation: Deviation | null
@@ -16,6 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const isResolving = ref(false)
+const logger = createLogger('deviation-details-dialog')
 
 function formatCategory(value: Deviation['category']): string {
   return value
@@ -67,20 +69,37 @@ function formatText(value?: string): string {
 
 async function handleResolve() {
   if (!props.deviation?.id || isResolving.value) {
+    logger.warn('deviation resolve skipped', {
+      deviationId: props.deviation?.id ?? null,
+      isResolving: isResolving.value,
+    })
     return
   }
 
   isResolving.value = true
+  logger.info('deviation resolve started', { deviationId: props.deviation.id })
 
   try {
     await resolveDeviation(props.deviation.id)
     emit('resolved')
+    logger.info('deviation resolve succeeded', { deviationId: props.deviation.id })
   } catch (error) {
-    console.error('Failed to resolve deviation', error)
+    logger.error('deviation resolve failed', error, { deviationId: props.deviation.id })
   } finally {
     isResolving.value = false
   }
 }
+
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    logger.info('deviation details visibility changed', {
+      isOpen,
+      deviationId: props.deviation?.id ?? null,
+    })
+  },
+  { immediate: true },
+)
 
 const summaryFields = [
   { label: 'Category', getValue: (deviation: Deviation) => formatCategory(deviation.category) },
