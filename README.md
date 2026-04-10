@@ -2,6 +2,8 @@
 
 **A live portal for internal complaince control.**
 
+GitHub Repoistory: "https://github.com/siguraso/fullstack-project-v26"
+
 ## Contributors
 
 - Alexander Owren Elton
@@ -40,11 +42,13 @@ $ npm install
 
 ### Option 1: Run using Docker (recommended):
 
+In the project root run:
+
 ```bash
 $ docker compose up
 ```
 
-This will run the entire application stack, where you can access the frontend through http://localhost:8080.
+This will run the entire application stack, where you can access the frontend through http://localhost:8081.
 
 ### Option 2: Run locally (used in further development):
 
