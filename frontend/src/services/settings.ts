@@ -122,3 +122,16 @@ export async function sendStaffInvite(email: string): Promise<void> {
     'Unable to send staff invite.',
   )
 }
+
+export async function generateInviteLink(email: string): Promise<string> {
+  const data = await request<{ inviteUrl: string }>(
+    '/invitations/link',
+    {
+      method: 'POST',
+      headers: buildHeaders(true),
+      body: JSON.stringify({ email }),
+    },
+    'Unable to generate invite link.',
+  )
+  return data.inviteUrl
+}
